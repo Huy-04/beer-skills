@@ -1,0 +1,127 @@
+export function utcNow() {
+  return new Date().toISOString();
+}
+
+export function buildDefaultState() {
+  return {
+    schema_version: "1.0",
+    feature_slug: "",
+    mode: "standard",
+    risk: "normal",
+    run_style: "guided",
+    active_skill: "using-beer",
+    context_stage: "none",
+    seed_path: ".beer/seed/",
+    context_path: "",
+    context_confidence: 0,
+    phase: "idle",
+    phase_number: 0,
+    planning_route: "",
+    current_phase_name: "",
+    current_slice: "",
+    prep_depth: "",
+    execution_target: "",
+    validation_status: "",
+    spike_status: "",
+    swarm_status: "",
+    active_work_item: "",
+    tdd_required: false,
+    tdd_status: "not-required",
+    tdd_evidence_path: "",
+    execution_evidence_path: "",
+    verification_status: "not-run",
+    review_route: "",
+    review_status: "",
+    open_findings_count: 0,
+    compounding_route: "",
+    learnings_file: "",
+    critical_promotions: 0,
+    next_handoff: "",
+    epic_id: "",
+    approved_gates: {
+      context: false,
+      phase_plan: false,
+      execution: false,
+      review: false,
+    },
+    active_beads: [],
+    active_workers: [],
+    auto_accept: {
+      enabled: false,
+      planning: false,
+      validating: false,
+      swarming: false,
+      reviewing: false,
+      compounding: false,
+    },
+    blockers: [],
+    last_updated: utcNow(),
+  };
+}
+
+export function buildDefaultConfig() {
+  return {
+    schema_version: "1.0",
+    ecosystem: "beer",
+    version: "1.0.0",
+    features: {
+      context_intake: true,
+      graph_explore: true,
+      codex_hooks: true,
+    },
+    defaults: {
+      mode: "auto",
+      risk: "normal",
+      run_style: "guided",
+      max_workers: 3,
+      context_threshold: 0.65,
+    },
+    auto_accept: {
+      enabled: false,
+      planning: false,
+      validating: false,
+      swarming: false,
+      reviewing: false,
+      compounding: false,
+    },
+    dependencies: {
+      task_tracker: "beads",
+      graph_engine: "gitnexus",
+    },
+  };
+}
+
+export function buildDefaultStateMd() {
+  return [
+    "# Beer State",
+    "",
+    "Current: idle",
+    "Feature: (none)",
+    "Mode: standard",
+    "Risk: normal",
+    "Run style: guided",
+    "Context: none",
+    "Context path: (none)",
+    "Phase: idle",
+    "Planning route: (none)",
+    "Current phase: (none)",
+    "Current slice: (none)",
+    "Gate approvals: context=no, phase_plan=no, execution=no, review=no",
+    "Validation: (none)",
+    "Execution target: (none)",
+    "TDD required: no",
+    "TDD status: not-required",
+    "TDD evidence: (none)",
+    "Execution evidence: (none)",
+    "Verification: not-run",
+    "Review: (none)",
+    "Next handoff: (none)",
+    "",
+    "Artifacts:",
+    "",
+    "- (none)",
+    "",
+    "Last updated: " + utcNow().slice(0, 10),
+    "",
+  ].join("\n");
+}

@@ -1,0 +1,50 @@
+{
+  "name": "beer-skills",
+  "version": "1.0.0",
+  "description": "Agentic workflow skill ecosystem for AI-assisted software development",
+  "bin": {
+    "beer-skills": "./scripts/commands/beer-cli.mjs",
+    "beer": "./scripts/commands/beer-cli.mjs"
+  },
+  "scripts": {
+    "onboard": "node scripts/commands/onboard-beer.mjs --apply",
+    "status": "node scripts/commands/beer-status.mjs --json",
+    "auto:accept": "node scripts/commands/beer-auto-accept.mjs",
+    "test": "node --test --test-isolation=none",
+    "dependencies": "node scripts/commands/beer-dependencies.mjs",
+    "planning:gate": "node scripts/commands/beer-planning-gate.mjs",
+    "cli": "node scripts/commands/beer-cli.mjs",
+    "check-links": "node scripts/maintenance/check-markdown-links.mjs",
+    "skills:sync": "node scripts/maintenance/sync-skills.mjs"
+  },
+  "keywords": [
+    "ai-agent",
+    "agentic-workflow",
+    "multi-agent",
+    "workflow",
+    "skills",
+    "codex-plugin",
+    "claude-code",
+    "debugging",
+    "tdd",
+    "gitnexus",
+    "beads"
+  ],
+  "author": "Beer contributors",
+  "files": [
+    ".agents",
+    ".codex-plugin",
+    "skills",
+    "scripts",
+    "docs",
+    "COMMANDS.md",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE.md"
+  ],
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

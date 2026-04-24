@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-04-24T15:51:40.843Z",
+  "skills_total": 17,
+  "entries": [
+    {
+      "name": "writing-beer-skills",
+      "description": "This skill should be used when the user asks to \"create a new skill\", \"edit an existing skill\", \"verify a skill under pressure\", or \"test a skill before handoff\".",
+      "category": "meta",
+      "family": "",
+      "directory": "writing-beer-skills",
+      "file": "skills\\meta\\writing-beer-skills\\SKILL.md"
+    },
+    {
+      "name": "xia",
+      "description": "This skill should be used when the user asks to \"analyze a skills repo\", \"compare skills\", \"scout a repo for reusable skills\", or \"recommend which skills Beer should add, update, adapt, ignore, or prioritize next\".",
+      "category": "meta",
+      "family": "",
+      "directory": "xia",
+      "file": "skills\\meta\\xia\\SKILL.md"
+    },
+    {
+      "name": "agent-docs-sync",
+      "description": "This skill should be used when the user asks to \"update CLAUDE.md\", \"edit AGENTS.md\", \"sync agent docs\", \"inject guidelines\", \"update project context\", or \"manage agent rules\".",
+      "category": "support",
+      "family": "",
+      "directory": "agent-docs-sync",
+      "file": "skills\\support\\agent-docs-sync\\SKILL.md"
+    },
+    {
+      "name": "codebase-knowledge",
+      "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build knowledge base\"], [\"scan project patterns\"], [\"refresh knowledge base\"], or otherwise needs a refreshed project-local knowledge cache. It is strongest when used to consolidate stable knowledge after work has been completed or a reusable pattern has clearly emerged.",
+      "category": "support",
+      "family": "",
+      "directory": "codebase-knowledge",
+      "file": "skills\\support\\codebase-knowledge\\SKILL.md"
+    },
+    {
+      "name": "graph-explore",
+      "description": "This skill should be used when another Beer skill needs deeper code structure, blast-radius, dependency, process, or API-safety answers than local inspection can provide through GitNexus-backed graph queries.",
+      "category": "support",
+      "family": "",
+      "directory": "graph-explore",
+      "file": "skills\\support\\graph-explore\\SKILL.md"
+    },
+    {
+      "name": "prompt-leverage",
+      "description": "This skill should be used when the user asks to upgrade, normalize, structure, improve, or leverage a prompt, especially when the prompt needs repository, skill, file, Beer workflow, or session context to be understood correctly.",
+      "category": "support",
+      "family": "",
+      "directory": "prompt-leverage",
+      "file": "skills\\support\\prompt-leverage\\SKILL.md"
+    },
+    {
+      "name": "test-driven-development",
+      "description": "This skill should be used when the user asks to \"use TDD\", \"write the test first\", \"add a regression test before fixing\", \"implement with red green refactor\", or \"prove the behavior change with tests\", or when a behavior change should be demonstrated by a failing test before production code is written.",
+      "category": "support",
+      "family": "",
+      "directory": "test-driven-development",
+      "file": "skills\\support\\test-driven-development\\SKILL.md"
+    },
+    {
+      "name": "debugging",
+      "description": "This skill should be used when the user asks to debug, fix a build failure, fix a failing test, root-cause an error, diagnose a runtime crash, unblock a stuck worker, investigate an integration failure, or perform systematic debugging before changing code.",
+      "category": "workflow",
+      "family": "debug",
+      "directory": "debugging",
+      "file": "skills\\workflow\\debug\\debugging\\SKILL.md"
+    },
+    {
+      "name": "compounding",
+      "description": "This skill should be used when completed feature work or debugging work should be turned into reusable Beer learnings.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "compounding",
+      "file": "skills\\workflow\\feature\\compounding\\SKILL.md"
+    },
+    {
+      "name": "context-intake",
+      "description": "This skill should be used when the user asks to \"load context\", \"resume state\", \"recover handoff\", \"start from zero context\", or otherwise needs Beer session context restored before routing.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "context-intake",
+      "file": "skills\\workflow\\feature\\context-intake\\SKILL.md"
+    },
+    {
+      "name": "executing",
+      "description": "This skill should be used when a validated execution slice is approved for implementation, whether on the direct path or as a swarm worker.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "executing",
+      "file": "skills\\workflow\\feature\\executing\\SKILL.md"
+    },
+    {
+      "name": "exploring",
+      "description": "This skill should be used when the user wants to build, add, change, or design a feature and important product or behavior decisions are still unlocked.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "exploring",
+      "file": "skills\\workflow\\feature\\exploring\\SKILL.md"
+    },
+    {
+      "name": "planning",
+      "description": "This skill should be used when implementation work needs a bounded plan, including feature work after exploring, small direct fixes that route through context-intake into compact planning, or debug escalations that need a planned repair path.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "planning",
+      "file": "skills\\workflow\\feature\\planning\\SKILL.md"
+    },
+    {
+      "name": "reviewing",
+      "description": "This skill should be used when execution finishes and the work needs a quality gate before closeout, when a completed feature needs final review, when a bounded direct execution needs proportional review, or when the user explicitly asks for findings on the current diff.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "reviewing",
+      "file": "skills\\workflow\\feature\\reviewing\\SKILL.md"
+    },
+    {
+      "name": "swarming",
+      "description": "This skill should be used when `beer:validating` approved the current slice with `execution_target = swarming`, when the user asks to launch the swarm for a validated multi-worker slice, or when parallel execution must be coordinated across bounded workers.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "swarming",
+      "file": "skills\\workflow\\feature\\swarming\\SKILL.md"
+    },
+    {
+      "name": "using-beer",
+      "description": "This skill should be used when the user asks to \"start beer session\", \"which skill should I use\", \"/go\", \"run full pipeline\", \"resume session\", or \"go mode\".",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "using-beer",
+      "file": "skills\\workflow\\feature\\using-beer\\SKILL.md"
+    },
+    {
+      "name": "validating",
+      "description": "This skill should be used when a planned execution slice needs a go/no-go check before code is written, including feature work after planning, small direct-fix work that still needs a compact safety gate, or debug-escalation repairs that should be verified before execution.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "validating",
+      "file": "skills\\workflow\\feature\\validating\\SKILL.md"
+    }
+  ],
+  "issues": []
+}

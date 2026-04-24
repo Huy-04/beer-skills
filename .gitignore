@@ -1,0 +1,4 @@
+.beer/
+.tmp/
+.npm-cache/
+.claude/

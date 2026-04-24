@@ -1,0 +1,159 @@
+---
+name: planning
+description: >
+  This skill should be used when implementation work needs a bounded plan,
+  including feature work after exploring, small direct fixes that route through
+  context-intake into compact planning, or debug escalations that need a planned
+  repair path.
+license: PolyForm-Noncommercial-1.0.0
+compatibility:
+  - claude-code
+  - beer-ecosystem
+metadata:
+  version: "1.0.0"
+  ecosystem: beer
+  tags:
+    - beer/workflow
+    - workflow
+  dependencies:
+    - id: beads-cli
+      kind: command
+      command: bd
+      missing_effect: degraded
+    - id: gitnexus
+      kind: mcp_server
+      server_names: [gitnexus]
+      missing_effect: degraded
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+user-invocable: true
+disable-model-invocation: false
+---
+
+# planning
+
+Turn a clarified request into a bounded implementation plan. Scale the planning depth to the route instead of forcing every task through the same full feature shape.
+
+## At a Glance
+
+| | |
+|---|---|
+| **Use when** | `CONTEXT.md` is locked, `context-intake` routes a small direct fix into compact planning, or `debugging` escalates into planned repair work |
+| **Needs** | One of: locked `CONTEXT.md`; a small direct-fix request with bounded scope; or a proven root cause from `debugging` |
+| **Produces** | `discovery.md`, `approach.md`, `phase-plan.md`, and proportional current-phase prep |
+| **Next** | `beer:validating` after approval |
+
+## 30-Second Version
+
+1. Confirm the incoming route: `feature`, `small-fix`, or `debug-escalation`.
+2. Reject the route and bounce to the right upstream phase if prerequisites do not match.
+3. Read `history/learnings/critical-patterns.md` first.
+4. Research only enough repo reality to support the confirmed route.
+5. Write `discovery.md`, `approach.md`, and a phase plan sized to the work.
+6. Ask for approval unless `beer-auto-accept.mjs --gate planning` returns `ALLOW`.
+7. Prepare only the current execution slice, proportional to the route.
+8. Hand off to `beer:validating`.
+
+## Planning Routes
+
+### Feature Route
+
+Use when:
+
+- `planning_route = feature`
+- `context_stage = locked`
+- `approved_gates.context = true`
+- `history/<feature>/CONTEXT.md` exists
+- the work is feature-sized, ambiguous, or cross-cutting
+
+This is the full planning path: research, synthesis, multi-phase plan, and current-phase preparation.
+
+### Small Direct-Fix Route
+
+Use when:
+
+- `planning_route = small-fix`
+- the task is local and low ambiguity,
+- it likely touches fewer than 3 files,
+- `context-intake` already determined that `exploring` is unnecessary,
+- the fix still benefits from a short explicit plan.
+
+This route stays compact: short discovery, short approach, single-phase plan, and no forced bead graph.
+
+### Debug-Escalation Route
+
+Use when:
+
+- `planning_route = debug-escalation`
+- `debugging` already proved the root cause,
+- the repair is no longer a tiny local edit,
+- the next safe step is a planned repair rather than an immediate patch.
+
+This route plans from the debug evidence. It must preserve the root-cause statement and avoid drifting into unrelated feature expansion.
+
+## Scope and Ownership
+
+- `exploring` owns locked product decisions and `CONTEXT.md`.
+- `debugging` owns reproduction evidence and the root-cause sentence.
+- `planning` owns implementation planning, risk mapping, and current-slice preparation.
+- `planning` does not lock new product decisions, silently reinterpret seed context, or start execution.
+
+## Output Contract
+
+### All Routes
+
+Always write:
+
+- `history/<feature>/discovery.md`
+- `history/<feature>/approach.md`
+- `history/<feature>/phase-plan.md`
+
+`<feature>` must already be present in `.beer/state.json` before planning starts. `planning` does not invent or rename the feature slug.
+
+### Feature Route
+
+After approval, prepare:
+
+- `history/<feature>/phase-<n>-contract.md`
+- `history/<feature>/phase-<n>-story-map.md`
+- beads only for the current phase when decomposition is actually needed
+
+### Small Direct-Fix and Debug-Escalation Routes
+
+After approval, prepare only what is proportional:
+
+- a compact current-phase contract when execution needs it
+- no story map or beads unless the work is large enough that direct execution would force guessing
+
+## Hard Rules
+
+- Never start feature planning from `.beer/seed/`; feature route requires locked context.
+- Never invent a new planning route inside `planning`.
+- Never silently downgrade or upgrade the incoming route; bounce back to the upstream skill instead.
+- Never skip learnings retrieval.
+- Never create beads before approval.
+- Never force multi-phase planning onto a tiny direct fix.
+- Never lose the debug root cause when planning an escalated repair.
+- Never auto-prepare current-slice work without an `ALLOW` result from `beer-auto-accept.mjs --gate planning`.
+- Never hand off directly to `swarming`; `planning` always hands off to `beer:validating`.
+
+## State Contract
+
+- `state.json` is authoritative.
+- Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
+- Treat `planning_route` as an incoming contract from upstream. Validate it; do not invent a replacement route locally.
+- Record enough state for `validating` to know the active route, current phase, and whether current-phase prep is compact or full.
+- Set `approved_gates.phase_plan = false` before the planning approval gate, then `true` only after that gate passes.
+- Log the auto-accept policy result when it is used to cross the planning gate.
+
+## References
+
+- [Workflow detail](references/workflow.md)
+- [Quick reference](references/quick-ref.md)
+- [Communication standards](references/communication.md)
+- [Pressure scenarios](references/pressure-scenarios.md)
