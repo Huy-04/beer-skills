@@ -16,7 +16,7 @@ const PACKAGED_SKILLS_ROOT = path.join(INSTALL_ROOT, "skills");
 const AGENT_GUIDELINES_REFERENCE_ROOT = path.join(
   PACKAGED_SKILLS_ROOT,
   "support",
-  "agent-guidelines",
+  "beer-agent-guidelines",
   "references",
 );
 

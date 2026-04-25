@@ -1,10 +1,10 @@
 ---
-name: agent-guidelines
+name: beer-agent-guidelines
 description: Fast checklist for installing Karpathy-style execution guardrails into repo instruction files
 version: "1.0.0"
 ---
 
-# agent-guidelines - Quick Reference
+# beer-agent-guidelines - Quick Reference
 
 ## Invoke When
 

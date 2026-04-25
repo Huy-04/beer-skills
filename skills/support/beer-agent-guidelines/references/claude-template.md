@@ -1,5 +1,5 @@
 ---
-name: agent-guidelines
+name: beer-agent-guidelines
 description: Canonical CLAUDE.md guardrail block
 version: "1.0.0"
 ---

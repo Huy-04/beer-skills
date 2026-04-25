@@ -1,5 +1,5 @@
 ---
-name: agent-guidelines
+name: beer-agent-guidelines
 description: >
   This skill should be used when the user asks to "use Karpathy guidelines",
   "install execution guardrails", "make the repo instructions more surgical",
@@ -25,7 +25,7 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
-# agent-guidelines
+# beer-agent-guidelines
 
 Install or refresh Karpathy-style coding guardrails in repo instruction files so the working behavior lives in `CLAUDE.md` and `AGENTS.md`, not only inside this skill package.
 
@@ -121,7 +121,7 @@ Use a stable wrapper when the repo already contains other instructions:
 
 ## Ownership Boundary
 
-- `agent-guidelines` owns the canonical guardrail wording and where it lands inside repo instruction files.
+- `beer-agent-guidelines` owns the canonical guardrail wording and where it lands inside repo instruction files.
 - Project-specific repo rules remain outside the managed block unless the user explicitly asks to rewrite them.
 - Workflow skills still own planning, execution, validation, and review after the instructions are synced.
 

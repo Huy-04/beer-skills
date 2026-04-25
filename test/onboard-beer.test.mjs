@@ -54,9 +54,9 @@ test("removeRepo removes installed Beer Claude skills and managed guideline file
 
   const result = removeRepo(repoRoot);
 
-  assert.equal(fs.existsSync(path.join(repoRoot, ".claude", "skills", "agent-guidelines")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".claude", "skills", "beer-agent-guidelines")), false);
   assert.equal(fs.existsSync(customSkillDir), true);
   assert.equal(fs.existsSync(path.join(repoRoot, "AGENTS.md")), false);
   assert.equal(fs.existsSync(path.join(repoRoot, "CLAUDE.md")), false);
-  assert.ok(result.removed_skills.includes("agent-guidelines"));
+  assert.ok(result.removed_skills.includes("beer-agent-guidelines"));
 });

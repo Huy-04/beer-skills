@@ -1,10 +1,10 @@
 ---
-name: agent-guidelines
+name: beer-agent-guidelines
 description: Detailed workflow for syncing Karpathy-style coding guardrails into repo instruction files
 version: "1.0.0"
 ---
 
-# agent-guidelines - Workflow Detail
+# beer-agent-guidelines - Workflow Detail
 
 ## Purpose
 

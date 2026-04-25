@@ -47,7 +47,7 @@ test("syncProjectSkills replaces Beer Claude skills and syncs repo instructions"
 
   assert.ok(result.removed_skills.includes("execution-guardrails"));
   assert.equal(fs.existsSync(staleBeerSkillDir), false);
-  assert.equal(fs.existsSync(path.join(claudeSkillsDir, "agent-guidelines")), true);
+  assert.equal(fs.existsSync(path.join(claudeSkillsDir, "beer-agent-guidelines")), true);
   assert.equal(fs.existsSync(customSkillDir), true);
   assert.match(agents, /Project note/);
   assert.match(agents, /<!-- beer-agent-guidelines:start -->/);

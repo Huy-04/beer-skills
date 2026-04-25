@@ -1,10 +1,10 @@
 ---
-name: agent-guidelines
+name: beer-agent-guidelines
 description: Communication templates for syncing execution guardrails into repo instruction files
 version: "1.0.0"
 ---
 
-# agent-guidelines - Communication Templates
+# beer-agent-guidelines - Communication Templates
 
 ## Sync Summary
 

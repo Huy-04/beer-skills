@@ -36,7 +36,7 @@ flowchart TD
     GH[graph-explore] -. support .-> PL
     PH[prompt-leverage] -. support .-> UB
     KB[codebase-knowledge] -. support .-> CO
-    AG[agent-guidelines] -. support .-> PL
+    AG[beer-agent-guidelines] -. support .-> PL
 ```
 
 Debugging is a parallel workflow branch:
@@ -88,7 +88,7 @@ flowchart LR
 | `graph-explore` | query GitNexus for structure, flow, and impact context |
 | `test-driven-development` | supply RED -> GREEN -> REFACTOR evidence for behavior changes |
 | `codebase-knowledge` | maintain `.beer/knowledge-base/` as a project-local pattern-first implementation map |
-| `agent-guidelines` | install or refresh Karpathy-style guardrails in `CLAUDE.md` and `AGENTS.md` |
+| `beer-agent-guidelines` | install or refresh Karpathy-style guardrails in `CLAUDE.md` and `AGENTS.md` |
 
 ### Meta
 
