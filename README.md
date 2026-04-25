@@ -48,6 +48,8 @@ beer status
 | Install Beer globally from GitHub | `npm install -g github:Huy-04/beer-skills` |
 | Update the global Beer package | `beer update` |
 | Onboard the current repo | `beer init` |
+| Install Beer Claude slash commands for the current repo | `beer claude install` |
+| Install Beer Claude slash commands globally | `beer claude install --global` |
 | Refresh Beer files in the current repo | `beer refresh` |
 | Remove Beer from the current repo | `beer uninstall --yes` |
 | Check installed tools | `beer check-tools` |
@@ -63,6 +65,11 @@ than the current working directory.
 
 Detailed setup: [docs/setup.md](docs/setup.md)  
 Full command reference: [COMMANDS.md](COMMANDS.md)
+
+`beer claude install` generates Claude custom slash commands in
+`.claude/commands/` with names like `/beer-using-beer` and
+`/beer-execution-guardrails`. Use `--global` for `~/.claude/commands/`, or
+`--all` to install both.
 
 ## What Beer Provides
 

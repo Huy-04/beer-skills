@@ -1,6 +1,7 @@
 export function parseCliArgs(argv) {
   const args = {
     command: "help",
+    subcommand: "",
     approval: "",
     repoRoot: undefined,
     json: false,
@@ -13,6 +14,8 @@ export function parseCliArgs(argv) {
     tool: undefined,
     yes: false,
     dryRunTools: false,
+    global: false,
+    all: false,
   };
 
   const remaining = [...argv];
@@ -20,6 +23,9 @@ export function parseCliArgs(argv) {
   if (first && !first.startsWith("-")) {
       args.command = first;
     }
+  if (args.command === "claude" && remaining.length > 0 && !remaining[0].startsWith("-")) {
+    args.subcommand = remaining.shift();
+  }
   if (args.command === "approve" && remaining.length > 0 && !remaining[0].startsWith("-")) {
     args.approval = remaining.shift();
   }
@@ -64,6 +70,14 @@ export function parseCliArgs(argv) {
     }
     if (arg === "--dry-run-tools") {
       args.dryRunTools = true;
+      continue;
+    }
+    if (arg === "--global") {
+      args.global = true;
+      continue;
+    }
+    if (arg === "--all") {
+      args.all = true;
       continue;
     }
     if (arg === "--request") {

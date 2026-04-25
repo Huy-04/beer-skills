@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { assessAutoAccept, renderAutoAccept } from "./beer-auto-accept.mjs";
 import { buildBeerDependencyReport } from "./beer-dependencies.mjs";
 import { parseCliArgs } from "../beer-cli/args.mjs";
+import { runClaude } from "../beer-cli/claude.mjs";
 import { printHelp } from "../beer-cli/help.mjs";
 import { runCheckTools } from "../beer-cli/check-tools.mjs";
 import { runBeerIndex } from "../beer-cli/index.mjs";
@@ -83,6 +84,8 @@ export async function main(argv = process.argv.slice(2)) {
       return runInit(args);
     case "update":
       return runUpdate(args);
+    case "claude":
+      return runClaude(args);
     case "refresh":
       return runRefresh(args);
     case "uninstall":

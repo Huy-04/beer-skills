@@ -31,6 +31,27 @@ Onboard a different repo:
 beer init --repo-root /path/to/project
 ```
 
+Install Beer slash commands for Claude Code in the current repo:
+
+```bash
+beer claude install
+```
+
+This creates commands like `/beer-using-beer` and `/beer-execution-guardrails`
+inside `.claude/commands/`.
+
+Install Beer slash commands for Claude Code globally:
+
+```bash
+beer claude install --global
+```
+
+Install both project and user Claude slash commands in one run:
+
+```bash
+beer claude install --all
+```
+
 Beer automatically uses the current repo by default. Use `--repo-root` only when
 you want to target a different repo.
 
@@ -48,6 +69,14 @@ Keep the file compact for `small-fix` and `debug-escalation` routes. Reserve
 | `.beer/config.json` | repo-local Beer configuration |
 | `.beer/scripts/` | managed script snapshot |
 | `.beer/skills/` | synced skills for the target repo |
+
+`beer claude install` is separate from `beer init`. It manages Claude Code
+slash-command files:
+
+| Target | Path |
+|---|---|
+| Project commands | `./.claude/commands/beer-*.md` |
+| User commands | `~/.claude/commands/beer-*.md` |
 
 ## Tooling Options
 
@@ -125,8 +154,8 @@ node /path/to/beer-skills/scripts/commands/onboard-beer.mjs --repo-root /path/to
 
 ## Codex Plugin Install
 
-This repo includes [.codex-plugin/plugin.json](../.codex-plugin/plugin.json), so
-Codex can use the repository as a plugin source.
+This repo ships local plugin metadata for Codex, so Codex can use the
+repository as a plugin source.
 
 Add this local checkout as a marketplace root:
 

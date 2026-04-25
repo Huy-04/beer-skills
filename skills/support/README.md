@@ -11,7 +11,7 @@ rather than another workflow family.
 | `prompt-leverage` | Context-aware prompt upgrading with built-in language policy | return an execution-ready prompt |
 | `codebase-knowledge` | Project-local pattern-first implementation map | return reusable repo patterns and boundaries without replacing repo truth |
 | `test-driven-development` | Fail-first proof for behavior changes | return RED/GREEN/REFACTOR evidence |
-| `agent-docs-sync` | Agent guidance synchronization for `CLAUDE.md` and `AGENTS.md` | return a surgically merged context file |
+| `execution-guardrails` | Karpathy-style guardrails for assumptions, simplicity, surgical diffs, and proof | return a compact execution frame |
 
 ## Relationship to Workflow
 

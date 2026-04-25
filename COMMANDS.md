@@ -18,6 +18,9 @@ beer update
 | Command | Use it for |
 |---|---|
 | `beer init` | onboard the current repo and create `.beer/` |
+| `beer claude install` | install or refresh Beer slash commands in `./.claude/commands/` |
+| `beer claude install --global` | install or refresh Beer slash commands in `~/.claude/commands/` |
+| `beer claude install --all` | install both project and user Claude slash commands |
 | `beer refresh` | refresh Beer-managed files in the current repo |
 | `beer uninstall --yes` | remove `.beer/` from the current repo |
 | `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided mode |
@@ -40,6 +43,8 @@ Use these when Beer is not installed globally:
 | Goal | Command |
 |---|---|
 | Init the current repo | `npx --yes --package github:Huy-04/beer-skills beer-skills init` |
+| Install Beer Claude slash commands for the current repo | `npx --yes --package github:Huy-04/beer-skills beer-skills claude install --repo-root /path/to/project` |
+| Install Beer Claude slash commands globally | `npx --yes --package github:Huy-04/beer-skills beer-skills claude install --global` |
 | Refresh managed repo files | `npx --yes --package github:Huy-04/beer-skills beer-skills refresh` |
 | Remove Beer from the current repo | `npx --yes --package github:Huy-04/beer-skills beer-skills uninstall --yes` |
 | Read repo status | `npx --yes --package github:Huy-04/beer-skills beer-skills status --json` |
@@ -75,6 +80,7 @@ Use these when Beer is not installed globally:
 ## Notes
 
 - `beer update` updates the global Beer package from GitHub.
+- `beer claude install` writes managed Claude slash commands with names like `/beer-using-beer`.
 - `beer refresh` updates repo-local managed files in `.beer/`.
 - `beer approve review` also runs the automatic post-task GitNexus refresh path for the current repo.
 - `beer index` reruns the current repo's GitNexus refresh path manually when needed.

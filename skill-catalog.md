@@ -32,7 +32,7 @@ Public reference for the **17 skills** in the Beer ecosystem.
 | `beer:graph-explore` | GitNexus-backed structure, flow, or impact lookup | Graph-derived findings or degraded status |
 | `beer:test-driven-development` | Behavior work needs fail-first proof | RED -> GREEN -> REFACTOR loop |
 | `beer:codebase-knowledge` | Project-local pattern-first implementation map should be created or refreshed | `.beer/knowledge-base/` implementation map |
-| `beer:agent-docs-sync` | Update CLAUDE.md or AGENTS.md with behavioral guidelines | Surgically merged context file |
+| `beer:execution-guardrails` | Apply Karpathy-style guardrails to planning, implementation, refactoring, or review | Compact execution frame |
 
 ## Meta (2)
 
