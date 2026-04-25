@@ -1,5 +1,5 @@
 ---
-name: beer-graph-explore
+name: graph-explore
 description: >
   This skill should be used when another Beer skill needs deeper code structure,
   blast-radius, dependency, process, or API-safety answers than local inspection

@@ -1,5 +1,5 @@
 ---
-name: beer-reviewing
+name: reviewing
 description: >
   This skill should be used when execution finishes and the work needs a
   quality gate before closeout, when a completed feature needs final review,

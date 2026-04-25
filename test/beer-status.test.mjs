@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
-import { buildRecommendedActions, deriveFeatureSlug } from "../scripts/beer-state/status.mjs";
+import { buildNextReads, buildRecommendedActions, deriveFeatureSlug } from "../scripts/beer-state/status.mjs";
 
 function baseStatus(overrides = {}) {
   return {
@@ -28,6 +31,10 @@ function baseStatus(overrides = {}) {
       ...overrides,
     },
   };
+}
+
+function makeTempRepo() {
+  return fs.mkdtempSync(path.join(os.tmpdir(), "beer-status-"));
 }
 
 test("deriveFeatureSlug ignores placeholder values from STATE.md", () => {
@@ -88,4 +95,17 @@ test("buildRecommendedActions asks small-fix routes to create bounded CONTEXT wh
     "Resume by reopening the active context for planning.",
     "Create or refresh history/login-copy/CONTEXT.md so the direct-fix route stays explicit before planning or execution.",
   ]);
+});
+
+test("buildNextReads includes both AGENTS.md and CLAUDE.md when present", () => {
+  const repoRoot = makeTempRepo();
+  fs.writeFileSync(path.join(repoRoot, "AGENTS.md"), "# AGENTS\n", "utf8");
+  fs.writeFileSync(path.join(repoRoot, "CLAUDE.md"), "# CLAUDE\n", "utf8");
+
+  const status = baseStatus();
+  status.repo_root = repoRoot;
+
+  const reads = buildNextReads(status);
+
+  assert.deepEqual(reads.slice(0, 2), ["AGENTS.md", "CLAUDE.md"]);
 });

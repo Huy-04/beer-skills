@@ -221,7 +221,16 @@ export function buildNextReads(status) {
 
   if (fs.existsSync(path.join(status.repo_root, "AGENTS.md"))) {
     reads.push("AGENTS.md");
-  } else if (fs.existsSync(path.join(status.repo_root, "README.md"))) {
+  }
+
+  if (fs.existsSync(path.join(status.repo_root, "CLAUDE.md"))) {
+    reads.push("CLAUDE.md");
+  }
+
+  if (
+    reads.length === 0 &&
+    fs.existsSync(path.join(status.repo_root, "README.md"))
+  ) {
     reads.push("README.md");
   }
 

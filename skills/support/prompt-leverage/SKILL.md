@@ -1,5 +1,5 @@
 ---
-name: beer-prompt-leverage
+name: prompt-leverage
 description: >
   This skill should be used when the user asks to upgrade, normalize, structure,
   improve, or leverage a prompt, especially when the prompt needs repository,

@@ -1,5 +1,5 @@
 ---
-name: beer-using-beer
+name: using-beer
 description: >
   This skill should be used when the user asks to "start beer session",
   "which skill should I use", "/go", "run full pipeline", "resume session",
@@ -75,7 +75,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 |---|---|
 | **Feature workflow** | `using-beer`, `context-intake`, `exploring`, `planning`, `validating`, `swarming`, `executing`, `reviewing`, `compounding` |
 | **Debug workflow** | `debugging` |
-| **Support** | `test-driven-development`, `codebase-knowledge`, `execution-guardrails` |
+| **Support** | `test-driven-development`, `codebase-knowledge`, `agent-guidelines` |
 | **Helpers** | `prompt-leverage` (transformer), `graph-explore` |
 | **Meta** | `writing-beer-skills`, `xia` |
 
@@ -103,7 +103,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 | Debug failing behavior | `beer:debugging` | Root-cause first |
 | Edit Beer itself | `beer:writing-beer-skills` or `beer:xia` | Use meta skills for ecosystem work |
 | Analyze or compare an external skills repo | `beer:xia` | Produce a curation brief before changing Beer skills |
-| Use Karpathy-style guardrails or demand a tighter, smaller diff | `beer:execution-guardrails` | Return an execution frame, then continue the active workflow under it |
+| Install or refresh Karpathy-style repo guardrails | `beer:agent-guidelines` | Sync `CLAUDE.md` and `AGENTS.md`, then continue under those instructions |
 | Capture shipped learnings | `beer:compounding` | End-of-cycle flywheel |
 
 Internal helpers stay off the main first-skill table. Pull them in only when an active skill needs prompt transformation, graph depth, or a background pattern cache.

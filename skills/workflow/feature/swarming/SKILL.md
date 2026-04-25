@@ -1,5 +1,5 @@
 ---
-name: beer-swarming
+name: swarming
 description: >
   This skill should be used when `beer:validating` approved the current
   slice with `execution_target = swarming`, when the user asks to launch the

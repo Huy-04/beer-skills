@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T11:21:58.909Z",
+  "generated_at": "2026-04-25T13:26:00.551Z",
   "skills_total": 17,
   "entries": [
     {
@@ -19,20 +19,20 @@
       "file": "skills\\meta\\xia\\SKILL.md"
     },
     {
+      "name": "agent-guidelines",
+      "description": "This skill should be used when the user asks to \"use Karpathy guidelines\", \"install execution guardrails\", \"make the repo instructions more surgical\", \"sync guardrails into CLAUDE.md or AGENTS.md\", or otherwise wants repository instruction files updated with assumption, simplicity, scope, and verification rules.",
+      "category": "support",
+      "family": "",
+      "directory": "agent-guidelines",
+      "file": "skills\\support\\agent-guidelines\\SKILL.md"
+    },
+    {
       "name": "codebase-knowledge",
       "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build knowledge base\"], [\"scan project patterns\"], [\"refresh knowledge base\"], or otherwise needs a refreshed project-local implementation map. It is strongest when used to consolidate stable repository patterns, boundaries, and critical flows after work has already clarified how the codebase really operates.",
       "category": "support",
       "family": "",
       "directory": "codebase-knowledge",
       "file": "skills\\support\\codebase-knowledge\\SKILL.md"
-    },
-    {
-      "name": "execution-guardrails",
-      "description": "This skill should be used when the user asks to \"use Karpathy guidelines\", \"be more surgical\", \"avoid overengineering\", \"think before coding\", \"keep the diff minimal\", \"push back on a bloated plan\", or otherwise wants explicit execution guardrails applied before planning, implementing, refactoring, or reviewing code.",
-      "category": "support",
-      "family": "",
-      "directory": "execution-guardrails",
-      "file": "skills\\support\\execution-guardrails\\SKILL.md"
     },
     {
       "name": "graph-explore",

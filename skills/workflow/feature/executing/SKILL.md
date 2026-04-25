@@ -1,5 +1,5 @@
 ---
-name: beer-executing
+name: executing
 description: >
   This skill should be used when a validated execution slice is approved for
   implementation, whether on the direct path or as a swarm worker.

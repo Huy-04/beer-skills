@@ -1,5 +1,5 @@
 ---
-name: beer-exploring
+name: exploring
 description: >
   This skill should be used when the user wants to build, add, change, or
   design a feature and important product or behavior decisions are still
