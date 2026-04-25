@@ -14,22 +14,27 @@ version: "1.1"
 - Current repository source wins over `.beer/knowledge-base/`.
 - Store `.beer/knowledge-base/` inside the current project/repo, not globally.
 - Default commit policy is `local-cache-by-default`.
-- Missing `.beer/knowledge-base/` means you may create a baseline cache during an approved run; it does not auto-trigger a scan by itself.
+- Missing `.beer/knowledge-base/` means you may run a full scan-and-write pass during an approved run; do not stop at scaffolding only.
 - If cache entries conflict with source, trust source for immediate analysis, mark entries stale, and ask whether to update knowledge/docs or change code.
 - If Git commit lookup is blocked/unavailable, use `generated_from_commit: unknown-*` and record the reason in metadata notes.
 - Prefer evidence-backed docs over exhaustive inventories.
-- Discovery may fan out, but synthesis must have one writer.
+- Default execution is one-pass real scan -> child-agent lane fan-out -> single-writer synthesis.
+- Evidence priority is `gitnexus-first` when graph evidence is available, otherwise `local-fallback`.
+- If child agents are unavailable, degrade locally but keep the same output contract.
 
-## Bootstrap Command
+## Scan Command
 
 ```text
 node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
   --output-root .beer/knowledge-base \
   --source-path <repo-or-subpath> \
+  --gitnexus-evidence <tmp-or-project-json> \
   --generated-from-commit unknown-git-unavailable \
-  --mode manual \
+  --mode gitnexus-assisted \
   --invocation-reason user-request
 ```
+
+Omit `--gitnexus-evidence` and use `--mode manual` when GitNexus is unavailable.
 
 ## Baseline Directory Shape
 
@@ -111,15 +116,26 @@ Do not force all of these into every repo. Generate only the docs supported by e
 - [ ] Has critical flows
 - [ ] States source-of-truth policy
 - [ ] Points to the generated docs that matter
+- [ ] Uses evidence-backed file references instead of placeholders
 
 ## Index Checklist
 
 - [ ] `strategy = pattern-first`
+- [ ] `discovery.pre_scan` is present
+- [ ] `discovery.execution` is present
+- [ ] `discovery.synthesis = single-writer`
+- [ ] `discovery.evidence_priority = gitnexus-first | local-fallback`
 - [ ] `dominant_patterns` present
 - [ ] `task_index` present
 - [ ] `entries[]` point to real files
 - [ ] `search_index` is keyword-oriented
 - [ ] `task_index` is implementation-task-oriented
+
+## Doc Checklist
+
+- [ ] `Key Files` points to real repo files
+- [ ] `Source Evidence` names the strongest supporting files
+- [ ] `Representative Snippet` is copied from current source, not invented
 
 ## Example Task Buckets
 
@@ -173,6 +189,7 @@ Get-Content .beer/knowledge-base/critical-flows/*.md
 | Flag | Action |
 |---|---|
 | README is navigation-only | rewrite as an implementation entrypoint |
+| Run stops after scaffolding | continue into the real repo scan |
 | Repo archetype unclear | do more scouting before writing docs |
 | Boundary docs missing | add them before polishing lower-value notes |
 | Too many tiny files | consolidate |

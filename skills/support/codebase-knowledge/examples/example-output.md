@@ -45,10 +45,14 @@ This is an illustrative output shape. Real entries must be generated from curren
   "strategy": "pattern-first",
   "gitnexus_status": "available",
   "source_path": ".",
+  "repo_shape": "Node-based skill and workflow repository",
   "discovery": {
-    "model": "single-writer synthesis",
-    "lanes": ["repo-scout", "backend", "frontend", "boundaries"],
-    "optional_lanes": ["critical-flows", "async-patterns", "integration-patterns"]
+    "pre_scan": "real-repo-scan",
+    "execution": "parallel-child-agents",
+    "synthesis": "single-writer",
+    "evidence_priority": "gitnexus-first",
+    "lanes": ["architecture-and-conventions", "backend", "frontend", "boundaries", "critical-flows"],
+    "optional_lanes": ["integration-patterns", "state-boundaries"]
   },
   "stats": {
     "files_scanned": 128,
@@ -159,6 +163,21 @@ This codebase keeps entrypoints thin and pushes coordination into deeper layers.
 - `src/api/users.controller.ts`
 - `src/application/create-user.handler.ts`
 - `src/infrastructure/user-repository.ts`
+
+## Source Evidence
+- Primary evidence: `src/api/users.controller.ts`
+- Supporting evidence: `src/application/create-user.handler.ts`
+- Supporting evidence: `src/infrastructure/user-repository.ts`
+
+## Representative Snippet
+Representative snippet from `src/application/create-user.handler.ts`:
+
+```ts
+export async function createUser(command) {
+  const user = await userRepository.create(command);
+  return user;
+}
+```
 
 ## Risk When Changing
 Medium to high. Request flow changes can affect auth, persistence, and async side effects.

@@ -29,26 +29,26 @@ The knowledge base says services use repositories only, but current code directl
 - Ask whether to update knowledge/docs or change code to match the documented pattern.
 - Do not make a code-convention decision without user direction.
 
-## Scenario 2: User Did Not Ask For Parallel Agents
+## Scenario 2: User Asked For A Fast Scan
 
 **Input**
 
 ```text
-Scan this repo and build the knowledge base.
+Scan this repo and build the knowledge base quickly.
 ```
 
 **Failure Mode**
 
-- Spawns subagents or tracked beads by default.
-- Creates task-system noise for a cache refresh.
-- Reports "workers completed" without evidence.
+- Stays local and serial even though the scan is lane-friendly.
+- Stops after scaffolding or folder listing instead of doing the real scan.
+- Reports "parallel scan" without evidence from lane outputs.
 
 **Expected Behavior**
 
-- Run repo-scout, backend, frontend, and boundary lanes sequentially by default.
+- Run one real repo pre-scan first.
+- Fan out lane work through child agents by default.
 - Use GitNexus/local source scans as evidence.
-- Only use parallel agents if the user explicitly asks for parallel agent work.
-- Record mode and evidence in metadata/output.
+- Record execution mode and evidence in metadata/output.
 
 ## Scenario 3: Generated Output Has No Evidence
 
@@ -67,6 +67,7 @@ Create .beer/knowledge-base/ quickly. It is fine if you infer the architecture.
 **Expected Behavior**
 
 - Refuse to label inferred patterns as high confidence without code evidence.
+- Prefer graph evidence first when GitNexus is available, then confirm with source files.
 - Include source file paths or graph evidence for each entry.
 - Use `low` confidence for weak evidence and list gaps.
 - Keep commit policy `local-cache-by-default`; do not commit unless explicitly requested.
@@ -75,6 +76,6 @@ Create .beer/knowledge-base/ quickly. It is fine if you infer the architecture.
 
 - Source authority is preserved in all scenarios.
 - Cache/code conflicts ask for user direction.
-- No default subagents, workers, or beads are created.
+- Fast scan requests trigger child-agent fan-out unless tooling is unavailable.
 - Generated entries include confidence and source references.
 - Metadata includes `generated_from_commit`, `source_authority`, and `commit_policy`.

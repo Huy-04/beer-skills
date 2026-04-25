@@ -17,8 +17,8 @@ metadata:
     - beer/support
     - knowledge
     - patterns
-  inputs: "Repo root + optional GitNexus readiness + optional approved refresh handoff"
-  outputs: "`.beer/knowledge-base/` pattern-first implementation map with metadata and index.json"
+  inputs: "Repo root + optional GitNexus evidence handoff + optional approved refresh handoff"
+  outputs: "`.beer/knowledge-base/` evidence-backed implementation map with generated docs, metadata, and index.json"
   upstream: "using-beer (user-initiated or compounding-approved refresh)"
   downstream: "context-intake, planning, validating, reviewing (read-only consumers)"
   dependencies:
@@ -33,6 +33,7 @@ allowed-tools:
   - Bash
   - Glob
   - Grep
+  - Agent
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -50,28 +51,27 @@ real shape of the repo instead of rediscovering it from scratch.
 |---|---|
 | **Use when** | The user explicitly wants the knowledge base created/refreshed, or compounding already won approval because finished work revealed reusable patterns |
 | **Do not use when** | A one-off repo question can be answered from current source, GitNexus, or locked context without generating cache artifacts |
-| **Produces** | Project-local `.beer/knowledge-base/` with pattern-first docs, `index.json`, and `00-metadata.json` |
+| **Produces** | Project-local `.beer/knowledge-base/` with evidence-backed docs, `index.json`, and `00-metadata.json` |
 | **Consumers** | Planning, validating, reviewing, debugging, and onboarding read it as optional context only |
 
 ## 30-Second Version
 
 1. Confirm this is a legitimate knowledge-base refresh request.
-2. Check existing `.beer/knowledge-base/` metadata, commit, and scope.
-3. Scout the repo shape first.
-4. Run discovery lanes for backend, frontend, and boundaries.
-5. Add optional lanes only when the codebase actually shows those patterns.
-6. Synthesize a small set of canonical docs with one writer and evidence-backed confidence.
-7. Update `README.md`, `index.json`, `00-metadata.json`, and report the refresh outcome.
+2. Run one real repo scan pass to lock repo shape, entrypoints, and high-signal evidence.
+3. Fan out child agents by lane to inspect architecture/conventions, backend, frontend, boundaries, and critical flows in parallel.
+4. Add optional lanes only when the codebase actually shows those patterns.
+5. Synthesize a small set of canonical docs with one writer and evidence-backed confidence.
+6. Update `README.md`, `index.json`, `00-metadata.json`, generated docs, and report the refresh outcome.
 
 ## Scope and Authority
 
 - Treat `.beer/knowledge-base/` as a cache, not a source of truth.
 - Store it inside the current project/repo, not in a global folder.
 - Default commit policy is `local-cache-by-default`: do not commit it unless the user/team explicitly wants shared repo knowledge.
-- A missing knowledge base permits baseline creation; it does not, by itself, widen the invocation gate.
+- A missing knowledge base permits a full scan-and-write pass; do not stop at a bootstrap skeleton.
 - If a knowledge-base entry conflicts with current source code, trust source code for immediate analysis, mark the entry stale, and ask whether the user wants to update knowledge/docs or change code to match the documented pattern.
-- Use GitNexus when available for structure, flow, and impact evidence, but fall back to local source scanning.
-- Analysis lanes are conceptual units. Use parallel agents only when the user explicitly asked for parallel agent work.
+- Use GitNexus first for structure, flow, route, and boundary evidence when available. Use local source scanning to confirm snippets, fill gaps, and degrade cleanly when graph support is unavailable.
+- This skill owns a one-pass real scan. Discovery lanes fan out through child agents by default and collapse back into one writer for synthesis.
 - This skill is a knowledge compiler, not a generic repo Q&A helper.
 
 ## Output Philosophy
@@ -89,7 +89,7 @@ implementation-oriented docs that help someone code correctly.
 
 ## Stable Skeleton, Adaptive Content
 
-Always create the baseline files:
+Always write the baseline artifacts:
 
 - `README.md`
 - `00-metadata.json`
@@ -116,18 +116,30 @@ does not have those patterns.
 
 ## Discovery Model
 
+### Required Pre-Scan
+
+Before lane fan-out, run one real repo scan pass to:
+
+- classify repo archetype
+- identify entrypoints and high-signal folders
+- collect evidence for lane assignment
+- decide which optional docs are justified
+
+This pre-scan is part of the same run. It is not a separate bootstrap phase.
+
 ### Required Lanes
 
 | Lane | Purpose | Typical outputs |
 |---|---|---|
-| Repo scout | Classify repo shape, frameworks, major folders, and entrypoints | `README.md`, `architecture/system-overview.md` |
+| Architecture + conventions | Consolidate repo shape, major folders, entrypoints, and repeated implementation rules | `README.md`, `architecture/system-overview.md`, `conventions/implementation-rules.md` |
 | Backend | Detect request lifecycle, module template, data access, domain rules, async patterns | `backend/*.md` |
 | Frontend | Detect app structure, API access, state/session patterns, UI conventions | `frontend/*.md` |
-| Boundaries | Detect FE/BE seams, contract coupling, auth/session boundary, error shapes | `boundaries/*.md` |
+| Boundaries | Detect FE/BE seams, command/state seams, contract coupling, auth/session boundary, error shapes | `boundaries/*.md` |
+| Critical flows | Capture high-blast-radius command, routing, auth, or orchestration flows | `critical-flows/*.md` |
 
 ### Optional Lanes
 
-Only run or promote docs for:
+Only run or promote additional docs for:
 
 - critical flows
 - domain events / outbox / messaging
@@ -136,9 +148,11 @@ Only run or promote docs for:
 - workflow engines
 - external integration seams
 
-## Single-Writer Rule
+## Execution Model
 
-- Discovery may fan out by lane.
+- The run is one-pass: pre-scan -> lane child agents -> single-writer synthesis.
+- Discovery fans out by lane through child agents by default.
+- If child-agent tooling is unavailable, degrade to a local single-agent pass without changing the output contract.
 - Final documentation must be synthesized by one writer.
 - Discovery workers collect evidence, confidence, and candidate doc proposals.
 - The final writer decides which patterns are dominant enough to become docs.
@@ -166,6 +180,8 @@ Each generated markdown doc should aim to include:
 - `Common variants in this repo`
 - `Do not do`
 - `Key files`
+- `Source evidence`
+- `Representative snippet`
 - `Risk when changing`
 - `Confidence`
 
@@ -175,7 +191,8 @@ this schema over ad hoc summaries.
 ## Metadata and Index Expectations
 
 - `00-metadata.json` must record `generated_from_commit`, `source_authority`, `commit_policy`, and whether discovery was `manual` or `gitnexus-assisted`.
-- `00-metadata.json` should record that the strategy is `pattern-first` and identify the discovery lanes used.
+- `00-metadata.json` should record the one-pass topology using `pre_scan`, `execution`, `synthesis`, and the discovery lanes used.
+- `00-metadata.json` should also record `evidence_priority = gitnexus-first | local-fallback`.
 - `index.json` should support both keyword lookup and task-oriented lookup.
 - Prefer task buckets such as:
   - `add backend endpoint`
@@ -210,7 +227,7 @@ Usually skip updates for:
 Knowledge base updated at `.beer/knowledge-base/`.
 [N] docs generated, [M] dominant patterns captured, [K] critical flows documented.
 Current source remains authoritative; stale/conflicting entries are marked.
-Strategy: pattern-first. Discovery lanes: repo-scout, backend, frontend, boundaries.
+Strategy: pattern-first. Execution: one-pass real scan -> child-agent lane fan-out -> single-writer synthesis.
 Invocation reason: <user-request | compounding-approved-refresh | explicit-partial-scan>.
 ```
 

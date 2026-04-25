@@ -38,7 +38,7 @@ Think of this skill as a knowledge compiler: it consolidates stable project
 knowledge into `.beer/knowledge-base/` after the workflow has already learned
 something worth preserving.
 
-## Phase 0: Initialization
+## Phase 0: One-Pass Scan Setup
 
 ### Step 0.0: Check Optional Tooling
 
@@ -67,41 +67,53 @@ If the knowledge base exists:
 
 If it is missing:
 
-- create `.beer/knowledge-base/` with the baseline directory layout
+- create `.beer/knowledge-base/` as the output root
 - record `source_authority = current repository source`
 - record `commit_policy = local-cache-by-default`
 - record `strategy = pattern-first`
 
-Bootstrap with:
+Then continue into the real scan immediately. Do not stop after scaffolding.
+
+If GitNexus is available, gather graph evidence first through `graph-explore` or direct GitNexus tools, then hand that evidence to the writer.
+
+Run the one-pass helper with:
 
 ```bash
 node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
   --output-root .beer/knowledge-base \
   --source-path <repo-or-subpath> \
+  --gitnexus-evidence <tmp-or-project-json> \
   --generated-from-commit unknown-git-unavailable \
-  --mode manual \
+  --mode gitnexus-assisted \
   --invocation-reason user-request
 ```
 
-### Step 0.2: Establish Repo Shape First
+If GitNexus is unavailable, omit `--gitnexus-evidence` and run the same helper in local fallback mode.
 
-Before documenting patterns, answer:
+### Step 0.2: Run The Real Repo Pre-Scan
+
+Before lane fan-out, answer:
 
 - does the repo have backend, frontend, shared packages, infra, jobs, workers, or plugins?
 - how many apps exist?
 - where are the entrypoints?
 - which boundaries matter enough to deserve their own docs?
 
-This repo-shape pass is mandatory. Do not jump straight into area summaries.
+This pre-scan is mandatory and belongs to the same run. It is not a separate bootstrap layer. Its job is to collect the repo shape and evidence needed to assign lane work cleanly. Prefer GitNexus for this pass when available; local scan fills file-level gaps and snippet extraction.
 
-## Phase 1: Discovery Lanes
+## Phase 1: Parallel Discovery Lanes
 
-Run lanes sequentially by default using local source scans and GitNexus when
-available. Use subagents only when the user explicitly asked for parallel agent
-work. If subagents are used:
+After the pre-scan, fan out lane work through child agents by default. Each lane
+gets the pre-scan evidence plus its own focused file set. Prefer GitNexus-backed
+queries first inside each lane, then read local files to confirm the promoted
+pattern and capture representative snippets. Synthesis must still
+happen in one writer.
 
-- discovery may fan out by lane
-- synthesis must still happen in one writer
+If child-agent tooling is unavailable:
+
+- continue with a local single-agent pass
+- keep the same output contract
+- record the degraded execution mode in metadata or notes
 
 ### Lane A: Repo Scout
 
@@ -123,6 +135,9 @@ Typical searches:
 rg --files -g "package.json" -g "*.sln" -g "Program.cs" -g "app.*" -g "main.*"
 rg --files .
 ```
+
+This lane is fed by the pre-scan and usually collapses into the final writer's
+architecture/conventions synthesis.
 
 ### Lane B: Backend Discovery
 
@@ -260,6 +275,8 @@ Suggested doc schema:
 - Common variants in this repo
 - Do not do
 - Key files
+- Source evidence
+- Representative snippet
 - Risk when changing
 - Confidence
 
@@ -271,6 +288,10 @@ Metadata requirements:
 - `source_authority`
 - `commit_policy`
 - `strategy = pattern-first`
+- `pre_scan`
+- `execution = parallel-child-agents | single-agent-degraded`
+- `synthesis = single-writer`
+- `evidence_priority = gitnexus-first | local-fallback`
 - discovery lanes used
 - `mode = manual | gitnexus-assisted`
 - `scan_scope = full | partial`
@@ -292,6 +313,7 @@ Use the communication shape from `references/communication.md` and include:
 - scan scope
 - mode
 - strategy
+- execution model
 - docs generated
 - dominant patterns captured
 - critical flows documented

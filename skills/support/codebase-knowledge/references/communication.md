@@ -31,11 +31,14 @@ Report the refresh in terms of implementation value, not just file counts.
 Preferred summary points:
 
 - strategy used: `pattern-first`
+- execution model: `one-pass real scan -> child-agent lane fan-out -> single-writer synthesis`
+- evidence priority: `gitnexus-first` when graph evidence exists, otherwise `local-fallback`
 - repo shape observed: backend/frontend/boundaries or other detected archetype
 - dominant patterns captured
 - high-risk boundaries captured
 - critical flows documented
 - stale/conflicting entries, if any
+- representative snippets come from current source, not imagined templates
 
 ## README Standard
 
@@ -81,6 +84,7 @@ Optional docs should only appear when the repo supports them.
 ```markdown
 Knowledge base updated at `.beer/knowledge-base/`.
 - Strategy: pattern-first
+- Execution: one-pass real scan -> child-agent lane fan-out -> single-writer synthesis
 - Repo shape: [backend/frontend/boundaries | backend-only | other]
 - Dominant patterns captured: [N]
 - Critical flows documented: [K]

@@ -53,9 +53,13 @@ generation strategy:
   "strategy": "pattern-first",
   "gitnexus_status": "available|missing|repo-not-indexed|not-used",
   "source_path": ".",
+  "repo_shape": "Node-based skill and workflow repository",
   "discovery": {
-    "model": "single-writer synthesis",
-    "lanes": ["repo-scout", "backend", "frontend", "boundaries"],
+    "pre_scan": "real-repo-scan",
+    "execution": "parallel-child-agents",
+    "synthesis": "single-writer",
+    "evidence_priority": "gitnexus-first",
+    "lanes": ["architecture-and-conventions", "backend", "frontend", "boundaries", "critical-flows"],
     "optional_lanes": ["critical-flows", "async-patterns", "integration-patterns"]
   },
   "stats": {
@@ -76,6 +80,10 @@ generation strategy:
 Use `generated_from_commit` for freshness checks. It may be a commit sha or an
 explicit `unknown-*` fallback when Git lookup is blocked or unavailable.
 
+When GitNexus evidence is available, the writer should prefer graph-derived repo
+shape, dominant patterns, and doc proposals, then use local source to confirm
+key files and representative snippets.
+
 ## `entries[]`
 
 Each entry should contain:
@@ -91,6 +99,12 @@ Each entry should contain:
   "summary": "Shows the usual path from entrypoint to persistence and side effects."
 }
 ```
+
+The markdown file referenced by each entry should include:
+
+- `Key Files`
+- `Source Evidence`
+- `Representative Snippet`
 
 ## `dominant_patterns[]`
 
