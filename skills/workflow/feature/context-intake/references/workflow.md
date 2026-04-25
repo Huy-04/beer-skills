@@ -298,7 +298,7 @@ If the user declines resume:
 
 | Problem | Action |
 |---|---|
-| GitNexus unavailable | Record degraded mode and continue to Path 2 or 3 |
+| GitNexus unavailable | Record degraded workflow status and continue to Path 2 or 3 |
 | Repo not indexed | Continue without indexing here |
 | `bd` unavailable | Skip context scouts and use Path 3 |
 | Saved context missing details | Write seeded context with gaps and route to `exploring` |

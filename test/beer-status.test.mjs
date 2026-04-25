@@ -28,6 +28,7 @@ function baseStatus(overrides = {}) {
       next_handoff: "",
       context_stage: "none",
       feature_slug: "",
+      route: "",
       ...overrides,
     },
   };
@@ -69,7 +70,7 @@ test("buildRecommendedActions asks direct-fix routes to restore missing CONTEXT"
     baseStatus({
       active_skill: "planning",
       phase: "planning",
-      planning_route: "small-fix",
+      route: "small-fix",
       feature_slug: "login-copy",
       context_path: "history/login-copy/CONTEXT.md",
     }),
@@ -86,7 +87,7 @@ test("buildRecommendedActions asks small-fix routes to create bounded CONTEXT wh
     baseStatus({
       active_skill: "planning",
       phase: "planning",
-      planning_route: "small-fix",
+      route: "small-fix",
       feature_slug: "login-copy",
     }),
   );

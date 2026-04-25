@@ -23,7 +23,7 @@ version: "1.1"
 Root cause: <file>:<line or component> - <what is wrong and why it causes the symptom>
 
 ### Fix
-<What changed, or why this is routing to planning_route = debug-escalation.>
+<What changed, or why this is routing to route = debug-escalation.>
 
 ### Verification
 - Original command: <pass/fail/not run with reason>
@@ -77,7 +77,7 @@ Ready for: <executing/reviewing/compounding/user>
 
 ```text
 Root cause is proven, but the repair is too broad for a direct patch.
-Set planning_route = debug-escalation.
+Set route = debug-escalation.
 Invoke beer:planning with --route debug-escalation.
 Root cause: <verbatim sentence>
 Repair boundary: <files/modules/scope>

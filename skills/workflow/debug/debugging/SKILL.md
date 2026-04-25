@@ -86,7 +86,7 @@ Root cause: <file>:<line or component> - <what is wrong and why it causes the sy
 
 - Small, obvious fixes can be implemented directly after root cause is proven.
 - Behavior bugs should go through `beer:test-driven-development` so RED proves the regression before GREEN fixes it.
-- Cross-cutting fixes should route to `beer:planning` with `planning_route = debug-escalation` instead of being hidden inside debugging.
+- Cross-cutting fixes should route to `beer:planning` with `route = debug-escalation` instead of being hidden inside debugging.
 - Decision violations against `CONTEXT.md` must be reported before silently changing behavior.
 
 ### Phase 4: Verify and Report

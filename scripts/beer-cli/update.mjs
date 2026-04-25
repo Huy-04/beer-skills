@@ -16,8 +16,16 @@ function renderUpdateResult(result) {
       if (result.skill_install.removed_skills?.length) {
         lines.push(`  removed old Beer skills: ${result.skill_install.removed_skills.length}`);
       }
+      for (const target of result.skill_install.targets || []) {
+        lines.push(`  ${target.label}: ${target.skills.length} skill(s)`);
+      }
       for (const file of result.skill_install.instruction_sync?.files || []) {
         lines.push(`  ${file.name}: ${file.status}/${file.block_status}`);
+      }
+      if (result.skill_install.hook_sync) {
+        lines.push(`  Claude hooks: ${result.skill_install.hook_sync.claude.status}`);
+        lines.push(`  Codex hooks: ${result.skill_install.hook_sync.codex.status}`);
+        lines.push(`  Codex config: ${result.skill_install.hook_sync.codex_config.status}`);
       }
     }
   } else if (result.status === "manual_required" || result.status === "dry_run") {

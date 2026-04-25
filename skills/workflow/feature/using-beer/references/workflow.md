@@ -64,7 +64,7 @@ If the direct-fix signal applies:
 
 - keep `beer:context-intake` as the intake gate,
 - let intake skip `beer:exploring`,
-- route to `beer:planning` with `mode = small`.
+- route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 If the signal does not apply, intake decides whether the work needs `beer:exploring` or can move straight to `beer:planning`.
 
@@ -122,14 +122,14 @@ Run these checks on every session start:
 
 ### Preflight Degradation Routing
 
-If preflight reports `mode: degraded`, adjust the session before routing:
+If preflight reports `workflow_status: degraded`, adjust the session before routing:
 
 | Missing Tool | Adjustment |
 |--------------|------------|
 | `bd` | Use manual bead management (markdown files in `.beads/`). Skip graph-assisted validation. If `bd` is missing, route to direct single-worker execution; do not spawn swarm. |
 | GitNexus MCP or repo index | Use local `rg`/file inspection. Do not claim graph-backed certainty. |
 
-## Go Mode (Full Pipeline)
+## Go Run Style (Full Pipeline)
 
 ```text
 context-intake -> exploring -> [GATE 1] -> planning -> [GATE 2]
@@ -206,7 +206,8 @@ At the end of every skill, update `.beer/state.json` first, then regenerate `.be
 Required route fields in `.beer/state.json`:
 
 - `feature_slug`: active feature identity for feature-sized or debug-escalated work
-- `planning_route`: `feature`, `small-fix`, or `debug-escalation`
+- `route`: `feature`, `small-fix`, or `debug-escalation`
+- `orchestration_strategy`: `single-worker` or `multi-worker`
 - `validation_status`: `pending`, `pass`, or `fail`
 - `execution_target`: proposed or approved `executing` / `swarming`
 - `next_handoff`: explicit next Beer owner when the workflow is waiting on a normal handoff
@@ -226,9 +227,9 @@ Use this as the minimum state handoff contract:
 
 | Phase owner | Minimum state written before handoff |
 |---|---|
-| `context-intake` | `phase`, `context_stage`, `feature_slug` when known, `planning_route` when routing to planning, `next_handoff = beer:planning | beer:exploring` |
+| `context-intake` | `phase`, `context_stage`, `feature_slug` when known, `route` when routing to planning, `next_handoff = beer:planning | beer:exploring` |
 | `exploring` | `phase = exploring`, `context_stage = locked`, `context_path`, `context_confidence = 1.0`, `approved_gates.context = true` only after Gate 1 passes, then `next_handoff = beer:planning` |
-| `planning` | `phase = planning`, `planning_route`, `current_phase_name`, `current_slice`, `prep_depth`, `approved_gates.phase_plan = true` only after Gate 2 passes, then `next_handoff = beer:validating` |
+| `planning` | `phase = planning`, `route`, `orchestration_strategy`, `current_phase_name`, `current_slice`, `slice_count`, `planned_workers`, `prep_depth`, `approved_gates.phase_plan = true` only after Gate 2 passes, then `next_handoff = beer:validating` |
 | `validating` | `phase = validating`, `validation_status`, proposed then approved `execution_target`, `approved_gates.execution = true` only after Gate 3 passes, then `next_handoff = beer:executing | beer:swarming` |
 | `executing` / `swarming` | `phase = executing | swarming`, `active_work_item`, `execution_evidence_path`, `verification_status`, then `next_handoff = beer:reviewing` |
 | `reviewing` | `phase = reviewing`, `review_route`, `review_status`, `open_findings_count`, `approved_gates.review = true` only after Gate 4 passes, then `next_handoff = beer:compounding` or the repair route |

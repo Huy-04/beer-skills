@@ -49,10 +49,14 @@ Keep the file compact for `small-fix` and `debug-escalation` routes. Reserve
 | `.beer/scripts/` | managed script snapshot |
 | `.beer/skills/` | synced skills for the target repo |
 | `.claude/skills/` | Beer skills for Claude Code discovery; Beer removes old Beer skills first, then reinstalls the current set |
+| `.agents/skills/` | Beer skills for Codex discovery; Beer removes old Beer skills first, then reinstalls the current set |
+| `.claude/settings.json` | managed Beer Claude Code hooks for pre-edit flow lock and closeout guard |
+| `.codex/config.toml` | managed Codex feature toggle enabling repo-local Beer hooks |
+| `.codex/hooks.json` | managed Codex hook definitions for pre-edit flow lock and closeout guard |
 | `AGENTS.md` | managed `beer-agent-guidelines` block for agent-facing repo rules |
 | `CLAUDE.md` | managed `beer-agent-guidelines` block for Claude-facing repo rules |
 
-`beer init`, `beer refresh`, `beer install`, and `beer update` all resync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`.
+`beer init`, `beer refresh`, `beer install`, and `beer update` all resync Beer skills into `.claude/skills` and `.agents/skills`, sync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`, refresh the managed Beer hook entries in `.claude/settings.json`, and refresh the managed Codex hook/config entries in `.codex/`.
 
 ## Tooling Options
 
@@ -76,24 +80,9 @@ After GitNexus is installed, index the repo:
 npx gitnexus analyze
 ```
 
-## Automation Modes
-
-| Mode | Command |
-|---|---|
-| Minimal | `beer init --minimal` |
-| Full | `beer init --full` |
-
-Beer only runs the full installer when `bash` and `curl` are available. If not,
-it prints the official install command and leaves the repo in minimal mode.
-
-On Windows, `C:\Windows\System32\bash.exe` can exist even when WSL has no Linux
-distribution installed. Beer treats that as not usable for the full installer.
-Install Git Bash or a working WSL distro, then rerun `--full` or run the
-printed installer command manually.
-
 ## Full Toolchain Commands
 
-Beer `--full` mode installs:
+Beer toolchain install runs:
 
 ```bash
 npx -y gitnexus@latest setup

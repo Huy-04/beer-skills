@@ -2,7 +2,7 @@
 
 **Date**: <YYYY-MM-DD>
 **Feature**: <feature-slug>
-**Planning route**: `feature` | `small-fix` | `debug-escalation`
+**Route**: `feature` | `small-fix` | `debug-escalation`
 
 ## 1. Gap Analysis
 

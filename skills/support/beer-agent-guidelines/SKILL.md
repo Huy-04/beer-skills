@@ -4,8 +4,8 @@ description: >
   This skill should be used when the user asks to "use Karpathy guidelines",
   "install execution guardrails", "make the repo instructions more surgical",
   "sync guardrails into CLAUDE.md or AGENTS.md", or otherwise wants
-  repository instruction files updated with assumption, simplicity, scope,
-  and verification rules.
+  repository instruction files updated with assumption, simplicity, Beer flow
+  discipline, scope, and verification rules.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
@@ -61,6 +61,7 @@ Install or refresh Karpathy-style coding guardrails in repo instruction files so
 | Only one instruction file exists | Update that file and create the missing peer file unless the user said otherwise |
 | Existing instructions conflict with the canonical guardrails | Keep local project rules outside the managed block and flag the conflict explicitly |
 | The user wants lighter or heavier wording | Adjust the canonical block, then sync the same intent to both files |
+| Beer is onboarded but agents keep bypassing the workflow | Add explicit route-lock rules and a narrow trivial-task escape hatch |
 
 ---
 
@@ -70,6 +71,7 @@ Install or refresh Karpathy-style coding guardrails in repo instruction files so
 - Prefer a single compact rules section over a large skill-specific framework.
 - Keep project-specific instructions intact by editing only the managed block or creating the file when missing.
 - Maintain parity between `CLAUDE.md` and `AGENTS.md` unless the user explicitly wants them to diverge.
+- Make the Beer workflow sticky enough that agents do not ask a few questions and then code outside the active route.
 
 ## Sync Rules
 
@@ -100,6 +102,8 @@ Install or refresh Karpathy-style coding guardrails in repo instruction files so
 ### 5. Verify the Result
 
 - Confirm both files now contain the same four principles: thinking first, simplicity, surgical changes, and goal-driven verification.
+- Confirm both files now contain the Beer route-lock rule and the narrow trivial-task escape hatch.
+- Confirm both files now require contract verification before coding against constructors, factories, events, DTOs, and value objects.
 - Confirm project-specific rules outside the managed block were preserved.
 - Report whether each file was created or updated.
 
@@ -124,6 +128,7 @@ Use a stable wrapper when the repo already contains other instructions:
 - `beer-agent-guidelines` owns the canonical guardrail wording and where it lands inside repo instruction files.
 - Project-specific repo rules remain outside the managed block unless the user explicitly asks to rewrite them.
 - Workflow skills still own planning, execution, validation, and review after the instructions are synced.
+- This skill can require agents to route through Beer before coding, but it does not replace the workflow skills that own those phases.
 
 ---
 
@@ -155,6 +160,8 @@ Return:
 | Letting `CLAUDE.md` and `AGENTS.md` drift | Different agents end up following different rules |
 | Writing a long workflow manifesto | Loses the concise feel of the reference repo |
 | Editing unrelated repo guidance while "cleaning up" | Expands scope without user approval |
+| Asking a few setup questions and then coding outside Beer | The workflow becomes optional and state loses authority |
+| Using build failures to discover missing type or constructor details | Verification turns into discovery instead of proof |
 
 ---
 

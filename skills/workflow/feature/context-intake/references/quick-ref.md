@@ -39,7 +39,7 @@ mcp__gitnexus__cypher "MATCH ..."
 
 If the repo is not indexed:
 
-- record degraded mode,
+- record degraded workflow status,
 - do not auto-index here,
 - continue to resume or scout path.
 

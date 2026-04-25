@@ -169,7 +169,7 @@ node .beer/scripts/commands/beer-planning-gate.mjs --route debug-escalation --js
 
 Before the handoff, update `.beer/state.json` with:
 
-- `planning_route = debug-escalation`
+- `route = debug-escalation`
 - `phase = planning`
 - `approved_gates.phase_plan = false`
 - `next_handoff = beer:planning`
@@ -272,4 +272,4 @@ Debugging is complete when:
 - fix path is appropriate for risk and behavior impact
 - original failing command is rerun or limitation is stated
 - reusable pattern is captured when applicable
-- broad repairs are routed through `planning_route = debug-escalation` instead of being implemented ad hoc
+- broad repairs are routed through `route = debug-escalation` instead of being implemented ad hoc

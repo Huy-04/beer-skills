@@ -42,17 +42,21 @@ export async function runInstall(args) {
 
     const lines = ["Beer Skill Install"];
     lines.push(`Target: ${repoRoot}`);
-    lines.push(`Skills directory: ${result.path}`);
     if (result.removed_skills.length) {
       lines.push(`Removed Beer skills before sync: ${result.removed_skills.length}`);
     }
     lines.push(`Installed ${result.skills.length} skill(s):`);
-    for (const skill of result.skills) {
-      lines.push(`  ${skill.status === "created" ? "+" : "~"} ${skill.name}`);
+    for (const target of result.targets || []) {
+      lines.push(`  ${target.label}: ${target.path}`);
     }
     lines.push("Repo instructions:");
     for (const file of result.instruction_sync.files) {
       lines.push(`  ${file.status === "created" ? "+" : "~"} ${file.name} (${file.block_status})`);
+    }
+    if (result.hook_sync) {
+      lines.push(`Claude hooks: ${result.hook_sync.claude.status}`);
+      lines.push(`Codex hooks: ${result.hook_sync.codex.status}`);
+      lines.push(`Codex config: ${result.hook_sync.codex_config.status}`);
     }
     process.stdout.write(lines.join("\n") + "\n");
     return 0;

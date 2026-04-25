@@ -71,7 +71,7 @@ Examples:
 - obvious wiring fix,
 - small bug fix with clear expected behavior.
 
-If the exemption applies, route to `beer:planning` with `mode = small`.
+If the exemption applies, route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 ## Scope and Ownership
 

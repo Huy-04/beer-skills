@@ -38,10 +38,10 @@ Confidence: [high|medium|low]
 Next step: route through `beer:exploring` before planning.
 ```
 
-### Degraded Mode Notice
+### Degraded Workflow Notice
 
 ```text
-Running in degraded mode.
+Running in degraded workflow mode.
 Context was inferred from direct repo inspection, not graph-backed indexing.
 See `.beer/seed/05-gaps.md` for uncertainties before treating this as stable context.
 ```

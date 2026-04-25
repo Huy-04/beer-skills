@@ -2,7 +2,7 @@
 
 **Date**: <YYYY-MM-DD>
 **Feature**: <feature-slug>
-**Planning route**: `feature` | `small-fix` | `debug-escalation`
+**Route**: `feature` | `small-fix` | `debug-escalation`
 
 ## 1. Summary
 
@@ -32,7 +32,7 @@ Remove unused rows. Small-fix and debug-escalation routes usually keep only Phas
 ## 5. Approval Summary
 
 - route: `<route>`
-- mode/risk/run style: `<small|standard> / <normal|high> / <guided|go>`
+- route/risk/orchestration/run style: `<feature|small-fix|debug-escalation> / <normal|high> / <single-worker|multi-worker> / <guided|go>`
 - current phase: `<phase>`
 - highest risk: `<summary>`
 - proposed execution target after validation: `<executing | swarming | pending validation>`

@@ -7,7 +7,14 @@ import { fileURLToPath } from "node:url";
 import { checkCommand, hasMcpServer } from "../onboard-beer/checks.mjs";
 import { buildDefaultConfig, buildDefaultState, buildDefaultStateMd, utcNow } from "../onboard-beer/defaults.mjs";
 import { MANAGED_SCRIPT_FILES, MANAGED_SKILL_SENTINEL, MIN_NODE_MAJOR } from "../onboard-beer/manifest.mjs";
-import { removeInstalledBeerSkills, removeManagedAgentGuidelines, syncProjectSkills } from "../beer-cli/skill-sync.mjs";
+import {
+  removeInstalledBeerSkills,
+  removeManagedAgentGuidelines,
+  removeManagedClaudeHookSettings,
+  removeManagedCodexConfig,
+  removeManagedCodexHookSettings,
+  syncProjectSkills,
+} from "../beer-cli/skill-sync.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const SCRIPT_DIR = path.dirname(SCRIPT_PATH);
@@ -199,12 +206,19 @@ export function removeRepo(repoRoot) {
     fs.rmSync(beerDir, { recursive: true, force: true });
   }
 
-  const removedSkills = removeInstalledBeerSkills(repoRoot).removed;
+  const removedSkillCleanup = removeInstalledBeerSkills(repoRoot);
+  const removedSkills = removedSkillCleanup.removed;
   const removedGuidelines = removeManagedAgentGuidelines(repoRoot).files;
+  const removedHooks = removeManagedClaudeHookSettings(repoRoot);
+  const removedCodexHooks = removeManagedCodexHookSettings(repoRoot);
+  const removedCodexConfig = removeManagedCodexConfig(repoRoot);
   const removedAnything =
     existed ||
     removedSkills.length > 0 ||
-    removedGuidelines.some((file) => file.status === "removed" || file.status === "updated");
+    removedGuidelines.some((file) => file.status === "removed" || file.status === "updated") ||
+    ["removed", "updated"].includes(removedHooks.status) ||
+    ["removed", "updated"].includes(removedCodexHooks.status) ||
+    ["removed", "updated"].includes(removedCodexConfig.status);
 
   return {
     repo_root: repoRoot,
@@ -212,7 +226,11 @@ export function removeRepo(repoRoot) {
     status: removedAnything ? "removed" : "not_installed",
     managed_root: ".beer",
     removed_skills: removedSkills,
+    removed_skill_targets: removedSkillCleanup.targets,
     removed_guidelines: removedGuidelines,
+    removed_hooks: removedHooks,
+    removed_codex_hooks: removedCodexHooks,
+    removed_codex_config: removedCodexConfig,
   };
 }
 

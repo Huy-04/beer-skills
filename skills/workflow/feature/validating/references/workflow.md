@@ -28,7 +28,8 @@ if (Test-Path .beer\STATE.md) { Get-Content .beer\STATE.md }
 
 Extract:
 
-- planning route: `feature` | `small-fix` | `debug-escalation`
+- route: `feature` | `small-fix` | `debug-escalation`
+- orchestration strategy: `single-worker` | `multi-worker`
 - current slice name
 - `approved_gates.phase_plan`
 - proposed execution route, if already present
@@ -222,7 +223,10 @@ Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
 Record:
 
 - route
+- `orchestration_strategy`
+- `contract_verified`
 - validated status
+- `validator_status`
 - proposed and then approved execution target
 - `approved_gates.execution`
 - any spike result

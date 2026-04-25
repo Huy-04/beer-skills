@@ -5,7 +5,6 @@ export function parseCliArgs(argv) {
     approval: "",
     repoRoot: undefined,
     json: false,
-    mode: undefined,
     route: undefined,
     request: "",
     risk: undefined,
@@ -16,6 +15,9 @@ export function parseCliArgs(argv) {
     dryRunTools: false,
     global: false,
     all: false,
+    paths: [],
+    trivial: false,
+    knowledgeBase: "",
   };
 
   const remaining = [...argv];
@@ -29,7 +31,7 @@ export function parseCliArgs(argv) {
   if (args.command === "approve" && remaining.length > 0 && !remaining[0].startsWith("-")) {
     args.approval = remaining.shift();
   }
-  if (args.command === "install" && remaining.length > 0 && !remaining[0].startsWith("-")) {
+  if ((args.command === "install" || args.command === "flow-guard") && remaining.length > 0 && !remaining[0].startsWith("-")) {
     args.tool = remaining.shift();
   }
   for (let index = 0; index < remaining.length; index += 1) {
@@ -56,20 +58,34 @@ export function parseCliArgs(argv) {
       args.route = arg.slice("--route=".length);
       continue;
     }
-    if (arg === "--minimal") {
-      args.mode = "minimal";
-      continue;
-    }
-    if (arg === "--full") {
-      args.mode = "full";
-      continue;
-    }
     if (arg === "--yes" || arg === "-y") {
       args.yes = true;
       continue;
     }
     if (arg === "--dry-run-tools") {
       args.dryRunTools = true;
+      continue;
+    }
+    if (arg === "--path") {
+      args.paths.push(remaining[index + 1] || "");
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--path=")) {
+      args.paths.push(arg.slice("--path=".length));
+      continue;
+    }
+    if (arg === "--trivial") {
+      args.trivial = true;
+      continue;
+    }
+    if (arg === "--knowledge-base") {
+      args.knowledgeBase = remaining[index + 1] || "";
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--knowledge-base=")) {
+      args.knowledgeBase = arg.slice("--knowledge-base=".length);
       continue;
     }
     if (arg === "--global") {
@@ -87,15 +103,6 @@ export function parseCliArgs(argv) {
     }
     if (arg.startsWith("--request=")) {
       args.request = arg.slice("--request=".length);
-      continue;
-    }
-    if (arg === "--mode") {
-      args.mode = remaining[index + 1];
-      index += 1;
-      continue;
-    }
-    if (arg.startsWith("--mode=")) {
-      args.mode = arg.slice("--mode=".length);
       continue;
     }
     if (arg === "--risk") {

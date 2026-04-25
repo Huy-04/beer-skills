@@ -2,8 +2,7 @@
 name: using-beer
 description: >
   This skill should be used when the user asks to "start beer session",
-  "which skill should I use", "/go", "run full pipeline", "resume session",
-  or "go mode".
+  "which skill should I use", "/go", "run full pipeline", or "resume session".
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
@@ -40,7 +39,7 @@ disable-model-invocation: false
 
 # using-beer
 
-Load this first. `using-beer` checks onboarding, invokes workflow intake through `context-intake`, and enforces the human gates around execution.
+Load this first. `using-beer` checks onboarding, invokes workflow intake through `context-intake`, enforces the human gates around execution, and locks non-trivial work to the Beer route before coding starts.
 
 ---
 
@@ -57,13 +56,14 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 
 ## 30-Second Version
 
-1. **Preflight**: Run `node scripts/commands/beer-preflight.mjs --json` to probe dependencies and determine degradation mode.
+1. **Preflight**: Run `node scripts/commands/beer-preflight.mjs --json` to probe dependencies and determine workflow readiness.
 2. **Onboard or check state**: Run `node scripts/commands/onboard-beer.mjs --repo-root <path>` if needed.
 3. **Run intake first**: Hand normal task work to `context-intake` so it can recover context and choose between `planning` and `exploring`.
 4. **Use the intake result**: If the task is a small direct fix, intake may route straight to `planning`; if decisions remain unlocked, intake routes to `exploring`.
 5. **Scout**: Read `node .beer/scripts/commands/beer-status.mjs --json`.
-6. **Classify inside the session**: Use the current model to decide `mode`, `risk`, `run_style`, and first route. If mode confidence is low, ask the user whether to keep the proposed mode or raise it.
-7. **Invoke**: Hand off to the appropriate explicit skill.
+6. **Classify inside the session**: Use the current model to decide `route`, `risk`, `run_style`, and `orchestration_strategy`.
+7. **Lock the route**: State the chosen Beer skill and why coding is or is not allowed yet.
+8. **Invoke**: Hand off to the appropriate explicit skill.
 
 ---
 
@@ -87,8 +87,9 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 
 | Axis | Values | Use when... |
 |---|---|---|
-| `mode` | `small` / `standard` | Task size and workflow depth |
+| `route` | `feature` / `small-fix` / `debug-escalation` | Workflow path and upstream prerequisites |
 | `risk` | `normal` / `high` | Reversibility, blast radius, or architecture sensitivity |
+| `orchestration_strategy` | `single-worker` / `multi-worker` | How execution will be dispatched after validation |
 | `run_style` | `guided` / `go` | How aggressively Beer moves across gates |
 
 ### First-Skill Routing
@@ -96,7 +97,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 | Request shape | First skill | Notes |
 |---|---|---|
 | Build, change, investigate, or resume normal repo work | `beer:context-intake` | Intake gate. Recover context first, then route to `planning` or `exploring` |
-| Small direct fix | `beer:context-intake` | Intake may route directly to `planning` with `mode = small` when the fix is local, low ambiguity, and likely under 3 files |
+| Small direct fix | `beer:context-intake` | Intake may route directly to `planning` when the fix is local, low ambiguity, and likely under 3 files |
 | Locked-context implementation task | `beer:context-intake` | Intake reopens the current state and typically routes to `planning` |
 | Use TDD, write test first, or add regression test before fixing | `beer:test-driven-development` | Can run directly or be invoked by `executing` / `debugging` |
 | Review or verify completed work | `beer:reviewing` | Jump straight to review flow |
@@ -109,6 +110,35 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 Internal helpers stay off the main first-skill table. Pull them in only when an active skill needs prompt transformation, graph depth, or a background pattern cache.
 
 **When in doubt:** start with `beer:context-intake` for normal task work. Let intake decide whether the next phase is `planning` or `exploring`.
+
+## Flow Lock
+
+Beer is not optional once the repo is onboarded and the task is not trivial.
+
+- Do not ask a few task-shaping questions and then code outside the route.
+- Do not skip from `using-beer` or `context-intake` straight into implementation unless the route is explicitly a trivial bypass or an approved execution path.
+- Before any code edit on non-trivial work, announce:
+  - current Beer skill
+  - why that skill is the right route
+  - what gate, approval, or condition allows the next step
+- If the required route is missing or blocked, stop and surface the blocker instead of coding around Beer state.
+
+### Trivial Escape Hatch
+
+Bypass Beer only when all of these are true:
+
+- the task is read-only or non-behavioral
+- the change is local and obviously reversible
+- no planning, validation, or locked product decision is needed
+- no constructor, factory, event, DTO, command, or value-object contract must be inferred
+
+Typical allowed examples:
+
+- status or environment questions
+- comment or copy edits
+- tiny formatting or non-behavioral text changes
+
+If any doubt remains, route through `beer:context-intake`.
 
 ---
 
@@ -142,7 +172,7 @@ flowchart TD
 | **GATE 3** | After validating | "Approve execution target: `swarming` or direct `executing`?" |
 | **GATE 4** | After reviewing | "Approve closeout and compounding?" |
 
-See `references/workflow.md#go-mode` for the detailed sequence.
+See `references/workflow.md#go-run-style-full-pipeline` for the detailed sequence.
 
 ---
 
@@ -168,6 +198,8 @@ If `.beer/HANDOFF.json` exists:
 7. Never skip validating for feature work.
 8. Read `history/learnings/critical-patterns.md` before planning when it exists.
 9. Small, local, low-ambiguity fixes under 3 files still pass through intake, but intake can route them straight to `planning` without `exploring`.
+10. Non-trivial coding work does not start until Beer route lock is explicit.
+11. Build failures are not an acceptable substitute for checking exact contracts before implementation.
 
 ---
 
@@ -191,17 +223,18 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Axis | Values | Meaning |
 |---|---|---|
-| `mode` | `small`, `standard` | Workflow size and artifact depth |
+| `route` | `feature`, `small-fix`, `debug-escalation` | Workflow shape and prerequisite chain |
 | `risk` | `normal`, `high` | Change danger and reversibility |
+| `orchestration_strategy` | `single-worker`, `multi-worker` | Execution dispatch after planning and validation |
 | `run_style` | `guided`, `go` | Gate behavior and automation preference |
 
 ### Typical combinations
 
 | Combination | Use when | Typical path |
 |---|---|---|
-| `mode = small`, `risk = normal`, `run_style = guided` | Bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with lightweight validation and optional lightweight review/compounding follow-up |
-| `mode = standard`, `risk = normal`, `run_style = guided` | Normal feature work | Full workflow with normal gates |
-| `mode = standard`, `risk = high`, `run_style = guided` | Cross-cutting or hard-to-reverse change | Full workflow plus stricter research and spikes |
+| `route = small-fix`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with compact artifacts and validator gate |
+| `route = feature`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
+| `route = feature`, `risk = normal|high`, `orchestration_strategy = multi-worker`, `run_style = guided` | Feature work that decomposes cleanly into disjoint slices | Full workflow plus worker dispatch, coordination, and stricter validation |
 | `run_style = go` | Trusted end-to-end run preference | Same workflow, but Beer can auto-move where confidence allows |
 
 ### Decision Order
@@ -209,27 +242,27 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 1. User preference from `.beer/config.json`
 2. Current repo state and workflow reality
 3. Live request understanding in `using-beer`
-4. If confidence is low, ask the user whether to keep the proposed mode or raise it
+4. If confidence is low, ask the user whether to keep the proposed route/strategy or raise the rigor
 5. Auto default
 
 `node .beer/scripts/commands/beer-status.mjs --json` surfaces the normalized config snapshot. `using-beer` interprets that snapshot when choosing the route; support scripts do not auto-route the session on their own.
 
-Do not treat keyword heuristics as the long-term source of truth for mode selection. If the classifier is uncertain, ask the user whether to keep the proposed mode or raise it.
+Do not treat keyword heuristics as the long-term source of truth for route or orchestration selection. If the classifier is uncertain, ask the user whether to keep the proposed route/strategy or raise the rigor.
 
-### Mode Differences
+### Strategy Differences
 
-| Phase | Small Mode | Standard Mode |
+| Phase | Single-Worker | Multi-Worker |
 |---|---|---|
-| Context | Lighter bootstrap | Full intake, seed, and locked-context flow |
-| Plan | 1-3 beads | Story map + phase contract + bead graph |
-| Validate | Lightweight gate before execution | 8-dimension validation |
-| Execute | Direct single-worker path after validation | Swarming + workers |
-| Review | Optional lightweight follow-up | Full review flow + UAT |
-| Compound | Optional when nothing reusable emerged | Expected at feature close |
+| Context | Same intake and context lock | Same intake and context lock |
+| Plan | One bounded execution stream, compact slice map | Multiple disjoint slices with explicit ownership |
+| Validate | Confirm one worker is enough and proof target is credible | Confirm slice boundaries, worker count, and merge safety |
+| Execute | Direct execution after Gate 3 | Dispatch coordinated worker slices after Gate 3 |
+| Review | One implementation stream plus validator checks | Aggregated worker output plus validator checks |
+| Compound | Same closeout obligations | Same closeout obligations |
 
 ---
 
-## Auto-Accept Mode
+## Auto-Accept Run Style
 
 Enable `auto_accept` to let Beer move between gates automatically when risk and confidence allow it. Store the active runtime value in `.beer/state.json`; `.beer/config.json` only seeds the default preference.
 
@@ -253,7 +286,7 @@ Even with auto-accept enabled:
 - Required TDD evidence must be complete before automatic review handoff.
 - Human approval is still required when the workflow says risk is unclear.
 
-See `references/workflow.md#go-mode`.
+See `references/workflow.md#go-run-style-full-pipeline`.
 
 ---
 

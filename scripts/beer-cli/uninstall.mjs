@@ -32,13 +32,18 @@ function renderUninstallResult(result) {
     `Repo: ${result.repo_root}`,
   ];
 
-  if (result.status === "removed") {
+    if (result.status === "removed") {
     lines.push("Status: removed");
     lines.push("Removed: .beer");
     if (result.removed_skills?.length) {
       lines.push(`Removed skills: ${result.removed_skills.length}`);
       for (const name of result.removed_skills) {
         lines.push(`  - ${name}`);
+      }
+    }
+    for (const target of result.removed_skill_targets || []) {
+      if (target.removed.length > 0) {
+        lines.push(`Removed from ${target.label}: ${target.removed.length}`);
       }
     }
     const changedGuidelines = result.removed_guidelines?.filter(
@@ -49,6 +54,15 @@ function renderUninstallResult(result) {
       for (const file of changedGuidelines) {
         lines.push(`  - ${file.name}: ${file.status}`);
       }
+    }
+    if (["removed", "updated"].includes(result.removed_hooks?.status)) {
+      lines.push(`Claude hooks: ${result.removed_hooks.status}`);
+    }
+    if (["removed", "updated"].includes(result.removed_codex_hooks?.status)) {
+      lines.push(`Codex hooks: ${result.removed_codex_hooks.status}`);
+    }
+    if (["removed", "updated"].includes(result.removed_codex_config?.status)) {
+      lines.push(`Codex config: ${result.removed_codex_config.status}`);
     }
   } else if (result.status === "not_installed") {
     lines.push("Status: not installed");

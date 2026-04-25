@@ -56,10 +56,6 @@ function normalizeContextStage(value) {
   return value === "seeded" || value === "locked" ? value : "none";
 }
 
-function normalizeMode(value) {
-  return value === "small" || value === "standard" ? value : "standard";
-}
-
 function normalizeRisk(value) {
   return value === "high" ? "high" : "normal";
 }
@@ -70,6 +66,12 @@ function normalizeRunStyle(value) {
 
 export function normalizePlanningRoute(value) {
   return value === "feature" || value === "small-fix" || value === "debug-escalation" ? value : "";
+}
+
+export const normalizeRoute = normalizePlanningRoute;
+
+function normalizeOrchestrationStrategy(value) {
+  return value === "single-worker" || value === "multi-worker" ? value : "";
 }
 
 function normalizeExecutionTarget(value) {
@@ -108,6 +110,28 @@ function normalizeVerificationStatus(value) {
     : "not-run";
 }
 
+function normalizeGitNexusRefreshStatus(value) {
+  return value === "completed" ||
+    value === "skipped" ||
+    value === "manual-required" ||
+    value === "failed"
+    ? value
+    : "";
+}
+
+function normalizeKnowledgeBaseRefreshStatus(value) {
+  return value === "not-needed" ||
+    value === "approved" ||
+    value === "declined" ||
+    value === "refreshed"
+    ? value
+    : "";
+}
+
+function normalizeValidatorStatus(value) {
+  return value === "pending" || value === "pass" || value === "fail" ? value : "";
+}
+
 function normalizePathString(value, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
@@ -132,14 +156,21 @@ function normalizeConfigAutoAccept(value) {
   };
 }
 
+function normalizeDefaultOrchestrationStrategy(value) {
+  return value === "single-worker" || value === "multi-worker" || value === "auto" ? value : "auto";
+}
+
 export function buildDefaultState(overrides = {}) {
   const approvedGates = normalizeApprovedGates(overrides.approved_gates);
+  const route = normalizeRoute(overrides.route || overrides.planning_route);
+  const orchestrationStrategy = normalizeOrchestrationStrategy(overrides.orchestration_strategy);
   return {
     schema_version: STATE_SCHEMA_VERSION,
     feature_slug: typeof overrides.feature_slug === "string" ? overrides.feature_slug : "",
-    mode: normalizeMode(overrides.mode),
+    route,
     risk: normalizeRisk(overrides.risk),
     run_style: normalizeRunStyle(overrides.run_style),
+    orchestration_strategy: orchestrationStrategy,
     active_skill: typeof overrides.active_skill === "string" ? overrides.active_skill : "",
     context_stage: normalizeContextStage(overrides.context_stage),
     seed_path: normalizePathString(overrides.seed_path, ".beer/seed/"),
@@ -147,12 +178,15 @@ export function buildDefaultState(overrides = {}) {
     context_confidence: normalizeContextConfidence(overrides.context_confidence),
     phase: typeof overrides.phase === "string" ? overrides.phase : "idle",
     phase_number: Number.isFinite(overrides.phase_number) ? overrides.phase_number : 0,
-    planning_route: normalizePlanningRoute(overrides.planning_route),
     current_phase_name: typeof overrides.current_phase_name === "string" ? overrides.current_phase_name : "",
     current_slice: typeof overrides.current_slice === "string" ? overrides.current_slice : "",
+    slice_count: Number.isFinite(overrides.slice_count) ? overrides.slice_count : 0,
+    planned_workers: Number.isFinite(overrides.planned_workers) ? overrides.planned_workers : 0,
     prep_depth: overrides.prep_depth === "compact" || overrides.prep_depth === "full" ? overrides.prep_depth : "",
     execution_target: normalizeExecutionTarget(overrides.execution_target),
+    contract_verified: normalizeBoolean(overrides.contract_verified, false),
     validation_status: normalizeValidationStatus(overrides.validation_status),
+    validator_status: normalizeValidatorStatus(overrides.validator_status),
     spike_status: typeof overrides.spike_status === "string" ? overrides.spike_status : "",
     swarm_status: normalizeSwarmStatus(overrides.swarm_status),
     active_work_item: typeof overrides.active_work_item === "string" ? overrides.active_work_item : "",
@@ -161,6 +195,7 @@ export function buildDefaultState(overrides = {}) {
     tdd_evidence_path: normalizePathString(overrides.tdd_evidence_path),
     execution_evidence_path: normalizePathString(overrides.execution_evidence_path),
     verification_status: normalizeVerificationStatus(overrides.verification_status),
+    gitnexus_refresh_status: normalizeGitNexusRefreshStatus(overrides.gitnexus_refresh_status),
     review_route:
       overrides.review_route === "feature-final" ||
       overrides.review_route === "direct-completion" ||
@@ -177,6 +212,8 @@ export function buildDefaultState(overrides = {}) {
         : "",
     learnings_file: normalizePathString(overrides.learnings_file),
     critical_promotions: Number.isFinite(overrides.critical_promotions) ? overrides.critical_promotions : 0,
+    knowledge_base_refresh_status: normalizeKnowledgeBaseRefreshStatus(overrides.knowledge_base_refresh_status),
+    closeout_ready: normalizeBoolean(overrides.closeout_ready, false),
     next_handoff: typeof overrides.next_handoff === "string" ? overrides.next_handoff : "",
     epic_id: typeof overrides.epic_id === "string" ? overrides.epic_id : "",
     approved_gates: {
@@ -231,12 +268,11 @@ export function buildDefaultConfig(overrides = {}) {
       codex_hooks: normalizeBoolean(features.codex_hooks, true),
     },
     defaults: {
-      mode:
-        defaults.mode === "small" || defaults.mode === "standard" || defaults.mode === "auto"
-          ? defaults.mode
-          : "auto",
       risk: defaults.risk === "high" ? "high" : "normal",
       run_style: defaults.run_style === "go" ? "go" : "guided",
+      orchestration_strategy: normalizeDefaultOrchestrationStrategy(
+        defaults.orchestration_strategy,
+      ),
       max_workers: Number.isFinite(defaults.max_workers) ? defaults.max_workers : 3,
       context_threshold: Number.isFinite(defaults.context_threshold) ? defaults.context_threshold : 0.65,
     },

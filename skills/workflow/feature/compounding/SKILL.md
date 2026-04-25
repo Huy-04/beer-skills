@@ -73,7 +73,8 @@ full feature.
 5. Promote only the small subset that is truly reusable across future work.
 6. Let the workflow auto-refresh the current repo's GitNexus index when task closeout changed graph-relevant code.
 7. Ask the user about `.beer/knowledge-base/` only when the finished work produced reusable project patterns worth preserving.
-8. Update Beer state and clear temporary compounding artifacts.
+8. Run `beer closeout-guard` before claiming compounding is complete.
+9. Update Beer state and clear temporary compounding artifacts.
 
 ## Output Contract
 
@@ -101,6 +102,7 @@ Optional supporting artifacts:
 - Never leave a learning without an `applicable_when` condition.
 - Never treat post-task GitNexus refresh as a tool update; it means re-indexing the current repo, typically via `npx gitnexus analyze`.
 - Never ask for knowledge-base refresh unless the finished work created reusable patterns, conventions, architecture notes, or critical-flow guidance worth keeping.
+- Never finish compounding while GitNexus refresh status or the knowledge-base decision is still missing from `.beer/state.json`.
 
 ## State Contract
 

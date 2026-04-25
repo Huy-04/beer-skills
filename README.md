@@ -41,7 +41,7 @@ beer init
 beer status
 ```
 
-`beer init` automatically reinstalls Beer skills into `./.claude/skills/` and syncs the managed `AGENTS.md` / `CLAUDE.md` guideline blocks.
+`beer init` automatically reinstalls Beer skills into `./.claude/skills/` and `./.agents/skills/`, syncs the managed `AGENTS.md` / `CLAUDE.md` guideline blocks, and configures repo-local hooks for Claude and Codex.
 
 ### Common Actions
 
@@ -122,8 +122,9 @@ repair.
 
 | Axis | Values | Meaning |
 |---|---|---|
-| `mode` | `small`, `standard` | workflow size and artifact depth |
+| `route` | `feature`, `small-fix`, `debug-escalation` | workflow path and prerequisites |
 | `risk` | `normal`, `high` | blast radius and reversibility |
+| `orchestration_strategy` | `single-worker`, `multi-worker` | execution topology after validation |
 | `run_style` | `guided`, `go` | how aggressively Beer crosses gates |
 
 Use `beer-skills auto-accept` from an installed package, or
@@ -136,13 +137,13 @@ missing coordination tool makes the move unsafe.
 
 | Common combination | Typical route |
 |---|---|
-| `small + normal + guided` | compact planning, validation, and direct execution |
-| `standard + normal + guided` | full feature workflow |
-| `standard + high + guided` | full workflow plus deeper research and stricter validation |
-| `standard + normal/high + go` | full workflow with configurable auto-advance where allowed |
+| `small-fix + normal + single-worker + guided` | compact planning, validation, and direct execution |
+| `feature + normal + single-worker + guided` | full feature workflow with one bounded implementation stream |
+| `feature + normal/high + multi-worker + guided` | full workflow plus coordinated worker slices and deeper validation |
+| `feature + normal/high + single/multi-worker + go` | same workflow with configurable auto-advance where allowed |
 
 `beer:using-beer` owns live request understanding and decides the smallest
-viable mode and route during the agent session itself.
+viable route and orchestration strategy during the agent session itself.
 
 ## Where Next
 
@@ -151,8 +152,6 @@ viable mode and route during the agent session itself.
 - [Setup Guide](docs/setup.md)
 - [Skill Catalog](skill-catalog.md)
 - [Ecosystem Flow Overview](docs/ecosystem-flow-overview.md)
-- [Mode Selection](docs/mode-selection.md)
-- [Mode Comparison](docs/mode-comparison.md)
 - [Seed Context Contract](docs/seed-context-contract.md)
 - [Skill Authoring Pattern](docs/skill-authoring/skill-pattern.md)
 - [Contributing](CONTRIBUTING.md)

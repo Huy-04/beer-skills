@@ -16,9 +16,7 @@ Script layout uses three buckets:
 |---|---|
 | [Ecosystem Flow Overview](ecosystem-flow-overview.md) | understanding the full workflow, support skills, artifacts, and dependency tiers |
 | [Commands Reference](../COMMANDS.md) | CLI commands, package commands, and onboarded-repo commands |
-| [Setup Guide](setup.md) | installation, onboarding, tooling setup, and automation modes |
-| [Mode Selection](mode-selection.md) | choosing `mode`, `risk`, and `run_style` for a task |
-| [Mode Comparison](mode-comparison.md) | comparing common session shapes and routes |
+| [Setup Guide](setup.md) | installation, onboarding, tooling setup, and automation settings |
 | [Seed Context Contract](seed-context-contract.md) | knowing when inferred context becomes locked planning context |
 | [Skill Catalog](../skill-catalog.md) | scanning every public Beer skill and its trigger point |
 
@@ -43,8 +41,7 @@ For a new user:
 3. [Setup Guide](setup.md)
 4. [Skill Catalog](../skill-catalog.md)
 5. [Ecosystem Flow Overview](ecosystem-flow-overview.md)
-6. [Mode Selection](mode-selection.md)
-7. [Seed Context Contract](seed-context-contract.md)
+6. [Seed Context Contract](seed-context-contract.md)
 
 For a skill author:
 

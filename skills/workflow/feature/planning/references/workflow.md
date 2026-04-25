@@ -314,13 +314,15 @@ Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
 Record:
 
 - route: `feature` | `small-fix` | `debug-escalation`
-- `planning_route`
+- `orchestration_strategy`
+- `slice_count`
+- `planned_workers`
 - current phase name
 - whether prep is `compact` or `full`
 - `approved_gates.phase_plan`
 - current artifacts
 
-Do not mutate `planning_route` just because planning disagrees with it. Reject the route and send the work back to the upstream phase that owns the classification.
+Do not mutate `route` just because planning disagrees with it. Reject the route and send the work back to the upstream phase that owns the classification.
 
 ## Troubleshooting
 

@@ -46,7 +46,7 @@ export function assessAutoAcceptGate({ gate, status, preflight }) {
   }
 
   if (gate === "planning") {
-    if (state.planning_route === "feature" && state.context_stage !== "locked") {
+    if (state.route === "feature" && state.context_stage !== "locked") {
       return block("context_not_locked", "Feature planning cannot auto-accept without locked context.", [
         "Route through beer:context-intake and beer:exploring.",
       ]);

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { normalizePlanningRoute } from "./schema.mjs";
+import { normalizeRoute } from "./schema.mjs";
 
 export function parseLooseKeyValueMarkdown(text) {
   const parsed = {};
@@ -53,7 +53,7 @@ export function resolveLockedContextPath(status) {
 }
 
 export function assessPlanningGate(status, options = {}) {
-  const requestedRoute = normalizePlanningRoute(options.route) || status.state_json.planning_route || "feature";
+  const requestedRoute = normalizeRoute(options.route) || status.state_json.route || "feature";
   const contextStage = status.state_json.context_stage || "none";
   const seedPath = status.state_json.seed_path || ".beer/seed/";
   const contextPath = resolveLockedContextPath(status);
@@ -63,7 +63,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "onboarding_missing",
       summary: "Planning blocked: Beer onboarding is missing.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -78,7 +78,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "state_missing",
       summary: "Planning blocked: .beer/state.json is missing.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -94,7 +94,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: true,
       code: "ready_small_fix",
       summary: "Planning may proceed on the small direct-fix route without locked feature context.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: taskContextPath || (contextStage === "seeded" ? seedPath : contextPath),
       next_steps: [
@@ -113,7 +113,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: true,
       code: "ready_debug_escalation",
       summary: "Planning may proceed on the debug-escalation route when a concrete root cause exists.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: taskContextPath || (contextStage === "locked" ? contextPath : ""),
       next_steps: [
@@ -131,7 +131,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "context_seeded",
       summary: `Planning blocked: seed context at ${seedPath} is not locked yet.`,
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: seedPath,
       next_steps: [
@@ -146,7 +146,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "context_not_locked",
       summary: "Planning blocked: no locked context is available yet.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -161,7 +161,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "context_path_missing",
       summary: "Planning blocked: locked context does not point to a CONTEXT.md path.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -177,7 +177,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "context_file_missing",
       summary: `Planning blocked: locked CONTEXT.md is missing at ${contextPath}.`,
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -192,7 +192,7 @@ export function assessPlanningGate(status, options = {}) {
       ok: false,
       code: "context_not_approved",
       summary: "Planning blocked: locked context exists, but Gate 1 approval is not recorded yet.",
-      planning_route: requestedRoute,
+      route: requestedRoute,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -206,7 +206,7 @@ export function assessPlanningGate(status, options = {}) {
     ok: true,
     code: "ready",
     summary: `Planning may proceed with locked context at ${contextPath}.`,
-    planning_route: requestedRoute,
+    route: requestedRoute,
     context_stage: contextStage,
     context_path: contextPath,
     next_steps: [
@@ -293,7 +293,7 @@ export function buildRecommendedActions(status) {
   const activeSkill = status.state_json.active_skill || status.state_markdown.skill || "";
   const phase = status.state_json.phase || status.state_markdown.phase || "";
   const featureSlug = deriveFeatureSlug(status);
-  const planningRoute = status.state_json.planning_route || "";
+  const route = status.state_json.route || "";
   const contextPath = deriveContextPath(status);
   const hasContextFile = contextPath && fs.existsSync(resolveStatusPath(status.repo_root, contextPath));
   const hasWorkflowState =
@@ -310,8 +310,8 @@ export function buildRecommendedActions(status) {
         `Read ${contextPath} before planning or execution work.`,
       ];
     }
-    if (featureSlug && (planningRoute === "small-fix" || planningRoute === "debug-escalation")) {
-      const routeLabel = planningRoute === "small-fix" ? "direct-fix" : "debug";
+    if (featureSlug && (route === "small-fix" || route === "debug-escalation")) {
+      const routeLabel = route === "small-fix" ? "direct-fix" : "debug";
       return [
         `Resume by reopening the active context for ${activeSkill || "the current skill"}.`,
         `Create or refresh history/${featureSlug}/CONTEXT.md so the ${routeLabel} route stays explicit before planning or execution.`,
@@ -333,19 +333,26 @@ export function renderBeerStatus(status) {
   const feature = deriveFeatureSlug(status) || "(none)";
   const skill = status.state_json.active_skill || status.state_markdown.skill || "(none)";
   const phase = status.state_json.phase || status.state_markdown.phase || "(none)";
-  const planningRoute = status.state_json.planning_route || "(none)";
+  const route = status.state_json.route || "(none)";
   const executionTarget = status.state_json.execution_target || "(none)";
   const validationStatus = status.state_json.validation_status || "(none)";
+  const validatorStatus = status.state_json.validator_status || "(none)";
   const verificationStatus = status.state_json.verification_status || "not-run";
+  const gitNexusRefreshStatus = status.state_json.gitnexus_refresh_status || "(none)";
   const approvedGates = status.state_json.approved_gates || {};
-  const mode = status.state_json.mode || "standard";
   const risk = status.state_json.risk || "normal";
   const runStyle = status.state_json.run_style || "guided";
+  const orchestrationStrategy = status.state_json.orchestration_strategy || "(none)";
   const contextStage = status.state_json.context_stage || "none";
   const contextPath =
     deriveContextPath(status) ||
     (contextStage === "seeded" ? status.state_json.seed_path || ".beer/seed/" : "(none)");
   const epicId = status.state_json.epic_id || status.state_markdown.epic || "(none)";
+  const knowledgeBaseRefreshStatus = status.state_json.knowledge_base_refresh_status || "(none)";
+  const contractVerified = status.state_json.contract_verified ? "yes" : "no";
+  const sliceCount = Number(status.state_json.slice_count || 0);
+  const plannedWorkers = Number(status.state_json.planned_workers || 0);
+  const closeoutReady = status.state_json.closeout_ready ? "yes" : "no";
   const handoff = status.handoff.exists ? "present" : "absent";
   const onboarding = status.onboarding.exists
     ? `${status.onboarding.status || "installed"}${status.onboarding.plugin_version ? ` (${status.onboarding.plugin_version})` : ""}`
@@ -356,19 +363,26 @@ export function renderBeerStatus(status) {
     `Repo: ${status.repo_root}`,
     `Onboarding: ${onboarding}`,
     `Feature: ${feature}`,
-    `Mode: ${mode}`,
+    `Route: ${route}`,
     `Risk: ${risk}`,
     `Run style: ${runStyle}`,
+    `Orchestration: ${orchestrationStrategy}`,
     `Skill: ${skill}`,
     `Context: ${contextStage}`,
     `Context path: ${contextPath}`,
     `Phase: ${phase}`,
-    `Planning route: ${planningRoute}`,
+    `Slices: ${sliceCount}`,
+    `Planned workers: ${plannedWorkers}`,
     `Execution target: ${executionTarget}`,
     `Gate approvals: context=${approvedGates.context ? "yes" : "no"}, phase_plan=${approvedGates.phase_plan ? "yes" : "no"}, execution=${approvedGates.execution ? "yes" : "no"}, review=${approvedGates.review ? "yes" : "no"}`,
+    `Contract verified: ${contractVerified}`,
     `Validation: ${validationStatus}`,
+    `Validator: ${validatorStatus}`,
     `Verification: ${verificationStatus}`,
+    `GitNexus refresh: ${gitNexusRefreshStatus}`,
     `Epic: ${epicId}`,
+    `Knowledge-base refresh: ${knowledgeBaseRefreshStatus}`,
+    `Closeout ready: ${closeoutReady}`,
     `Handoff: ${handoff}`,
     "",
     "Next reads:",

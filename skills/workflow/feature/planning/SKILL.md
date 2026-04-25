@@ -55,9 +55,11 @@ Turn a clarified request into a bounded implementation plan. Scale the planning 
 3. Read `history/learnings/critical-patterns.md` first.
 4. Research only enough repo reality to support the confirmed route.
 5. Write `discovery.md`, `approach.md`, and a phase plan sized to the work.
-6. Ask for approval unless `beer-auto-accept.mjs --gate planning` returns `ALLOW`.
-7. Prepare only the current execution slice, proportional to the route.
-8. Hand off to `beer:validating`.
+6. Lock `orchestration_strategy` as `single-worker` or `multi-worker`.
+7. Make slice ownership, proof target, and validator focus explicit.
+8. Ask for approval unless `beer-auto-accept.mjs --gate planning` returns `ALLOW`.
+9. Prepare only the current execution slice, proportional to the route.
+10. Hand off to `beer:validating`.
 
 ## Planning Routes
 
@@ -65,7 +67,7 @@ Turn a clarified request into a bounded implementation plan. Scale the planning 
 
 Use when:
 
-- `planning_route = feature`
+- `route = feature`
 - `context_stage = locked`
 - `approved_gates.context = true`
 - `history/<feature>/CONTEXT.md` exists
@@ -77,7 +79,7 @@ This is the full planning path: research, synthesis, multi-phase plan, and curre
 
 Use when:
 
-- `planning_route = small-fix`
+- `route = small-fix`
 - the task is local and low ambiguity,
 - it likely touches fewer than 3 files,
 - `context-intake` already determined that `exploring` is unnecessary,
@@ -89,7 +91,7 @@ This route stays compact: short discovery, short approach, single-phase plan, an
 
 Use when:
 
-- `planning_route = debug-escalation`
+- `route = debug-escalation`
 - `debugging` already proved the root cause,
 - the repair is no longer a tiny local edit,
 - the next safe step is a planned repair rather than an immediate patch.
@@ -100,7 +102,7 @@ This route plans from the debug evidence. It must preserve the root-cause statem
 
 - `exploring` owns locked product decisions and `CONTEXT.md`.
 - `debugging` owns reproduction evidence and the root-cause sentence.
-- `planning` owns implementation planning, risk mapping, and current-slice preparation.
+- `planning` owns implementation planning, orchestration choice, risk mapping, and current-slice preparation.
 - `planning` does not lock new product decisions, silently reinterpret seed context, or start execution.
 
 ## Output Contract
@@ -146,8 +148,8 @@ After approval, prepare only what is proportional:
 
 - `state.json` is authoritative.
 - Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
-- Treat `planning_route` as an incoming contract from upstream. Validate it; do not invent a replacement route locally.
-- Record enough state for `validating` to know the active route, current phase, and whether current-phase prep is compact or full.
+- Treat `route` as an incoming contract from upstream. Validate it; do not invent a replacement route locally.
+- Record enough state for `validating` to know the active route, `orchestration_strategy`, slice count, planned worker count, and whether current-phase prep is compact or full.
 - Set `approved_gates.phase_plan = false` before the planning approval gate, then `true` only after that gate passes.
 - Log the auto-accept policy result when it is used to cross the planning gate.
 

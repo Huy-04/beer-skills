@@ -51,12 +51,20 @@ test("removeRepo removes installed Beer Claude skills and managed guideline file
   const customSkillDir = path.join(repoRoot, ".claude", "skills", "custom-skill");
   fs.mkdirSync(customSkillDir, { recursive: true });
   fs.writeFileSync(path.join(customSkillDir, "SKILL.md"), "# custom\n", "utf8");
+  const customCodexSkillDir = path.join(repoRoot, ".agents", "skills", "custom-skill");
+  fs.mkdirSync(customCodexSkillDir, { recursive: true });
+  fs.writeFileSync(path.join(customCodexSkillDir, "SKILL.md"), "# custom codex\n", "utf8");
 
   const result = removeRepo(repoRoot);
 
   assert.equal(fs.existsSync(path.join(repoRoot, ".claude", "skills", "beer-agent-guidelines")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".agents", "skills", "beer-agent-guidelines")), false);
   assert.equal(fs.existsSync(customSkillDir), true);
+  assert.equal(fs.existsSync(customCodexSkillDir), true);
   assert.equal(fs.existsSync(path.join(repoRoot, "AGENTS.md")), false);
   assert.equal(fs.existsSync(path.join(repoRoot, "CLAUDE.md")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".claude", "settings.json")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".codex", "hooks.json")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".codex", "config.toml")), false);
   assert.ok(result.removed_skills.includes("beer-agent-guidelines"));
 });

@@ -10,9 +10,9 @@ version: "1.0"
 
 | Route | Use when | Depth |
 |---|---|---|
-| `feature` | Incoming `planning_route = feature` and locked `CONTEXT.md` exists | Full |
-| `small-fix` | Incoming `planning_route = small-fix` and the work is still local, low ambiguity, likely under 3 files | Compact |
-| `debug-escalation` | Incoming `planning_route = debug-escalation` and root cause is proven | Compact by default |
+| `feature` | Incoming `route = feature` and locked `CONTEXT.md` exists | Full |
+| `small-fix` | Incoming `route = small-fix` and the work is still local, low ambiguity, likely under 3 files | Compact |
+| `debug-escalation` | Incoming `route = debug-escalation` and root cause is proven | Compact by default |
 
 ## Route Gates
 

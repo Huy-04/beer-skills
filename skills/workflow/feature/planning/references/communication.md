@@ -20,21 +20,21 @@ Explain the plan like a teammate drawing the next few steps on a whiteboard.
 ### Feature Route
 
 ```text
-Planning route: feature.
+Route: feature.
 Locked context is present, so I am writing the full feature plan before current-phase prep.
 ```
 
 ### Small Direct-Fix Route
 
 ```text
-Planning route: small direct fix.
+Route: small direct fix.
 This does not need full feature planning, so I am keeping the plan compact and single-phase.
 ```
 
 ### Debug-Escalation Route
 
 ```text
-Planning route: debug escalation.
+Route: debug escalation.
 The root cause is proven, but the repair is too large or risky for a direct patch.
 I am planning the repair without expanding into unrelated feature work.
 ```

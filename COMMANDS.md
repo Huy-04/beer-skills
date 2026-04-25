@@ -17,15 +17,17 @@ beer update
 
 | Command | Use it for |
 |---|---|
-| `beer init` | onboard the current repo, create `.beer/`, reinstall Beer skills into `.claude/skills/`, and sync `AGENTS.md` / `CLAUDE.md` |
+| `beer init` | onboard the current repo, create `.beer/`, reinstall Beer skills into `.claude/skills/` and `.agents/skills/`, and sync `AGENTS.md` / `CLAUDE.md` |
 | `beer refresh` | refresh Beer-managed files in the current repo |
 | `beer uninstall --yes` | remove `.beer/` from the current repo |
-| `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided mode |
+| `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided workflow runs |
 | `beer index` | refresh the current repo's GitNexus index |
 | `beer check-tools` | check whether `bd`, GitNexus MCP, and the GitNexus index are available |
 | `beer install gitnexus` | install GitNexus setup |
 | `beer install beads` | install `bd` |
 | `beer status` | read current Beer state for a repo |
+| `beer flow-guard --tool Edit --path src/foo.ts --json` | inspect the pre-edit Beer gate manually |
+| `beer closeout-guard --knowledge-base not-needed --json` | inspect closeout readiness manually |
 | `beer auto-accept --gate <gate> --json` | check whether a gate may auto-advance |
 | `beer dependencies` | print dependency status for the current bundle |
 | `beer planning-gate --route <route> --json` | check whether planning may proceed |
@@ -60,6 +62,8 @@ Use these when Beer is not installed globally:
 | Refresh the current repo's GitNexus index | `node .beer/scripts/commands/beer-cli.mjs index --json` |
 | Show dependency status | `node .beer/scripts/commands/beer-dependencies.mjs` |
 | Check planning gate | `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` |
+| Check pre-edit Beer flow lock manually | `node .beer/scripts/commands/beer-flow-guard.mjs --tool Edit --path src/foo.ts --json` |
+| Check compounding closeout obligations manually | `node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base not-needed --json` |
 
 ## Commands While Developing Beer
 
@@ -74,18 +78,21 @@ Use these when Beer is not installed globally:
 
 ## Notes
 
-- `beer update` updates the global Beer package from GitHub, then resyncs Beer skills and managed guideline files in the current repo.
-- `beer init` removes old Beer skills in `./.claude/skills/`, reinstalls the current set, and syncs `AGENTS.md` / `CLAUDE.md`.
+- `beer update` updates the global Beer package from GitHub, then resyncs Beer skills and managed guideline files in the current repo across Claude and Codex.
+- `beer init` removes old Beer skills in `./.claude/skills/` and `./.agents/skills/`, reinstalls the current set, and syncs `AGENTS.md` / `CLAUDE.md`.
 - `beer refresh` updates repo-local managed files in `.beer/` and resyncs Beer skills plus managed guideline files.
+- Beer installs Claude Code hooks into `.claude/settings.json` so `beer flow-guard` runs automatically on `PreToolUse` for `Edit|MultiEdit|Write`.
+- Beer installs Codex hooks into `.codex/hooks.json` and enables them from `.codex/config.toml`.
+- Both Claude and Codex get a closeout hook so `beer closeout-guard` blocks closeout when GitNexus refresh or the knowledge-base decision is still missing.
 - `beer approve review` also runs the automatic post-task GitNexus refresh path for the current repo.
 - `beer index` reruns the current repo's GitNexus refresh path manually when needed.
 - `beer uninstall` removes `.beer/` only. It does not remove global tools such
   as GitNexus or `bd`.
-- In guided mode, use `beer approve <context|phase-plan|execution|review>` to
+- In guided workflow runs, use `beer approve <context|phase-plan|execution|review>` to
   record a real manual gate decision instead of editing `.beer/state.json` by
   hand.
-- Mode, risk, and first-route selection now belong to `beer:using-beer` during
-  the live agent session, not to a standalone CLI classifier.
+- Route, risk, run style, and orchestration strategy now belong to
+  `beer:using-beer` during the live agent session, not to a standalone CLI classifier.
 - Every task should carry a `history/<feature>/CONTEXT.md`. Keep it compact for
   `small-fix` and `debug-escalation`; reserve `.beer/seed/` for feature/debug
   discovery before the context is locked.

@@ -100,15 +100,15 @@ export function assessApproval(options = {}) {
     }
   }
 
-  if (approval === "phase-plan" && !state.planning_route) {
+  if (approval === "phase-plan" && !state.route) {
     return {
       repo_root: repoRoot,
       approval,
       ok: false,
-      code: "planning_route_missing",
-      summary: "Phase-plan approval needs an active planning route.",
+      code: "route_missing",
+      summary: "Phase-plan approval needs an active route.",
       next_steps: [
-        "Run planning first and record planning_route in state.",
+        "Run planning first and record route in state.",
       ],
       state,
     };
@@ -213,8 +213,32 @@ function applyMutation(state, approval) {
   }
 
   nextState.approved_gates.review = true;
+  nextState.gitnexus_refresh_status = "";
+  nextState.knowledge_base_refresh_status = "";
+  nextState.closeout_ready = false;
   nextState.next_handoff = "beer:compounding";
   return nextState;
+}
+
+function mapGitNexusRefreshStatus(result) {
+  if (!result) {
+    return "";
+  }
+
+  if (result.status === "completed") {
+    return "completed";
+  }
+  if (result.status === "skipped") {
+    return "skipped";
+  }
+  if (result.status === "manual_required") {
+    return "manual-required";
+  }
+  if (result.status === "failed") {
+    return "failed";
+  }
+
+  return "";
 }
 
 export function recordApproval(options = {}) {
@@ -232,8 +256,15 @@ export function recordApproval(options = {}) {
           ? options.gitNexusIndexRunner({ repoRoot })
           : runGitNexusIndex({ repoRoot }))
       : null;
+  const finalizedState =
+    assessment.approval === "review"
+      ? writeBeerState(repoRoot, {
+          ...updatedState,
+          gitnexus_refresh_status: mapGitNexusRefreshStatus(gitNexusIndex),
+        })
+      : updatedState;
   const nextSteps = [
-    `Continue with ${updatedState.next_handoff || "the next workflow step"}.`,
+    `Continue with ${finalizedState.next_handoff || "the next workflow step"}.`,
   ];
 
   if (gitNexusIndex?.status === "completed") {
@@ -246,6 +277,10 @@ export function recordApproval(options = {}) {
     nextSteps.push("Rerun beer index after reviewing the GitNexus refresh failure.");
   }
 
+  if (assessment.approval === "review") {
+    nextSteps.push("Before leaving compounding, run beer closeout-guard with an explicit knowledge-base decision.");
+  }
+
   return {
     repo_root: repoRoot,
     approval: assessment.approval,
@@ -254,7 +289,7 @@ export function recordApproval(options = {}) {
     summary: `Recorded ${assessment.approval} approval in .beer/state.json.`,
     next_steps: nextSteps,
     gitnexus_index: gitNexusIndex,
-    state: updatedState,
+    state: finalizedState,
   };
 }
 

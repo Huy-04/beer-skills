@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T13:53:39.368Z",
+  "generated_at": "2026-04-25T16:57:59.259Z",
   "skills_total": 17,
   "entries": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "name": "beer-agent-guidelines",
-      "description": "This skill should be used when the user asks to \"use Karpathy guidelines\", \"install execution guardrails\", \"make the repo instructions more surgical\", \"sync guardrails into CLAUDE.md or AGENTS.md\", or otherwise wants repository instruction files updated with assumption, simplicity, scope, and verification rules.",
+      "description": "This skill should be used when the user asks to \"use Karpathy guidelines\", \"install execution guardrails\", \"make the repo instructions more surgical\", \"sync guardrails into CLAUDE.md or AGENTS.md\", or otherwise wants repository instruction files updated with assumption, simplicity, Beer flow discipline, scope, and verification rules.",
       "category": "support",
       "family": "",
       "directory": "beer-agent-guidelines",
@@ -124,7 +124,7 @@
     },
     {
       "name": "using-beer",
-      "description": "This skill should be used when the user asks to \"start beer session\", \"which skill should I use\", \"/go\", \"run full pipeline\", \"resume session\", or \"go mode\".",
+      "description": "This skill should be used when the user asks to \"start beer session\", \"which skill should I use\", \"/go\", \"run full pipeline\", or \"resume session\".",
       "category": "workflow",
       "family": "feature",
       "directory": "using-beer",

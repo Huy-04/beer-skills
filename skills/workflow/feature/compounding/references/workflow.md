@@ -143,7 +143,7 @@ Then return Beer to idle while preserving the closeout trail:
 
 - set `phase = idle`
 - set `context_stage = none`
-- clear `feature_slug`, `context_path`, `planning_route`, `current_phase_name`, `current_slice`, and `prep_depth`
+- clear `feature_slug`, `context_path`, `route`, `orchestration_strategy`, `current_phase_name`, `current_slice`, and `prep_depth`
 - clear `execution_target`, `review_route`, `execution_evidence_path`, and `next_handoff`
 - clear cycle-specific evidence such as `tdd_required`, `tdd_status`, and `tdd_evidence_path`
 - clear transient result fields such as `validation_status`, `spike_status`, `swarm_status`, `verification_status`, `review_status`, and `open_findings_count`

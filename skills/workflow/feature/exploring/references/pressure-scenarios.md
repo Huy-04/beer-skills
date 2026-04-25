@@ -40,7 +40,7 @@ Fix the wrong date format in this serializer. It should be ISO-8601.
 
 - Recognize the direct-fix exemption.
 - Skip context-intake and exploring.
-- Route to `beer:planning` with `mode = small`.
+- Route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 ## Scenario 3: Seed Becomes Locked Without Confirmation
 

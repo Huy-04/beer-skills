@@ -64,7 +64,7 @@ export function renderPlanningGate(result, repoRoot) {
     "Beer Planning Gate",
     `Repo: ${repoRoot}`,
     `Status: ${statusLabel}`,
-    `Route: ${result.planning_route || "feature"}`,
+    `Route: ${result.route || "feature"}`,
     `Context: ${result.context_stage || "none"}`,
     `Context path: ${result.context_path || "(none)"}`,
     `Reason: ${result.summary}`,

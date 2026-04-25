@@ -9,9 +9,9 @@ Beer currently ships **17 skills** across four categories:
 | Support | 5 | Utilities and focused helper passes |
 | Meta | 2 | Skills for evolving Beer itself |
 
-The core idea is simple: Beer chooses the smallest workflow that can safely
-handle the task, then records enough state for the next skill or session to
-continue without guessing.
+The core idea is simple: Beer chooses the safest route, risk level, and
+orchestration strategy that can handle the task, then records enough state for
+the next skill or session to continue without guessing.
 
 ## End-to-End Feature Flow
 
@@ -67,8 +67,8 @@ flowchart LR
 | `using-beer` | entry point, routing, gates, and resume logic |
 | `context-intake` | recover context, classify the task, and route to planning or exploring |
 | `exploring` | lock product or implementation decisions into `CONTEXT.md` |
-| `planning` | turn the active route into an execution plan |
-| `validating` | decide whether the slice should execute directly or via swarm |
+| `planning` | turn the active route into an execution plan and lock worker strategy |
+| `validating` | decide whether the planned worker strategy and slice boundaries are safe to execute |
 | `swarming` | coordinate parallel workers for a swarm-approved slice |
 | `executing` | implement the active direct slice or swarm assignment |
 | `reviewing` | run the quality gate before closeout |
@@ -120,13 +120,11 @@ human-readable derivative and should not become the source of truth.
 | Route | Minimum dependency set |
 |---|---|
 | Onboarding / status | `node` |
-| Small guided path | `node` |
-| Standard path | `node` + `bd` |
+| `single-worker` execution path | `node` |
+| `multi-worker` execution path | `node` + `bd` |
 | Graph augmentation | configured GitNexus MCP server plus an indexed repo |
 
 ## Related Docs
 
 - [README](../README.md)
-- [Mode Selection](mode-selection.md)
-- [Mode Comparison](mode-comparison.md)
 - [Seed Context Contract](seed-context-contract.md)

@@ -21,7 +21,7 @@ version: "1.0"
 This looks like a small, local, low-ambiguity fix.
 Skipping context-intake and exploring.
 
-Next step: route to `beer:planning` with `mode = small`.
+Next step: route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 ```
 
 ### Seeded Context Input

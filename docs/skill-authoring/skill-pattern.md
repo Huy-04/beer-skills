@@ -280,11 +280,12 @@ Rule of thumb: if a section exceeds 300 words, consider moving it to `references
 
 ### Session model references
 
-When a skill needs to mention modes, use the canonical axes:
+When a skill needs to mention session shape, use the canonical axes:
 
 ```text
-mode: small | standard
+route: feature | small-fix | debug-escalation
 risk: normal | high
+orchestration_strategy: single-worker | multi-worker
 run_style: guided | go
 ```
 

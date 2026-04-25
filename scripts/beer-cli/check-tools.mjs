@@ -35,7 +35,8 @@ function renderCheckToolsReport(result) {
   }
 
   lines.push("");
-  lines.push(`Recommended mode: ${result.preflight.recommended_mode}`);
+  lines.push(`Workflow: ${result.preflight.workflow_status}`);
+  lines.push(`Recommended orchestration: ${result.preflight.recommended_orchestration_strategy}`);
 
   return lines.join("\n");
 }
@@ -52,5 +53,5 @@ export async function runCheckTools(args) {
     args.json ? `${JSON.stringify(payload, null, 2)}\n` : `${renderCheckToolsReport(payload)}\n`,
   );
 
-  return preflight.recommended_mode === "degraded" ? 1 : 0;
+  return preflight.workflow_status === "ready" ? 0 : 1;
 }

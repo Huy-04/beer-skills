@@ -49,9 +49,10 @@ Verify that the current execution slice is ready to execute. Scale the gate to t
 3. Run structural validation at the right depth for the route.
 4. Run spikes only when route and risk actually require them.
 5. Confirm the current slice has a believable demo and verification path.
-6. Choose the proposed execution target for this slice.
-7. Run the auto-accept policy check before crossing the execution gate.
-8. Handoff only to the approved execution route.
+6. Confirm `orchestration_strategy` still matches the planned slices.
+7. Choose the proposed execution target for this slice.
+8. Run the auto-accept policy check before crossing the execution gate.
+9. Handoff only to the approved execution route.
 
 ## Validation Routes
 
@@ -104,7 +105,7 @@ Required compact check:
 ## Scope and Ownership
 
 - `planning` owns the plan and current-slice preparation.
-- `validating` owns readiness checks, optional spike findings, and the execution go/no-go decision.
+- `validating` owns readiness checks, optional spike findings, the orchestration sanity check, and the execution go/no-go decision.
 - `validating` does not author a new feature plan from scratch.
 - `validating` does not force beads or swarming when the approved route does not need them.
 - `validating` may propose or reject an execution target, but the gate only becomes approved when `approved_gates.execution = true`.
@@ -153,7 +154,9 @@ For `small direct-fix` and `debug-escalation`, focus on:
 
 - `state.json` is authoritative.
 - Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
-- Record the validated route, approval status, and approved execution target.
+- Record the validated route, `orchestration_strategy`, approval status, and approved execution target.
+- Record whether critical contracts were verified before execution with `contract_verified = true|false`.
+- Record validator outcome with `validator_status = pass|fail`.
 - Set `validation_status = pass | fail`.
 - Set the proposed `execution_target = executing | swarming` before the execution approval ask.
 - Set `approved_gates.execution = true` only after human approval or an `ALLOW` result from `beer-auto-accept.mjs --gate validating`.

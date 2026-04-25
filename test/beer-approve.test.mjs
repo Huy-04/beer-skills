@@ -42,7 +42,7 @@ test("recordApproval blocks execution approval when validation has not passed", 
   state.feature_slug = "example";
   state.active_skill = "validating";
   state.phase = "validating";
-  state.planning_route = "feature";
+  state.route = "feature";
   state.approved_gates.phase_plan = true;
   state.validation_status = "";
   state.execution_target = "executing";
@@ -80,5 +80,6 @@ test("recordApproval records review approval and points to compounding", () => {
   assert.equal(result.ok, true);
   assert.equal(result.state.approved_gates.review, true);
   assert.equal(result.state.next_handoff, "beer:compounding");
+  assert.equal(result.state.gitnexus_refresh_status, "completed");
   assert.equal(result.gitnexus_index?.status, "completed");
 });

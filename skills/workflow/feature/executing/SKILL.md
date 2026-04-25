@@ -45,22 +45,24 @@ no longer trustworthy to continue.
 | **Produces** | Implemented slice, verification evidence, and a completion or blocker handoff |
 | **Next** | `beer:reviewing` for finished work, or back to the coordinator/local state for more approved work |
 
-## Execution Modes
+## Execution Strategies
 
-### Swarm Worker
+### Multi-Worker Execution
 
 Use when:
 
 - `execution_target = swarming`
+- `orchestration_strategy = multi-worker`
 - `approved_gates.execution = true`
 - a coordinator assigned the work
 - the worker has an explicit task or bead
 
-### Direct Execution
+### Single-Worker Execution
 
 Use when:
 
 - `execution_target = executing`
+- `orchestration_strategy = single-worker`
 - `approved_gates.execution = true`
 - the slice was explicitly approved for direct work
 - scope stays bounded enough that no coordinator is needed
@@ -78,8 +80,8 @@ Use when:
 1. Read `AGENTS.md`, Beer state, the current contract, and any active handoff note.
 2. Confirm `approved_gates.execution = true` before starting code changes.
 3. Confirm whether this run is direct execution or swarm-worker execution.
-4. Load the exact approved work item, file scope, and verification target.
-5. Implement only the approved slice.
+4. Load the exact approved work item, file scope, verification target, and any target type definitions the slice depends on.
+5. Verify exact constructors, factories, events, DTOs, commands, and value objects before coding against them.
 6. Verify before claiming completion.
 7. Run `beer-auto-accept.mjs --gate reviewing` if the handoff to review would auto-advance.
 8. Record what changed, what passed, and what the next owner should do.
@@ -97,6 +99,8 @@ Use when:
 - Never treat `STATE.md` as authoritative; update `state.json` first.
 - Never mark work complete without a traceable completion note.
 - Never auto-handoff to review without execution evidence and an `ALLOW` result from `beer-auto-accept.mjs --gate reviewing`.
+- Never infer constructors, factories, event payloads, DTO shapes, or value-object APIs from naming alone.
+- Never use build or compile failures as the first time those contracts are verified.
 
 ## TDD Trigger
 
@@ -109,7 +113,7 @@ complete. For behavior-changing slices, record `tdd_required = true` in
 ## State Contract
 
 - `state.json` is authoritative.
-- Record execution mode, active work item, verification status, and next handoff in `.beer/state.json`.
+- Record `orchestration_strategy`, active work item, verification status, and next handoff in `.beer/state.json`.
 - Record TDD state for behavior changes: `tdd_required`, `tdd_status`, and `tdd_evidence_path`.
 - Write execution evidence to `history/<feature>/execution-evidence.md` for every Beer route that reached approved execution.
 - Store that path in `execution_evidence_path`.

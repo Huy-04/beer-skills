@@ -5,7 +5,9 @@ import process from "node:process";
 import { pathToFileURL } from "node:url";
 
 import { assessAutoAccept, renderAutoAccept } from "./beer-auto-accept.mjs";
+import { main as closeoutGuardMain } from "./beer-closeout-guard.mjs";
 import { buildBeerDependencyReport } from "./beer-dependencies.mjs";
+import { main as flowGuardMain } from "./beer-flow-guard.mjs";
 import { parseCliArgs } from "../beer-cli/args.mjs";
 import { printHelp } from "../beer-cli/help.mjs";
 import { runCheckTools } from "../beer-cli/check-tools.mjs";
@@ -75,6 +77,40 @@ function runPlanningGate(args) {
   return planningGateMain(gateArgs);
 }
 
+function runFlowGuard(args) {
+  const guardArgs = [];
+  if (args.repoRoot) {
+    guardArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.tool) {
+    guardArgs.push("--tool", args.tool);
+  }
+  for (const filePath of args.paths || []) {
+    guardArgs.push("--path", filePath);
+  }
+  if (args.trivial) {
+    guardArgs.push("--trivial");
+  }
+  if (args.json) {
+    guardArgs.push("--json");
+  }
+  return flowGuardMain(guardArgs);
+}
+
+function runCloseoutGuard(args) {
+  const guardArgs = [];
+  if (args.repoRoot) {
+    guardArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.knowledgeBase) {
+    guardArgs.push("--knowledge-base", args.knowledgeBase);
+  }
+  if (args.json) {
+    guardArgs.push("--json");
+  }
+  return closeoutGuardMain(guardArgs);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const args = parseCliArgs(argv);
 
@@ -103,6 +139,10 @@ export async function main(argv = process.argv.slice(2)) {
       return runDependencies(args);
     case "planning-gate":
       return runPlanningGate(args);
+    case "flow-guard":
+      return runFlowGuard(args);
+    case "closeout-guard":
+      return runCloseoutGuard(args);
     case "help":
     default:
       printHelp();

@@ -57,7 +57,7 @@ Do not claim TDD if the test did not fail first for the right reason.
 - Original failing command cannot be run and no limitation is stated.
 - `CONTEXT.md` decision would be violated.
 - Fix crosses multiple components without bead/scope approval.
-- Repair is broad enough to need `planning_route = debug-escalation`.
+- Repair is broad enough to need `route = debug-escalation`.
 - Worker blocker needs coordination rather than code changes.
 
 ## Escalation Route

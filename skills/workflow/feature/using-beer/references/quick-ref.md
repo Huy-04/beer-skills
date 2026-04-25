@@ -54,7 +54,7 @@ cat .beer/HANDOFF.json 2>/dev/null || echo "No handoff"
 | `onboarding.json` | Managed Beer install metadata |
 | `state.json` | Machine-readable routing snapshot |
 | `STATE.md` | Human-readable current phase summary |
-| `config.json` | Beer config and mode settings |
+| `config.json` | Beer config and workflow settings |
 | `HANDOFF.json` | Session resume data |
 | `seed/` | Temporary inferred context for `beer:exploring` |
 | `scripts/` | Managed Beer utility scripts |
@@ -126,16 +126,20 @@ Examples:
 ```json
 {
   "schema_version": "1.0",
-  "mode": "standard",
+  "route": "",
   "risk": "normal",
   "run_style": "guided",
+  "orchestration_strategy": "",
   "phase": "idle",
-  "planning_route": "",
   "current_phase_name": "",
   "current_slice": "",
+  "slice_count": 0,
+  "planned_workers": 0,
   "prep_depth": "",
+  "contract_verified": false,
   "execution_target": "",
   "validation_status": "",
+  "validator_status": "",
   "spike_status": "",
   "swarm_status": "",
   "active_work_item": "",
@@ -147,6 +151,7 @@ Examples:
   "compounding_route": "",
   "learnings_file": "",
   "critical_promotions": 0,
+  "closeout_ready": false,
   "next_handoff": "",
   "context_stage": "none",
   "seed_path": ".beer/seed/",
@@ -168,14 +173,18 @@ Examples:
 
 Current: idle
 Feature: (none)
-Mode: standard
+Route: (none)
 Risk: normal
 Run style: guided
+Orchestration: (none)
 Phase: idle
-Planning route: (none)
+Slices: 0
+Planned workers: 0
+Contract verified: no
 Execution target: (none)
 Gate approvals: context=no, phase_plan=no, execution=no, review=no
 Validation: (none)
+Validator: (none)
 Verification: (none)
 Execution evidence: (none)
 ```

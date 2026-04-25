@@ -22,14 +22,23 @@ function renderRefreshResult(result) {
     if (result.skill_install.removed_skills?.length) {
       lines.push(`Beer skills removed before sync: ${result.skill_install.removed_skills.length}`);
     }
+    for (const target of result.skill_install.targets || []) {
+      lines.push(`- ${target.label}: ${target.skills.length} skill(s)`);
+    }
     for (const file of result.skill_install.instruction_sync?.files || []) {
       lines.push(`- ${file.name}: ${file.status}/${file.block_status}`);
+    }
+    if (result.skill_install.hook_sync) {
+      lines.push(`- Claude hooks: ${result.skill_install.hook_sync.claude.status}`);
+      lines.push(`- Codex hooks: ${result.skill_install.hook_sync.codex.status}`);
+      lines.push(`- Codex config: ${result.skill_install.hook_sync.codex_config.status}`);
     }
   }
 
   lines.push("");
   lines.push("Preflight:");
-  lines.push(`- recommended mode: ${result.preflight.recommended_mode}`);
+  lines.push(`- workflow: ${result.preflight.workflow_status}`);
+  lines.push(`- recommended orchestration: ${result.preflight.recommended_orchestration_strategy}`);
   lines.push(`- bd: ${result.preflight.available_tools.bd ? "OK" : "NO"}`);
   lines.push(`- GitNexus MCP: ${result.preflight.available_tools.gitnexus ? "OK" : "NO"}`);
   lines.push(`- GitNexus index: ${result.preflight.available_tools.gitnexus_index ? "OK" : "NO"}`);

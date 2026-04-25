@@ -15,6 +15,13 @@ Behavior guardrails for coding work. Merge these with project-specific instructi
 - Push back when a simpler path solves the request.
 - Stop and ask when local evidence cannot resolve a material ambiguity safely.
 
+## Beer Flow Lock
+
+- If this repo is Beer-onboarded and the task is not trivial, route through Beer before coding.
+- Do not start implementation after a few intake questions unless the active Beer skill and gate make coding valid.
+- Announce the current Beer skill, why it is the right route, and what gate or condition allows the next step.
+- Only bypass Beer for trivial tasks: read-only status/questions, comment/text-only edits, or tiny non-behavioral changes that stay local and need no planning or validation.
+
 ## Simplicity First
 
 - Prefer the smallest change that solves the requested problem.
@@ -35,6 +42,13 @@ Behavior guardrails for coding work. Merge these with project-specific instructi
 - Prefer RED -> GREEN when behavior changes materially.
 - Do not call work done without naming the verification that passed.
 - For multi-step work, state a short plan with a check for each step.
+
+## Contract Verification
+
+- Before writing code that uses constructors, factories, events, DTOs, commands, or value objects, inspect the exact target definitions first.
+- Verify exact signatures, property names, enum versus value-object shapes, and namespace targets from source or graph context.
+- Do not infer API shape from naming, memory, or nearby code.
+- Build is verification, not discovery.
 
 ## Signs It Is Working
 

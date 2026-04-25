@@ -25,7 +25,7 @@ If the request is:
 - likely under 3 files,
 - and not a new feature or behavior-shaping change,
 
-exit `exploring` and route to `beer:planning` with `mode = small`.
+exit `exploring` and route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 ## Phase 1: Context Gate
 
@@ -175,5 +175,5 @@ Invoke `beer:planning`.
 | Seed exists but is incomplete | Use it as input, record gaps, continue the dialogue |
 | Seed conflicts with repo evidence | Trust repo evidence and clarify with the user |
 | User wants to move fast | Keep the dialogue short, but still lock the decisions that matter |
-| Request is actually a direct fix | Exit exploring and route to small-mode planning |
+| Request is actually a direct fix | Exit exploring and route to `small-fix` planning |
 | Too many gray areas appear | Narrow scope before continuing |

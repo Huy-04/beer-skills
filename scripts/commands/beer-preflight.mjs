@@ -129,27 +129,25 @@ export function buildBeerPreflightReport(root = repoRoot) {
       gitnexus: gitNexusProbe.ok,
       gitnexus_index: gitNexusIndexProbe.ok ? gitNexusIndexProbe : false,
     },
-    recommended_mode: "standard",
+    workflow_status: "ready",
+    recommended_orchestration_strategy: bdProbe.ok ? "multi-worker" : "single-worker",
     degraded_features: [],
   };
 
   if (!nodeProbe.ok) {
-    result.recommended_mode = "unavailable";
+    result.workflow_status = "unavailable";
     result.degraded_features.push("Node.js runtime missing - all Beer features unavailable");
   } else {
     if (!bdProbe.ok) {
-      result.recommended_mode = "degraded";
+      result.workflow_status = "degraded";
       result.degraded_features.push("bead_management: manual (bd missing)");
-    }
-    if (!bdProbe.ok) {
-      result.recommended_mode = "degraded";
       result.degraded_features.push("coordination: direct_single_worker (bd missing)");
     }
     if (!gitNexusProbe.ok) {
-      result.recommended_mode = "degraded";
+      result.workflow_status = "degraded";
       result.degraded_features.push("graph_context: manual inspection (GitNexus MCP missing)");
     } else if (!gitNexusIndexProbe.ok) {
-      result.recommended_mode = "degraded";
+      result.workflow_status = "degraded";
       result.degraded_features.push("graph_context: unavailable for this repo (run npx gitnexus analyze)");
     }
   }
@@ -174,12 +172,12 @@ export function main(argv = process.argv.slice(2)) {
   } else {
     console.log("Beer Preflight");
     console.log("==============");
-    console.log(`Mode: ${result.recommended_mode}`);
+    console.log(`Workflow: ${result.workflow_status}`);
+    console.log(`Orchestration: ${result.recommended_orchestration_strategy}`);
     console.log(`Repo: ${result.repoRoot}`);
     console.log("Tools:");
     console.log(`  node: ${result.available_tools.node ? "OK" : "NO"} ${result.available_tools.node?.version || ""}`);
     console.log(`  bd:   ${result.available_tools.bd ? "OK" : "NO"}`);
-      console.log(`  bd: ${result.available_tools.bd ? "OK" : "NO"}`);
     console.log(`  GitNexus MCP: ${result.available_tools.gitnexus ? "OK" : "NO"}`);
     console.log(`  GitNexus index: ${result.available_tools.gitnexus_index ? "OK" : "NO"}`);
     if (result.degraded_features.length) {
@@ -188,7 +186,7 @@ export function main(argv = process.argv.slice(2)) {
     }
   }
 
-  return result.recommended_mode === "unavailable" ? 1 : 0;
+  return result.workflow_status === "unavailable" ? 1 : 0;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
