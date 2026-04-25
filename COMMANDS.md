@@ -17,7 +17,7 @@ beer update
 
 | Command | Use it for |
 |---|---|
-| `beer init` | onboard the current repo, create `.beer/`, and install skills into `.claude/skills/` |
+| `beer init` | onboard the current repo, create `.beer/`, reinstall Beer skills into `.claude/skills/`, and sync `AGENTS.md` / `CLAUDE.md` |
 | `beer refresh` | refresh Beer-managed files in the current repo |
 | `beer uninstall --yes` | remove `.beer/` from the current repo |
 | `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided mode |
@@ -74,9 +74,9 @@ Use these when Beer is not installed globally:
 
 ## Notes
 
-- `beer update` updates the global Beer package from GitHub.
-- `beer init` also copies Beer skills into `./.claude/skills/`.
-- `beer refresh` updates repo-local managed files in `.beer/`.
+- `beer update` updates the global Beer package from GitHub, then resyncs Beer skills and managed guideline files in the current repo.
+- `beer init` removes old Beer skills in `./.claude/skills/`, reinstalls the current set, and syncs `AGENTS.md` / `CLAUDE.md`.
+- `beer refresh` updates repo-local managed files in `.beer/` and resyncs Beer skills plus managed guideline files.
 - `beer approve review` also runs the automatic post-task GitNexus refresh path for the current repo.
 - `beer index` reruns the current repo's GitNexus refresh path manually when needed.
 - `beer uninstall` removes `.beer/` only. It does not remove global tools such

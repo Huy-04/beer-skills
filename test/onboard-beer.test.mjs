@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { applyRepo, checkRepo, removeRepo } from "../scripts/commands/onboard-beer.mjs";
+import { syncProjectSkills } from "../scripts/beer-cli/skill-sync.mjs";
 
 function makeTempRepo() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "beer-onboard-"));
@@ -40,4 +41,22 @@ test("checkRepo reports onboarding missing after removal", () => {
 
   assert.equal(result.status, "needs_onboarding");
   assert.ok(result.actions.includes("create-state.json"));
+});
+
+test("removeRepo removes installed Beer Claude skills and managed guideline files", () => {
+  const repoRoot = makeTempRepo();
+  applyRepo(repoRoot);
+  syncProjectSkills(repoRoot);
+
+  const customSkillDir = path.join(repoRoot, ".claude", "skills", "custom-skill");
+  fs.mkdirSync(customSkillDir, { recursive: true });
+  fs.writeFileSync(path.join(customSkillDir, "SKILL.md"), "# custom\n", "utf8");
+
+  const result = removeRepo(repoRoot);
+
+  assert.equal(fs.existsSync(path.join(repoRoot, ".claude", "skills", "agent-guidelines")), false);
+  assert.equal(fs.existsSync(customSkillDir), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, "AGENTS.md")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "CLAUDE.md")), false);
+  assert.ok(result.removed_skills.includes("agent-guidelines"));
 });

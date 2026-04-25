@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { checkCommand, hasMcpServer } from "../onboard-beer/checks.mjs";
 import { buildDefaultConfig, buildDefaultState, buildDefaultStateMd, utcNow } from "../onboard-beer/defaults.mjs";
 import { MANAGED_SCRIPT_FILES, MANAGED_SKILL_SENTINEL, MIN_NODE_MAJOR } from "../onboard-beer/manifest.mjs";
+import { removeInstalledBeerSkills, removeManagedAgentGuidelines, syncProjectSkills } from "../beer-cli/skill-sync.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const SCRIPT_DIR = path.dirname(SCRIPT_PATH);
@@ -190,26 +191,6 @@ export function applyRepo(repoRoot) {
   };
 }
 
-function removeBeerSkills(repoRoot) {
-  const claudeSkillsDir = path.join(repoRoot, ".claude", "skills");
-  const removed = [];
-
-  if (!fs.existsSync(claudeSkillsDir)) {
-    return removed;
-  }
-
-  const entries = fs.readdirSync(claudeSkillsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.isDirectory() && entry.name.startsWith("beer-")) {
-      const skillDir = path.join(claudeSkillsDir, entry.name);
-      fs.rmSync(skillDir, { recursive: true, force: true });
-      removed.push(entry.name);
-    }
-  }
-
-  return removed;
-}
-
 export function removeRepo(repoRoot) {
   const beerDir = path.join(repoRoot, ".beer");
   const existed = fs.existsSync(beerDir);
@@ -218,14 +199,20 @@ export function removeRepo(repoRoot) {
     fs.rmSync(beerDir, { recursive: true, force: true });
   }
 
-  const removedSkills = removeBeerSkills(repoRoot);
+  const removedSkills = removeInstalledBeerSkills(repoRoot).removed;
+  const removedGuidelines = removeManagedAgentGuidelines(repoRoot).files;
+  const removedAnything =
+    existed ||
+    removedSkills.length > 0 ||
+    removedGuidelines.some((file) => file.status === "removed" || file.status === "updated");
 
   return {
     repo_root: repoRoot,
-    removed: existed,
-    status: existed ? "removed" : "not_installed",
+    removed: removedAnything,
+    status: removedAnything ? "removed" : "not_installed",
     managed_root: ".beer",
     removed_skills: removedSkills,
+    removed_guidelines: removedGuidelines,
   };
 }
 
@@ -254,7 +241,12 @@ function parseCliArgs(argv) {
 export function main(argv = process.argv.slice(2)) {
   const args = parseCliArgs(argv);
   const repoRoot = resolveRepoRoot(args.repoRoot);
-  const payload = args.apply ? applyRepo(repoRoot) : checkRepo(repoRoot);
+  const payload = args.apply
+    ? {
+        ...applyRepo(repoRoot),
+        skill_install: syncProjectSkills(repoRoot),
+      }
+    : checkRepo(repoRoot);
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
   return payload.status === "missing_runtime" ? 1 : 0;
 }

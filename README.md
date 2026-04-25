@@ -41,14 +41,14 @@ beer init
 beer status
 ```
 
-`beer init` automatically installs Beer skills into `./.claude/skills/`.
+`beer init` automatically reinstalls Beer skills into `./.claude/skills/` and syncs the managed `AGENTS.md` / `CLAUDE.md` guideline blocks.
 
 ### Common Actions
 
 | Goal | Command |
 |---|---|
 | Install Beer globally from GitHub | `npm install -g github:Huy-04/beer-skills` |
-| Update the global Beer package | `beer update` |
+| Update the global Beer package and resync the current repo | `beer update` |
 | Onboard the current repo | `beer init` |
 | Refresh Beer files in the current repo | `beer refresh` |
 | Remove Beer from the current repo | `beer uninstall --yes` |

@@ -48,7 +48,11 @@ Keep the file compact for `small-fix` and `debug-escalation` routes. Reserve
 | `.beer/config.json` | repo-local Beer configuration |
 | `.beer/scripts/` | managed script snapshot |
 | `.beer/skills/` | synced skills for the target repo |
-| `.claude/skills/` | Beer skills for Claude Code discovery |
+| `.claude/skills/` | Beer skills for Claude Code discovery; Beer removes old Beer skills first, then reinstalls the current set |
+| `AGENTS.md` | managed `agent-guidelines` block for agent-facing repo rules |
+| `CLAUDE.md` | managed `agent-guidelines` block for Claude-facing repo rules |
+
+`beer init`, `beer refresh`, `beer install`, and `beer update` all resync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`.
 
 ## Tooling Options
 

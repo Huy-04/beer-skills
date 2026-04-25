@@ -2,8 +2,8 @@ import readline from "node:readline/promises";
 
 import { buildBeerPreflightReport } from "../commands/beer-preflight.mjs";
 import { applyRepo, resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
+import { syncProjectSkills } from "./skill-sync.mjs";
 import { installBeads, installGitNexus } from "./toolchain.mjs";
-import { syncProjectSkills } from "./install.mjs";
 
 async function askYesNo(rl, question) {
   const answer = (await rl.question(question)).trim().toLowerCase();
@@ -19,8 +19,15 @@ function renderInitResult(result) {
 
   if (result.skill_install) {
     lines.push(`Skills: ${result.skill_install.skills.length} skill(s) installed`);
+    if (result.skill_install.removed_skills?.length) {
+      lines.push(`Beer skills removed before sync: ${result.skill_install.removed_skills.length}`);
+    }
     for (const skill of result.skill_install.skills) {
       lines.push(`  ${skill.status === "created" ? "+" : "~"} ${skill.name}`);
+    }
+    lines.push("Repo instructions:");
+    for (const file of result.skill_install.instruction_sync?.files || []) {
+      lines.push(`  ${file.status === "created" ? "+" : "~"} ${file.name} (${file.block_status})`);
     }
   }
 

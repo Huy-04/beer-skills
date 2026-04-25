@@ -41,6 +41,15 @@ function renderUninstallResult(result) {
         lines.push(`  - ${name}`);
       }
     }
+    const changedGuidelines = result.removed_guidelines?.filter(
+      (file) => file.status === "removed" || file.status === "updated",
+    ) || [];
+    if (changedGuidelines.length) {
+      lines.push("Updated repo instructions:");
+      for (const file of changedGuidelines) {
+        lines.push(`  - ${file.name}: ${file.status}`);
+      }
+    }
   } else if (result.status === "not_installed") {
     lines.push("Status: not installed");
     lines.push("Nothing to remove.");

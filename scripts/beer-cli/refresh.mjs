@@ -1,5 +1,6 @@
 import { buildBeerPreflightReport } from "../commands/beer-preflight.mjs";
 import { applyRepo, checkRepo, resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
+import { syncProjectSkills } from "./skill-sync.mjs";
 
 function renderRefreshResult(result) {
   const lines = [
@@ -13,6 +14,16 @@ function renderRefreshResult(result) {
     lines.push("Managed actions:");
     for (const action of result.before.actions) {
       lines.push(`- ${action}`);
+    }
+  }
+
+  if (result.skill_install) {
+    lines.push(`Skills synced: ${result.skill_install.skills.length}`);
+    if (result.skill_install.removed_skills?.length) {
+      lines.push(`Beer skills removed before sync: ${result.skill_install.removed_skills.length}`);
+    }
+    for (const file of result.skill_install.instruction_sync?.files || []) {
+      lines.push(`- ${file.name}: ${file.status}/${file.block_status}`);
     }
   }
 
@@ -30,11 +41,13 @@ export async function runRefresh(args) {
   const repoRoot = resolveOnboardRepoRoot(args.repoRoot);
   const before = checkRepo(repoRoot);
   const onboarding = applyRepo(repoRoot);
+  const skillInstall = syncProjectSkills(repoRoot);
   const preflight = buildBeerPreflightReport(repoRoot);
   const payload = {
     repo_root: repoRoot,
     before,
     onboarding,
+    skill_install: skillInstall,
     preflight,
   };
 
