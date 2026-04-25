@@ -1,5 +1,5 @@
 ---
-name: execution-guardrails
+name: beer-execution-guardrails
 description: >
   This skill should be used when the user asks to "use Karpathy guidelines",
   "be more surgical", "avoid overengineering", "think before coding",

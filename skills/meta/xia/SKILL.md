@@ -1,5 +1,5 @@
 ---
-name: xia
+name: beer-xia
 description: >
   This skill should be used when the user asks to "analyze a skills repo", "compare skills",
   "scout a repo for reusable skills", or "recommend which skills Beer should add, update, adapt, ignore, or prioritize next".

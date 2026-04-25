@@ -1,5 +1,5 @@
 ---
-name: debugging
+name: beer-debugging
 description: >
   This skill should be used when the user asks to debug, fix a build failure,
   fix a failing test, root-cause an error, diagnose a runtime crash, unblock a

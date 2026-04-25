@@ -1,5 +1,5 @@
 ---
-name: context-intake
+name: beer-context-intake
 description: >
   This skill should be used when the user asks to "load context", "resume state",
   "recover handoff", "start from zero context", or otherwise needs Beer

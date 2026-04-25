@@ -1,5 +1,5 @@
 ---
-name: planning
+name: beer-planning
 description: >
   This skill should be used when implementation work needs a bounded plan,
   including feature work after exploring, small direct fixes that route through

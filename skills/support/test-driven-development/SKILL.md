@@ -1,5 +1,5 @@
 ---
-name: test-driven-development
+name: beer-test-driven-development
 description: >
   This skill should be used when the user asks to "use TDD", "write the test first",
   "add a regression test before fixing", "implement with red green refactor", or

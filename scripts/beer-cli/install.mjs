@@ -40,7 +40,7 @@ function findSkillDirectories(root) {
       const relPath = path.join(relative, entry.name);
       if (fs.existsSync(path.join(fullPath, "SKILL.md"))) {
         skills.push({
-          name: `beer-${entry.name}`,
+          name: entry.name,
           sourcePath: fullPath,
         });
       } else {

@@ -1,5 +1,5 @@
 ---
-name: using-beer
+name: beer-using-beer
 description: >
   This skill should be used when the user asks to "start beer session",
   "which skill should I use", "/go", "run full pipeline", "resume session",

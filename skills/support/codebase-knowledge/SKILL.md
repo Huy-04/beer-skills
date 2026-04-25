@@ -1,5 +1,5 @@
 ---
-name: codebase-knowledge
+name: beer-codebase-knowledge
 description: >
   This skill should be used when the user asks to ["/scan codebase"], ["/analyze project"],
   ["build knowledge base"], ["scan project patterns"], ["refresh knowledge base"], or otherwise

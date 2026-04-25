@@ -1,5 +1,5 @@
 ---
-name: writing-beer-skills
+name: beer-writing-beer-skills
 description: >
   This skill should be used when the user asks to "create a new skill", "edit an existing skill",
   "verify a skill under pressure", or "test a skill before handoff".

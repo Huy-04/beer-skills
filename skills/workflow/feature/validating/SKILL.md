@@ -1,5 +1,5 @@
 ---
-name: validating
+name: beer-validating
 description: >
   This skill should be used when a planned execution slice needs a go/no-go
   check before code is written, including feature work after planning, small

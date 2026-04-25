@@ -1,5 +1,5 @@
 ---
-name: compounding
+name: beer-compounding
 description: >
   This skill should be used when completed feature work or debugging work
   should be turned into reusable Beer learnings.
