@@ -106,7 +106,7 @@ export function hasMaterialRepoChanges(paths) {
   return paths.some((filePath) => isMaterialRepoPath(filePath));
 }
 
-export function assessPostTaskGitNexusRefresh(options = {}) {
+export function assessGitNexusIndex(options = {}) {
   const repoRoot = resolveOnboardRepoRoot(options.repoRoot);
   const command = buildGitNexusAnalyzeCommand();
   const npxPath = options.npxPath ?? resolveCommand("npx");
@@ -165,8 +165,8 @@ export function assessPostTaskGitNexusRefresh(options = {}) {
   };
 }
 
-export function runPostTaskGitNexusRefresh(options = {}) {
-  const assessment = assessPostTaskGitNexusRefresh(options);
+export function runGitNexusIndex(options = {}) {
+  const assessment = assessGitNexusIndex(options);
 
   if (assessment.status !== "ready") {
     return assessment;
@@ -193,9 +193,9 @@ export function runPostTaskGitNexusRefresh(options = {}) {
   }
 }
 
-function renderPostTaskRefresh(result) {
+function renderBeerIndex(result) {
   const lines = [
-    "Beer Post-Task Refresh",
+    "Beer Index",
     `Repo: ${result.repo_root}`,
     `GitNexus: ${result.status}`,
   ];
@@ -218,14 +218,14 @@ function renderPostTaskRefresh(result) {
   return lines.join("\n");
 }
 
-export async function runPostTaskRefresh(args) {
-  const result = runPostTaskGitNexusRefresh({
+export async function runBeerIndex(args) {
+  const result = runGitNexusIndex({
     repoRoot: args.repoRoot,
     dryRun: args.dryRunTools,
   });
 
   process.stdout.write(
-    args.json ? `${JSON.stringify(result, null, 2)}\n` : `${renderPostTaskRefresh(result)}\n`,
+    args.json ? `${JSON.stringify(result, null, 2)}\n` : `${renderBeerIndex(result)}\n`,
   );
 
   return ["completed", "skipped", "dry_run"].includes(result.status) ? 0 : 1;

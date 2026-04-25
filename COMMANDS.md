@@ -21,7 +21,7 @@ beer update
 | `beer refresh` | refresh Beer-managed files in the current repo |
 | `beer uninstall --yes` | remove `.beer/` from the current repo |
 | `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided mode |
-| `beer post-task-refresh` | rerun the current repo's GitNexus post-task refresh path |
+| `beer index` | refresh the current repo's GitNexus index |
 | `beer check-tools` | check whether `bd`, GitNexus MCP, and the GitNexus index are available |
 | `beer install gitnexus` | install GitNexus setup |
 | `beer install beads` | install `bd` |
@@ -45,7 +45,7 @@ Use these when Beer is not installed globally:
 | Read repo status | `npx --yes --package github:Huy-04/beer-skills beer-skills status --json` |
 | Check auto-accept gate | `npx --yes --package github:Huy-04/beer-skills beer-skills auto-accept --gate validating --json` |
 | Record guided approval | `npx --yes --package github:Huy-04/beer-skills beer-skills approve phase-plan --json` |
-| Rerun post-task GitNexus refresh | `npx --yes --package github:Huy-04/beer-skills beer-skills post-task-refresh --json` |
+| Refresh the current repo's GitNexus index | `npx --yes --package github:Huy-04/beer-skills beer-skills index --json` |
 | Show dependency status | `npx --yes --package github:Huy-04/beer-skills beer-skills dependencies` |
 | Check planning gate | `npx --yes --package github:Huy-04/beer-skills beer-skills planning-gate --route feature --json` |
 
@@ -57,7 +57,7 @@ Use these when Beer is not installed globally:
 | Read status JSON | `node .beer/scripts/commands/beer-status.mjs --json` |
 | Check auto-accept gate | `node .beer/scripts/commands/beer-auto-accept.mjs --gate validating --json` |
 | Record guided approval | `node .beer/scripts/commands/beer-approve.mjs phase-plan --json` |
-| Rerun post-task GitNexus refresh | `node .beer/scripts/commands/beer-cli.mjs post-task-refresh --json` |
+| Refresh the current repo's GitNexus index | `node .beer/scripts/commands/beer-cli.mjs index --json` |
 | Show dependency status | `node .beer/scripts/commands/beer-dependencies.mjs` |
 | Check planning gate | `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` |
 
@@ -77,7 +77,7 @@ Use these when Beer is not installed globally:
 - `beer update` updates the global Beer package from GitHub.
 - `beer refresh` updates repo-local managed files in `.beer/`.
 - `beer approve review` also runs the automatic post-task GitNexus refresh path for the current repo.
-- `beer post-task-refresh` reruns that GitNexus refresh path manually when needed.
+- `beer index` reruns the current repo's GitNexus refresh path manually when needed.
 - `beer uninstall` removes `.beer/` only. It does not remove global tools such
   as GitNexus or `bd`.
 - In guided mode, use `beer approve <context|phase-plan|execution|review>` to

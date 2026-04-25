@@ -2,23 +2,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  assessPostTaskGitNexusRefresh,
+  assessGitNexusIndex,
   hasMaterialRepoChanges,
   isMaterialRepoPath,
   parseGitStatusPaths,
-  runPostTaskGitNexusRefresh,
-} from "../scripts/beer-cli/post-task-refresh.mjs";
+  runGitNexusIndex,
+} from "../scripts/beer-cli/index.mjs";
 
 test("parseGitStatusPaths handles modified, untracked, and renamed entries", () => {
   const result = parseGitStatusPaths([
     " M scripts/beer-cli/init.mjs",
-    "?? test/beer-post-task-refresh.test.mjs",
+    "?? test/beer-index.test.mjs",
     "R  old/file.mjs -> new/file.mjs",
   ].join("\n"));
 
   assert.deepEqual(result, [
     "scripts/beer-cli/init.mjs",
-    "test/beer-post-task-refresh.test.mjs",
+    "test/beer-index.test.mjs",
     "new/file.mjs",
   ]);
 });
@@ -36,7 +36,7 @@ test("hasMaterialRepoChanges returns true only for graph-relevant changes", () =
 });
 
 test("assessment skips refresh when no material changes are present", () => {
-  const result = assessPostTaskGitNexusRefresh({
+  const result = assessGitNexusIndex({
     repoRoot: "C:\\Code\\Project\\Example",
     npxPath: "C:\\Program Files\\nodejs\\npx.cmd",
     detectResult: {
@@ -51,7 +51,7 @@ test("assessment skips refresh when no material changes are present", () => {
 });
 
 test("assessment falls back to manual when npx is missing", () => {
-  const result = assessPostTaskGitNexusRefresh({
+  const result = assessGitNexusIndex({
     repoRoot: "C:\\Code\\Project\\Example",
     npxPath: "",
     detectResult: {
@@ -65,9 +65,9 @@ test("assessment falls back to manual when npx is missing", () => {
   assert.equal(result.command, "npx gitnexus analyze");
 });
 
-test("runPostTaskGitNexusRefresh executes analyze from the repo root", () => {
+test("runGitNexusIndex executes analyze from the repo root", () => {
   const calls = [];
-  const result = runPostTaskGitNexusRefresh({
+  const result = runGitNexusIndex({
     repoRoot: "C:\\Code\\Project\\Example",
     npxPath: "C:\\Program Files\\nodejs\\npx.cmd",
     detectResult: {

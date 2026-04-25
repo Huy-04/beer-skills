@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readBeerState, readBeerStatus, resolveRepoRoot, writeBeerState } from "../beer-state/core.mjs";
-import { runPostTaskGitNexusRefresh } from "../beer-cli/post-task-refresh.mjs";
+import { runGitNexusIndex } from "../beer-cli/index.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const APPROVALS = new Set(["context", "phase-plan", "execution", "review"]);
@@ -226,24 +226,24 @@ export function recordApproval(options = {}) {
   const repoRoot = assessment.repo_root;
   const currentState = readBeerState(repoRoot);
   const updatedState = writeBeerState(repoRoot, applyMutation(currentState, assessment.approval));
-  const postTaskRefresh =
+  const gitNexusIndex =
     assessment.approval === "review"
-      ? (typeof options.postTaskRefreshRunner === "function"
-          ? options.postTaskRefreshRunner({ repoRoot })
-          : runPostTaskGitNexusRefresh({ repoRoot }))
+      ? (typeof options.gitNexusIndexRunner === "function"
+          ? options.gitNexusIndexRunner({ repoRoot })
+          : runGitNexusIndex({ repoRoot }))
       : null;
   const nextSteps = [
     `Continue with ${updatedState.next_handoff || "the next workflow step"}.`,
   ];
 
-  if (postTaskRefresh?.status === "completed") {
+  if (gitNexusIndex?.status === "completed") {
     nextSteps.push("GitNexus index refreshed automatically for the current repo.");
-  } else if (postTaskRefresh?.status === "skipped") {
+  } else if (gitNexusIndex?.status === "skipped") {
     nextSteps.push("Post-task GitNexus refresh was skipped because no graph-relevant repo changes were detected.");
-  } else if (postTaskRefresh?.status === "manual_required") {
-    nextSteps.push(`Run ${postTaskRefresh.command} from the repo root after installing npx support.`);
-  } else if (postTaskRefresh?.status === "failed") {
-    nextSteps.push("Rerun beer post-task-refresh after reviewing the GitNexus refresh failure.");
+  } else if (gitNexusIndex?.status === "manual_required") {
+    nextSteps.push(`Run ${gitNexusIndex.command} from the repo root after installing npx support.`);
+  } else if (gitNexusIndex?.status === "failed") {
+    nextSteps.push("Rerun beer index after reviewing the GitNexus refresh failure.");
   }
 
   return {
@@ -253,7 +253,7 @@ export function recordApproval(options = {}) {
     code: "recorded",
     summary: `Recorded ${assessment.approval} approval in .beer/state.json.`,
     next_steps: nextSteps,
-    post_task_refresh: postTaskRefresh,
+    gitnexus_index: gitNexusIndex,
     state: updatedState,
   };
 }
@@ -268,10 +268,10 @@ export function renderApproval(result) {
     `Reason: ${result.summary}`,
   ];
 
-  if (result.post_task_refresh) {
-    lines.push(`Post-task GitNexus: ${result.post_task_refresh.status}`);
-    if (result.post_task_refresh.reason) {
-      lines.push(`Post-task detail: ${result.post_task_refresh.reason}`);
+  if (result.gitnexus_index) {
+    lines.push(`GitNexus index: ${result.gitnexus_index.status}`);
+    if (result.gitnexus_index.reason) {
+      lines.push(`GitNexus detail: ${result.gitnexus_index.reason}`);
     }
   }
 

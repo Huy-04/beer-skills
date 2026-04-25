@@ -68,7 +68,7 @@ test("recordApproval records review approval and points to compounding", () => {
   const result = recordApproval({
     repoRoot,
     approval: "review",
-    postTaskRefreshRunner: () => ({
+    gitNexusIndexRunner: () => ({
       repo_root: repoRoot,
       status: "completed",
       code: "completed",
@@ -80,5 +80,5 @@ test("recordApproval records review approval and points to compounding", () => {
   assert.equal(result.ok, true);
   assert.equal(result.state.approved_gates.review, true);
   assert.equal(result.state.next_handoff, "beer:compounding");
-  assert.equal(result.post_task_refresh?.status, "completed");
+  assert.equal(result.gitnexus_index?.status, "completed");
 });

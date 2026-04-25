@@ -10,7 +10,7 @@ export function printHelp() {
       "  uninstall       Remove Beer-managed files from a repo",
       "  approve <gate>  Record a manual gate approval in guided workflows",
       "  install <tool>  Install a Beer tool (gitnexus or beads)",
-      "  post-task-refresh  Refresh the current repo's GitNexus index after task closeout",
+      "  index           Refresh the current repo's GitNexus index",
       "  check-tools     Show which Beer tools are installed or missing",
       "  status          Show Beer status for a repo",
       "  auto-accept    Check whether a Beer gate may auto-advance",
