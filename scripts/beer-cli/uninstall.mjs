@@ -35,6 +35,12 @@ function renderUninstallResult(result) {
   if (result.status === "removed") {
     lines.push("Status: removed");
     lines.push("Removed: .beer");
+    if (result.removed_skills?.length) {
+      lines.push(`Removed skills: ${result.removed_skills.length}`);
+      for (const name of result.removed_skills) {
+        lines.push(`  - ${name}`);
+      }
+    }
   } else if (result.status === "not_installed") {
     lines.push("Status: not installed");
     lines.push("Nothing to remove.");

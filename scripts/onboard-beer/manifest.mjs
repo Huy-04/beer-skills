@@ -13,7 +13,6 @@ export const MANAGED_SCRIPT_FILES = [
   path.join("commands", "onboard-beer.mjs"),
   path.join("beer-auto-accept", "policy.mjs"),
   path.join("beer-cli", "args.mjs"),
-  path.join("beer-cli", "claude.mjs"),
   path.join("beer-cli", "help.mjs"),
   path.join("beer-cli", "index.mjs"),
   path.join("beer-cli", "init.mjs"),

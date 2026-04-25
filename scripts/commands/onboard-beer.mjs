@@ -190,6 +190,26 @@ export function applyRepo(repoRoot) {
   };
 }
 
+function removeBeerSkills(repoRoot) {
+  const claudeSkillsDir = path.join(repoRoot, ".claude", "skills");
+  const removed = [];
+
+  if (!fs.existsSync(claudeSkillsDir)) {
+    return removed;
+  }
+
+  const entries = fs.readdirSync(claudeSkillsDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory() && entry.name.startsWith("beer-")) {
+      const skillDir = path.join(claudeSkillsDir, entry.name);
+      fs.rmSync(skillDir, { recursive: true, force: true });
+      removed.push(entry.name);
+    }
+  }
+
+  return removed;
+}
+
 export function removeRepo(repoRoot) {
   const beerDir = path.join(repoRoot, ".beer");
   const existed = fs.existsSync(beerDir);
@@ -198,11 +218,14 @@ export function removeRepo(repoRoot) {
     fs.rmSync(beerDir, { recursive: true, force: true });
   }
 
+  const removedSkills = removeBeerSkills(repoRoot);
+
   return {
     repo_root: repoRoot,
     removed: existed,
     status: existed ? "removed" : "not_installed",
     managed_root: ".beer",
+    removed_skills: removedSkills,
   };
 }
 

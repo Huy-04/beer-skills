@@ -3,6 +3,7 @@ import readline from "node:readline/promises";
 import { buildBeerPreflightReport } from "../commands/beer-preflight.mjs";
 import { applyRepo, resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
 import { installBeads, installGitNexus } from "./toolchain.mjs";
+import { syncProjectSkills } from "./install.mjs";
 
 async function askYesNo(rl, question) {
   const answer = (await rl.question(question)).trim().toLowerCase();
@@ -15,6 +16,13 @@ function renderInitResult(result) {
     `Repo: ${result.repo_root}`,
     `Onboarding: ${result.onboarding.status}`,
   ];
+
+  if (result.skill_install) {
+    lines.push(`Skills: ${result.skill_install.skills.length} skill(s) installed`);
+    for (const skill of result.skill_install.skills) {
+      lines.push(`  ${skill.status === "created" ? "+" : "~"} ${skill.name}`);
+    }
+  }
 
   if (result.tool_install) {
     lines.push(`Tool install: ${result.tool_install.status}`);
@@ -42,6 +50,7 @@ function renderInitResult(result) {
 export async function runInit(args) {
   const repoRoot = resolveOnboardRepoRoot(args.repoRoot);
   const onboarding = applyRepo(repoRoot);
+  const skillInstall = syncProjectSkills(repoRoot);
   let preflight = buildBeerPreflightReport(repoRoot);
   let toolInstall = null;
   const gitNexusAlreadyInstalled = Boolean(preflight.available_tools.gitnexus);
@@ -79,6 +88,7 @@ export async function runInit(args) {
   const payload = {
     repo_root: repoRoot,
     onboarding,
+    skill_install: skillInstall,
     tool_install: toolInstall,
     preflight,
   };
