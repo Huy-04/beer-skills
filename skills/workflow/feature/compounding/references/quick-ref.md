@@ -45,6 +45,14 @@ Promote only if all are true:
 - likely to save meaningful future effort
 - short enough to scan quickly in `critical-patterns.md`
 
+## Post-Task Refresh Gate
+
+- Evaluate `.beer/knowledge-base/` refresh only when the finished work created reusable pattern or convention drift worth preserving.
+- Evaluate GitNexus reindex only when the finished work materially changed code or graph-relevant structure.
+- GitNexus reindex follows the automatic post-task path; it does not need a separate human approval prompt.
+- Knowledge-base refresh stays approval-based.
+- Post-task GitNexus refresh means re-indexing the current repo, not reinstalling or upgrading the GitNexus tool.
+
 ## One-Line Reminder
 
 `compounding` records genuine reuse value, not a ceremonial summary.

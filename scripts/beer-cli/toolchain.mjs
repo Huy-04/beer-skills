@@ -44,6 +44,10 @@ export function buildGitNexusSetupCommand() {
   return "npx -y gitnexus@latest setup";
 }
 
+export function buildGitNexusAnalyzeCommand() {
+  return "npx gitnexus analyze";
+}
+
 export function buildBeadsInstallCommand() {
   return "npm install -g @beads/bd";
 }
@@ -77,12 +81,14 @@ function runResolvedCommand(commandPath, args, options = {}) {
   if (isWindowsShellCommand(commandPath, platform)) {
     const cmd = [commandPath, ...args].map(quoteWindowsArg).join(" ");
     execSync(cmd, {
+      cwd: options.cwd,
       stdio: options.stdio || "inherit",
     });
     return;
   }
 
   execFileSync(commandPath, args, {
+    cwd: options.cwd,
     stdio: options.stdio || "inherit",
   });
 }
@@ -110,6 +116,16 @@ function normalizeToolError(error) {
 export function installGitNexus(options = {}) {
   const npxPath = resolveCommand("npx");
   const gitNexusCommand = buildGitNexusSetupCommand();
+
+  if (options.alreadyInstalled) {
+    return {
+      id: "gitnexus",
+      attempted: false,
+      status: "skipped",
+      installer_command: gitNexusCommand,
+      reason: "GitNexus MCP already available; skipping setup.",
+    };
+  }
 
   if (!npxPath) {
     return {
@@ -201,7 +217,7 @@ export function installFullToolchain({ dryRunTools }) {
 
   return {
     attempted: steps.some((step) => step.attempted),
-    status: steps.every((step) => step.status === "completed")
+    status: steps.every((step) => ["completed", "skipped"].includes(step.status))
       ? "completed"
       : steps.some((step) => step.status === "failed")
         ? "failed"

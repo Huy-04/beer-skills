@@ -18,8 +18,11 @@ If Git commit lookup is unavailable, say so explicitly. Use an `unknown-*` marke
 
 Always state why the scan was allowed: explicit user request,
 compounding-approved refresh, or explicit partial scan. If the request came from
-normal feature work, report that a new scan is not part of the standard path and
-offer to read existing cache/source instead.
+compounding, state that the scan was approved through compounding's
+knowledge-base refresh ask rather than a second knowledge-base-specific
+question. If the request came from normal feature work, report that a new scan
+is not part of the standard path and offer to read existing cache/source
+instead.
 
 ---
 

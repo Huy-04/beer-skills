@@ -44,6 +44,7 @@ export async function runInit(args) {
   const onboarding = applyRepo(repoRoot);
   let preflight = buildBeerPreflightReport(repoRoot);
   let toolInstall = null;
+  const gitNexusAlreadyInstalled = Boolean(preflight.available_tools.gitnexus);
 
   if (!args.json && process.stdin.isTTY && process.stdout.isTTY) {
     const rl = readline.createInterface({
@@ -56,11 +57,14 @@ export async function runInit(args) {
         "\nInstall the full Beer toolchain now? This includes GitNexus. [y/n]: ",
       );
       if (wantInstall) {
-        const gitNexusResult = installGitNexus();
+        const gitNexusResult = installGitNexus({
+          alreadyInstalled: gitNexusAlreadyInstalled,
+        });
         const beadsResult = installBeads();
         toolInstall = {
           status:
-            gitNexusResult.status === "completed" && beadsResult.status === "completed"
+            ["completed", "skipped"].includes(gitNexusResult.status) &&
+              ["completed", "skipped"].includes(beadsResult.status)
               ? "completed"
               : "failed",
           steps: [gitNexusResult, beadsResult],

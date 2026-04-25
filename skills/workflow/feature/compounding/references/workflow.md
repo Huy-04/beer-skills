@@ -90,7 +90,46 @@ For each critical item:
 
 If nothing qualifies, skip promotion cleanly.
 
-## Phase 6: Update Beer State and Cleanup
+## Phase 6: Post-Task Refresh Follow-Up
+
+Handle the two post-task follow-ups differently:
+
+### GitNexus Repo Re-Index
+
+If the finished work materially changed code or graph-relevant structure, let
+Beer auto-refresh the current repo's GitNexus index. This is a repo refresh such
+as:
+
+```text
+npx gitnexus analyze
+```
+
+Do not ask a separate human approval question just for this re-index path.
+
+### Knowledge-Base Refresh
+
+Ask about `.beer/knowledge-base/` only when the finished work changed reusable
+patterns, conventions, architecture, business rules, or critical flows worth
+preserving as curated docs.
+
+Preferred prompt shape:
+
+```text
+Compounding is complete. This task produced reusable project patterns. Refresh `.beer/knowledge-base/` now?
+```
+
+If the user approves:
+
+1. invoke `beer:codebase-knowledge`
+2. treat that approval as covering the knowledge-base refresh; do not ask again inside the downstream skill
+
+If the user declines:
+
+- skip the knowledge-base refresh cleanly
+- keep the learnings and closeout trail
+- finish compounding normally
+
+## Phase 7: Update Beer State and Cleanup
 
 Update `.beer/state.json` first with:
 

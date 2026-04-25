@@ -11,6 +11,7 @@ version: "1.0"
 ## Authority Rules
 
 - Only run on explicit user request or compounding-approved refresh.
+- If invoked from compounding's knowledge-base refresh handoff, do not ask for a second approval prompt here.
 - Normal feature planning/validation may read existing KB entries but must not auto-generate a new KB.
 - Current repository source wins over `.beer/knowledge-base/`.
 - Store `.beer/knowledge-base/` inside the current project/repo, not globally.
@@ -275,7 +276,7 @@ Why is this critical?
 ### Before Scan
 
 - [ ] Check if existing knowledge base exists
-- [ ] Confirm invocation reason: user request or compounding-approved refresh
+- [ ] Confirm invocation reason: user request or compounding-approved refresh from compounding's knowledge-base refresh handoff
 - [ ] If exists: Check staleness (`git log --since last_scan`)
 - [ ] Decide: Full rescan vs incremental update
 - [ ] GitNexus available? (optional)

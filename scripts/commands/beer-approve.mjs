@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readBeerState, readBeerStatus, resolveRepoRoot, writeBeerState } from "../beer-state/core.mjs";
+import { runPostTaskGitNexusRefresh } from "../beer-cli/post-task-refresh.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const APPROVALS = new Set(["context", "phase-plan", "execution", "review"]);
@@ -225,6 +226,25 @@ export function recordApproval(options = {}) {
   const repoRoot = assessment.repo_root;
   const currentState = readBeerState(repoRoot);
   const updatedState = writeBeerState(repoRoot, applyMutation(currentState, assessment.approval));
+  const postTaskRefresh =
+    assessment.approval === "review"
+      ? (typeof options.postTaskRefreshRunner === "function"
+          ? options.postTaskRefreshRunner({ repoRoot })
+          : runPostTaskGitNexusRefresh({ repoRoot }))
+      : null;
+  const nextSteps = [
+    `Continue with ${updatedState.next_handoff || "the next workflow step"}.`,
+  ];
+
+  if (postTaskRefresh?.status === "completed") {
+    nextSteps.push("GitNexus index refreshed automatically for the current repo.");
+  } else if (postTaskRefresh?.status === "skipped") {
+    nextSteps.push("Post-task GitNexus refresh was skipped because no graph-relevant repo changes were detected.");
+  } else if (postTaskRefresh?.status === "manual_required") {
+    nextSteps.push(`Run ${postTaskRefresh.command} from the repo root after installing npx support.`);
+  } else if (postTaskRefresh?.status === "failed") {
+    nextSteps.push("Rerun beer post-task-refresh after reviewing the GitNexus refresh failure.");
+  }
 
   return {
     repo_root: repoRoot,
@@ -232,25 +252,33 @@ export function recordApproval(options = {}) {
     ok: true,
     code: "recorded",
     summary: `Recorded ${assessment.approval} approval in .beer/state.json.`,
-    next_steps: [
-      `Continue with ${updatedState.next_handoff || "the next workflow step"}.`,
-    ],
+    next_steps: nextSteps,
+    post_task_refresh: postTaskRefresh,
     state: updatedState,
   };
 }
 
 export function renderApproval(result) {
-  return [
+  const lines = [
     "Beer Approval",
     `Repo: ${result.repo_root}`,
     `Approval: ${result.approval || "(none)"}`,
     `Decision: ${result.ok ? "RECORDED" : "BLOCKED"}`,
     `Code: ${result.code}`,
     `Reason: ${result.summary}`,
-    "",
-    "Next steps:",
-    ...(result.next_steps.length > 0 ? result.next_steps.map((step) => `- ${step}`) : ["- (none)"]),
-  ].join("\n");
+  ];
+
+  if (result.post_task_refresh) {
+    lines.push(`Post-task GitNexus: ${result.post_task_refresh.status}`);
+    if (result.post_task_refresh.reason) {
+      lines.push(`Post-task detail: ${result.post_task_refresh.reason}`);
+    }
+  }
+
+  lines.push("");
+  lines.push("Next steps:");
+  lines.push(...(result.next_steps.length > 0 ? result.next_steps.map((step) => `- ${step}`) : ["- (none)"]));
+  return lines.join("\n");
 }
 
 function parseCliArgs(argv) {
@@ -279,6 +307,7 @@ function parseCliArgs(argv) {
         "Usage: beer-approve.mjs <context|phase-plan|execution|review> [--repo-root <path>] [--json]",
         "",
         "Records a manual Beer gate approval in .beer/state.json for guided workflows.",
+        "Review approval also triggers the post-task GitNexus repo refresh path.",
       ].join("\n"));
       process.exit(0);
     }

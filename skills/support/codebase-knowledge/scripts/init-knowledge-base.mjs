@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const DEFAULT_AREAS = [
   "code-patterns",
@@ -13,7 +14,7 @@ const DEFAULT_AREAS = [
   "critical-sections",
 ];
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const args = {
     outputRoot: "",
     sourcePath: "",
@@ -131,7 +132,7 @@ function parseArgs(argv) {
   };
 }
 
-function printHelp() {
+export function printHelp() {
   process.stdout.write(
     [
       "Usage:",
@@ -153,14 +154,14 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
-function ensureDirs(root) {
+export function ensureDirs(root) {
   fs.mkdirSync(root, { recursive: true });
   for (const area of DEFAULT_AREAS) {
     fs.mkdirSync(path.join(root, area), { recursive: true });
   }
 }
 
-function buildMetadata(args) {
+export function buildMetadata(args) {
   const notes = [...args.note];
   if (args.generatedFromCommit.startsWith("unknown-") && notes.length === 0) {
     notes.push("generated_from_commit uses an explicit fallback because Git metadata was unavailable.");
@@ -191,7 +192,7 @@ function buildMetadata(args) {
   };
 }
 
-function buildIndex() {
+export function buildIndex() {
   return {
     version: "1.0",
     generated_at: new Date().toISOString(),
@@ -208,7 +209,7 @@ function buildIndex() {
   };
 }
 
-function buildReadme(args) {
+export function buildReadme(args) {
   return [
     "# Knowledge Base",
     "",
@@ -223,13 +224,16 @@ function buildReadme(args) {
   ].join("\n");
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
+export function initializeKnowledgeBase(args) {
   ensureDirs(args.outputRoot);
-
   writeJson(path.join(args.outputRoot, "00-metadata.json"), buildMetadata(args));
   writeJson(path.join(args.outputRoot, "index.json"), buildIndex());
   fs.writeFileSync(path.join(args.outputRoot, "README.md"), buildReadme(args), "utf8");
+}
+
+export function main(argv = process.argv.slice(2)) {
+  const args = parseArgs(argv);
+  initializeKnowledgeBase(args);
 
   process.stdout.write(
     [
@@ -241,6 +245,9 @@ function main() {
       `scan_scope: ${args.scanScope}`,
     ].join("\n") + "\n",
   );
+  return 0;
 }
 
-main();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
+  process.exitCode = main();
+}

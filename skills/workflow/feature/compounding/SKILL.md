@@ -38,7 +38,7 @@ debugging start from stronger evidence.
 |---|---|
 | **Use when** | Review passed with Gate 4 approved, direct work finished cleanly, or debugging exposed a reusable lesson |
 | **Needs** | `.beer/state.json`, the finished route source (`review_route` or debug evidence), and enough context to state what was learned |
-| **Produces** | One learnings file, optional critical-pattern promotion, and an updated Beer state trail |
+| **Produces** | One learnings file, optional critical-pattern promotion, optional knowledge-base refresh ask, and an updated Beer state trail |
 | **Next** | Idle Beer state, or the next feature with stronger starting knowledge |
 
 ## Compounding Routes
@@ -61,7 +61,7 @@ full feature.
 
 - `reviewing` owns the quality gate and closeout decision.
 - `debugging` owns reproduction evidence and root-cause proof.
-- `compounding` owns the learning synthesis and promotion decision.
+- `compounding` owns the learning synthesis, promotion decision, and deciding whether a knowledge-base refresh is worth asking the user for.
 - `compounding` does not require subagents by default. Local synthesis is the default path.
 
 ## 30-Second Version
@@ -71,7 +71,9 @@ full feature.
 3. Capture three buckets locally: patterns, decisions, failures.
 4. Write one learnings file for the finished unit of work.
 5. Promote only the small subset that is truly reusable across future work.
-6. Update Beer state and clear temporary compounding artifacts.
+6. Let the workflow auto-refresh the current repo's GitNexus index when task closeout changed graph-relevant code.
+7. Ask the user about `.beer/knowledge-base/` only when the finished work produced reusable project patterns worth preserving.
+8. Update Beer state and clear temporary compounding artifacts.
 
 ## Output Contract
 
@@ -97,6 +99,8 @@ Optional supporting artifacts:
 - Never treat `manual-review` as a valid compounding source route.
 - Never treat `STATE.md` as authoritative; update `state.json` first.
 - Never leave a learning without an `applicable_when` condition.
+- Never treat post-task GitNexus refresh as a tool update; it means re-indexing the current repo, typically via `npx gitnexus analyze`.
+- Never ask for knowledge-base refresh unless the finished work created reusable patterns, conventions, architecture notes, or critical-flow guidance worth keeping.
 
 ## State Contract
 

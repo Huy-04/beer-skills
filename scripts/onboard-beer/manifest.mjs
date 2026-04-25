@@ -15,6 +15,7 @@ export const MANAGED_SCRIPT_FILES = [
   path.join("beer-cli", "args.mjs"),
   path.join("beer-cli", "help.mjs"),
   path.join("beer-cli", "init.mjs"),
+  path.join("beer-cli", "post-task-refresh.mjs"),
   path.join("beer-cli", "refresh.mjs"),
   path.join("beer-cli", "toolchain.mjs"),
   path.join("beer-cli", "uninstall.mjs"),

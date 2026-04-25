@@ -84,7 +84,8 @@ Create or refresh project-local `.beer/knowledge-base/` as a workflow-backed, so
 
 - `codebase-knowledge` owns `.beer/knowledge-base/` cache generation and refresh.
 - Workflow skills own immediate task decisions and must prefer current source/GitNexus/locked context over stale cache entries.
-- `compounding` owns deciding when completed work created reusable knowledge worth refreshing automatically.
+- `compounding` owns deciding when completed work created reusable knowledge worth refreshing and asking the user whether that refresh should happen now.
+- When this skill is invoked from compounding's knowledge-base refresh handoff, treat that approval as already satisfied and do not ask a second refresh question.
 - `codebase-knowledge` does not own route decisions, implementation planning, or ad hoc repo Q&A outside the cache-refresh task.
 
 ## Analysis Lanes
@@ -125,7 +126,9 @@ Update the knowledge base after:
 - Compounding identifies a reusable pattern shift worth preserving.
 
 Only `user request` and `compounding-approved refresh` are valid automatic
-invocation reasons. Planning, validating, reviewing, and debugging may read the
+invocation reasons. In the `compounding-approved refresh` case, approval comes
+from compounding's knowledge-base refresh ask, not from a second question
+inside this skill. Planning, validating, reviewing, and debugging may read the
 cache, but they must not trigger a scan just because they need context.
 
 On first use, create a baseline cache only when the current request actually wants a knowledge-base scan or refresh.

@@ -12,6 +12,7 @@ import { runCheckTools } from "../beer-cli/check-tools.mjs";
 import { runRefresh } from "../beer-cli/refresh.mjs";
 import { runInit } from "../beer-cli/init.mjs";
 import { runInstall } from "../beer-cli/install.mjs";
+import { runPostTaskRefresh } from "../beer-cli/post-task-refresh.mjs";
 import { runUninstall } from "../beer-cli/uninstall.mjs";
 import { runUpdate } from "../beer-cli/update.mjs";
 import { recordApproval, renderApproval } from "./beer-approve.mjs";
@@ -92,6 +93,8 @@ export async function main(argv = process.argv.slice(2)) {
       return runCheckToolsWrapped(args);
     case "install":
       return runInstallWrapped(args);
+    case "post-task-refresh":
+      return runPostTaskRefresh(args);
     case "status":
       return runStatus(args);
     case "auto-accept":

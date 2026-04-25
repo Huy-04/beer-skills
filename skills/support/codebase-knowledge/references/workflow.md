@@ -21,7 +21,7 @@ If Git commit lookup is unavailable or blocked, degrade cleanly: set `generated_
 Run `codebase-knowledge` only when at least one is true:
 
 - the user explicitly asks to scan, analyze, build, or refresh the knowledge base
-- `beer:compounding` identified a reusable pattern/convention/architecture shift and the user approved the refresh
+- `beer:compounding` identified a reusable pattern/convention/architecture shift and the user approved the knowledge-base refresh
 - the user explicitly requests a subfolder or partial scan
 
 Do not run this skill during normal feature work just because planning or
@@ -32,6 +32,10 @@ Think of this skill as a knowledge compiler: it consolidates stable project
 knowledge into `.beer/knowledge-base/` after the workflow has already learned
 something worth preserving.
 If `.beer/knowledge-base/` does not exist yet, that only changes the initialization path. It does not widen the invocation gate.
+
+When this skill is invoked from compounding's knowledge-base refresh handoff, do
+not ask for another approval inside this skill. That handoff already covered
+the refresh decision.
 
 ---
 
@@ -376,6 +380,10 @@ Use this decision rule:
 | Commit unchanged | Knowledge base remains fresh |
 | Commit changed but only local feature files shifted | Usually skip refresh |
 | Commit changed and conventions/architecture/rules drifted | Trigger incremental or full refresh |
+
+When `beer:compounding` owns freshness review, it may trigger this refresh after
+task closeout while GitNexus repo re-index follows its own automatic path. This
+skill still only owns the knowledge-base refresh work.
 
 The exact staleness command stays in `references/quick-ref.md`.
 

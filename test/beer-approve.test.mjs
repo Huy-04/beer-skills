@@ -65,9 +65,20 @@ test("recordApproval records review approval and points to compounding", () => {
   state.review_status = "pass";
   writeBeerState(repoRoot, state);
 
-  const result = recordApproval({ repoRoot, approval: "review" });
+  const result = recordApproval({
+    repoRoot,
+    approval: "review",
+    postTaskRefreshRunner: () => ({
+      repo_root: repoRoot,
+      status: "completed",
+      code: "completed",
+      command: "npx gitnexus analyze",
+      reason: "GitNexus index refreshed for the current repo.",
+    }),
+  });
 
   assert.equal(result.ok, true);
   assert.equal(result.state.approved_gates.review, true);
   assert.equal(result.state.next_handoff, "beer:compounding");
+  assert.equal(result.post_task_refresh?.status, "completed");
 });

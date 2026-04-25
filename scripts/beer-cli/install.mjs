@@ -12,6 +12,9 @@ function renderInstallResult(result) {
 
   if (result.status === "completed") {
     lines.push(`${result.id}: installed`);
+  } else if (result.status === "skipped") {
+    lines.push(`${result.id}: skipped`);
+    lines.push(`  Reason: ${result.reason}`);
   } else if (result.status === "manual_required") {
     lines.push(`${result.id}: manual required`);
     lines.push(`  Command: ${result.installer_command}`);
@@ -44,8 +47,12 @@ export async function runInstall(args) {
     return 1;
   }
 
-  const result = installer({ dryRun: args.dryRunTools });
+  const preflight = buildBeerPreflightReport(resolveOnboardRepoRoot(args.repoRoot));
+  const result = installer({
+    dryRun: args.dryRunTools,
+    alreadyInstalled: tool === "gitnexus" ? Boolean(preflight.available_tools.gitnexus) : false,
+  });
   process.stdout.write(`${renderInstallResult(result)}\n`);
 
-  return result.status === "completed" ? 0 : 1;
+  return ["completed", "skipped"].includes(result.status) ? 0 : 1;
 }
