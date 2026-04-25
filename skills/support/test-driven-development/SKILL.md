@@ -27,7 +27,8 @@ disable-model-invocation: false
 
 # test-driven-development
 
-Drive a behavior change through a failing test first, then the smallest passing code, then cleanup that preserves green tests.
+Run a nested RED -> GREEN -> REFACTOR proof loop inside the active Beer workflow
+before a behavior-changing code change is treated as complete.
 
 ---
 
@@ -36,20 +37,22 @@ Drive a behavior change through a failing test first, then the smallest passing 
 | | |
 |---|---|
 | **Use when** | New behavior, bug fixes, or logic changes that should be proven with tests |
-| **Needs** | Target behavior, runnable test command, and clear scope for the change |
-| **Produces** | Failing-first test evidence, minimal passing implementation, and a clean TDD handoff |
-| **Next** | `beer:executing`, `beer:debugging`, `beer:reviewing`, or user handoff |
+| **Needs** | Target behavior, runnable test command, clear scope for the change, and the parent phase that opened the loop |
+| **Produces** | Failing-first test evidence, minimal passing implementation, explicit TDD exit target, and a clean handoff |
+| **Next** | Returns to the parent workflow through `beer:executing`, `beer:debugging`, `beer:reviewing`, `beer:validating`, or user handoff |
 
 ---
 
 ## 30-Second Version
 
-1. **Confirm TDD applies**: Use for behavior changes, bug fixes, and refactors that need proof.
-2. **RED**: Write one focused test for one behavior and run it until it fails for the right reason.
-3. **GREEN**: Write the smallest production change that makes that test pass.
-4. **VERIFY GREEN**: Re-run the focused test and the nearest useful regression scope.
-5. **REFACTOR**: Clean names, duplication, or helper structure only while the tests stay green.
-6. **REPORT**: State the failing test used, the passing proof, any waiver, and any remaining risk.
+1. **Enter**: Record which Beer phase opened the TDD loop and which behavior is being proven.
+2. **Confirm TDD applies**: Use for behavior changes, bug fixes, and refactors that need proof.
+3. **RED**: Write one focused test for one behavior and run it until it fails for the right reason.
+4. **GREEN**: Write the smallest production change that makes that test pass.
+5. **VERIFY GREEN**: Re-run the focused test and the nearest useful regression scope.
+6. **REFACTOR**: Clean names, duplication, or helper structure only while the tests stay green.
+7. **EXIT**: Return proof to the correct parent phase.
+8. **REPORT**: State the failing test used, the passing proof, any waiver, and any remaining risk.
 
 ---
 
@@ -63,6 +66,7 @@ Drive a behavior change through a failing test first, then the smallest passing 
 
 ### Beer Flow Integration
 
+- `test-driven-development` is a nested proof loop, not a replacement top-level Beer route.
 - If invoked from `debugging`, keep root-cause evidence visible and return the RED/GREEN proof to the debug or repair path.
 - If invoked from `executing`, keep the current phase contract scope fixed. TDD does not authorize extra behavior beyond the validated slice.
 - For Beer routes, set `tdd_required = true` when a behavior-changing slice needs fail-first proof; set `tdd_status = complete` and `tdd_evidence_path` only after RED/GREEN/REFACTOR evidence exists.
@@ -72,12 +76,14 @@ Drive a behavior change through a failing test first, then the smallest passing 
 ### Ownership Boundary
 
 - `test-driven-development` owns the RED/GREEN/REFACTOR proof loop and test evidence.
+- the orchestrator or parent phase owns the final gate decision and next global handoff.
 - `planning` and `validating` own feature scope approval; TDD evidence can strengthen those gates but not replace them.
 - `executing` owns implementation scope when TDD is invoked inside an approved slice.
 - `reviewing` owns final quality judgment after code changes.
 
 ### Phase 1: Confirm Scope
 
+- Record `tdd_entry_phase` before starting the loop.
 - Use this skill for:
   - new behavior
   - bug fixes
@@ -138,7 +144,15 @@ Drive a behavior change through a failing test first, then the smallest passing 
   - any TDD waiver or limitation
 - If the code changed but no meaningful failing test was demonstrated first, do not claim TDD was completed.
 - If TDD is blocked or waived, record `tdd_status = blocked` or `waived`; do not let automatic review handoff treat it as complete.
-- If this TDD loop belongs to a Beer feature or debug repair, state which gate should receive the evidence next: `validating`, `executing`, `debugging`, or `reviewing`.
+- If this TDD loop belongs to a Beer feature or debug repair, state the explicit `tdd_exit_target`: `validating`, `executing`, `debugging`, `reviewing`, or user handoff.
+
+### Exit Rules
+
+- Exit to `beer:executing` when the implementation remains inside the approved slice and the parent phase is still valid.
+- Exit to `beer:debugging` when the RED/GREEN loop clarified a bug fix but more diagnosis or repair framing is still needed.
+- Exit to `beer:validating` when the test evidence was gathered before approval and should strengthen plan/validation input.
+- Exit to `beer:reviewing` when code changed and the work is ready for the post-execution quality gate.
+- Exit to user handoff when the test harness, environment, or baseline prevents trustworthy TDD progress.
 
 ---
 
@@ -147,3 +161,4 @@ Drive a behavior change through a failing test first, then the smallest passing 
 - [Workflow detail](references/workflow.md) - Full RED -> GREEN -> REFACTOR workflow and decision rules
 - [Quick reference](references/quick-ref.md) - Fast checklist, smell tests, and handoff minimums
 - [Communication templates](references/communication.md) - TDD run reports, waivers, and blocker formats
+- [Pressure scenarios](references/pressure-scenarios.md) - Edge cases for nested TDD behavior

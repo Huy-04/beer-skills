@@ -18,6 +18,8 @@ version: "1.0.0"
 ## TDD Run Report
 
 ```markdown
+tdd_entry_phase: [executing | debugging | validating-input | user]
+tdd_exit_target: [executing | debugging | validating | reviewing | user]
 TDD run complete: [behavior]
 RED scope: [test path or target]
 RED command: [command]
@@ -56,4 +58,13 @@ Blocker: [missing harness | environment issue | broken baseline | other]
 Why RED evidence is incomplete: [one sentence]
 Completion status: not TDD-complete until RED can be demonstrated or user explicitly accepts a non-TDD route
 Next needed action: [repair harness | fix baseline | get approval | other]
+```
+
+## Nested TDD Exit
+
+```markdown
+TDD entry phase: [phase]
+Behavior proved: [behavior]
+Exit target: [executing | debugging | validating | reviewing | user]
+Why this exit: [one sentence]
 ```

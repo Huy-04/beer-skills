@@ -30,6 +30,12 @@ Say what context was used and what stayed unresolved:
 Context packet built from repo docs and mentioned skill files. `CONTEXT.md` was preserved as an artifact name but was not found as a local file.
 ```
 
+State who should receive the result next:
+
+```text
+Return to: beer:<calling skill> | user
+```
+
 ## Routing Safety Note
 
 When handing off to `using-beer` or another skill, include:

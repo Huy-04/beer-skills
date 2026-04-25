@@ -2,8 +2,8 @@
 name: planning
 description: >
   This skill should be used when implementation work needs a bounded plan,
-  including feature work after exploring, small direct fixes that route through
-  context-intake into compact planning, or repair work that needs a planned
+  including feature work after exploring, small-fix work that passes through
+  exploring into compact planning, or repair work that needs a planned
   path inside the main Beer workflow.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
@@ -43,8 +43,8 @@ Turn a clarified request into a bounded implementation plan. Scale the planning 
 
 | | |
 |---|---|
-| **Use when** | `CONTEXT.md` is locked, `context-intake` routes a small direct fix into compact planning, or repair work needs a planned path |
-| **Needs** | One of: locked `CONTEXT.md`; a small direct-fix request with bounded scope; or a proven root cause from `debugging` |
+| **Use when** | `CONTEXT.md` is locked, `exploring` routes a `small-fix` into compact planning, or repair work needs a planned path |
+| **Needs** | One of: locked `CONTEXT.md`; a compact `small-fix` handoff from `exploring`; or a proven root cause from `debugging` |
 | **Produces** | `discovery.md`, `approach.md`, `phase-plan.md`, and proportional current-phase prep |
 | **Next** | `beer:validating` after approval |
 
@@ -82,7 +82,8 @@ Use when:
 - `route = small-fix`
 - the task is local and low ambiguity,
 - it likely touches fewer than 3 files,
-- `context-intake` already determined that `exploring` is unnecessary,
+- `exploring` already applied the small-fix exemption,
+- `next_handoff = beer:planning`,
 - the fix still benefits from a short explicit plan.
 
 This route stays compact: short discovery, short approach, single-phase plan, and no forced bead graph.
@@ -140,7 +141,7 @@ After approval, prepare only what is proportional:
 - Never silently downgrade or upgrade the incoming route; bounce back to the upstream skill instead.
 - Never skip learnings retrieval.
 - Never create beads before approval.
-- Never force multi-phase planning onto a tiny direct fix.
+- Never force multi-phase planning onto tiny small-fix work.
 - Never lose the debug root cause when planning repair work.
 - Never auto-prepare current-slice work without an `ALLOW` result from `beer-auto-accept.mjs --gate planning`.
 - Never hand off directly to `swarming`; `planning` always hands off to `beer:validating`.

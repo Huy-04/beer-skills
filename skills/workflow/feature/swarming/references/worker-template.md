@@ -11,6 +11,7 @@ Each worker should receive:
 - feature slug
 - active slice name
 - assigned work item or bead
+- assigned model profile
 - locked decisions to honor
 - verification expectation
 - reporting channel back to the coordinator

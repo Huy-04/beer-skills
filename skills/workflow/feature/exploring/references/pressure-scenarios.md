@@ -1,6 +1,6 @@
 ---
 skill: exploring
-purpose: Pressure scenarios for direct-fix exemption, seed discipline, and Socratic locking
+purpose: Pressure scenarios for small-fix exemption, seed discipline, and Socratic locking
 version: "1.0"
 ---
 
@@ -38,8 +38,9 @@ Fix the wrong date format in this serializer. It should be ISO-8601.
 
 **Expected Behavior**
 
-- Recognize the direct-fix exemption.
-- Skip context-intake and exploring.
+- Recognize the small-fix exemption.
+- Keep the normal `context-intake -> exploring` entry.
+- Exit `exploring` through the small-fix exemption.
 - Route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 ## Scenario 3: Seed Becomes Locked Without Confirmation

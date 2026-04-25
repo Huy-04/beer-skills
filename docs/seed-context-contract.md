@@ -96,7 +96,7 @@ feature contract.
 If only `.beer/seed/` exists on the feature route, planning must stop and route back to
 `beer:exploring`.
 
-Small direct fixes may use route-specific planning without locked feature
+Small-fix work may use route-specific planning without locked feature
 context when `beer-planning-gate.mjs --route small-fix` passes. Broader repair
 work stays on the `feature` route and must return to `beer:exploring` when the
 work becomes scope-shaping or decision-shaping.

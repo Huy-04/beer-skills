@@ -11,8 +11,11 @@ version: "2.0"
 ## Overview
 
 **Role:** Contextual prompt builder  
-**Job:** Turn raw requests into context-grounded execution prompts  
+**Job:** Turn raw requests into context-grounded execution prompts for a calling Beer owner  
 **When:** A prompt needs repo, file, skill, workflow, or language context to be understood correctly
+
+This helper builds a prompt packet and returns it. It does not take over Beer
+route ownership or state mutation.
 
 ---
 
@@ -26,6 +29,11 @@ Keep the original request intact. Preserve:
 - env vars and flags
 - skill IDs
 - Beer artifacts such as `CONTEXT.md`, `phase-plan.md`, `beer:planning`
+
+Also record:
+
+- `invoking_owner`
+- intended `return_to`
 
 ---
 
@@ -127,6 +135,18 @@ Briefly report what changed:
 ```
 
 If `/raw` was used, say no upgrade was applied.
+
+## Return Contract
+
+Return:
+
+- raw request
+- contextual prompt
+- context packet
+- unresolved unknowns
+- `return_to`
+
+The caller decides whether to route, ask, or execute next.
 
 ---
 

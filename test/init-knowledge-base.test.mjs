@@ -183,10 +183,13 @@ test("scanRepository builds a real scan contract for skill and command repos", (
   assert.match(readme, /one-pass real scan -> child-agent lane fan-out -> single-writer synthesis/);
   assert.doesNotMatch(readme, /Fill this section/);
   assert.ok(index.entries.every((entry) => scan.docEntries.some((docEntry) => docEntry.file === entry.file)));
+  assert.ok(index.task_index["change workflow skill"]);
+  assert.ok(Array.isArray(index.task_index["change workflow skill"].docs));
   const architectureDoc = scan.docEntries.find((entry) => entry.file === "architecture/system-overview.md");
   assert.ok(architectureDoc);
   assert.match(architectureDoc.content, /## Source Evidence/);
   assert.match(architectureDoc.content, /## Representative Snippet/);
+  assert.match(architectureDoc.content, /## Verification Targets/);
   assert.match(architectureDoc.content, /scripts\/commands\/beer-cli\.mjs|package\.json/);
 });
 
@@ -240,9 +243,10 @@ test("initializeKnowledgeBase writes only docs that the scan actually generated"
     assert.equal(fs.existsSync(path.join(outputRoot, entry.file)), true, `missing ${entry.file}`);
   }
 
-  for (const [task, files] of Object.entries(index.task_index)) {
+  for (const [task, entry] of Object.entries(index.task_index)) {
     assert.ok(task.length > 0);
-    for (const file of files) {
+    assert.ok(Array.isArray(entry.docs));
+    for (const file of entry.docs) {
       assert.equal(fs.existsSync(path.join(outputRoot, file)), true, `missing task target ${file}`);
     }
   }
@@ -254,6 +258,7 @@ test("initializeKnowledgeBase writes only docs that the scan actually generated"
   const commandFlowDoc = fs.readFileSync(path.join(outputRoot, "critical-flows", "cli-entrypoints-and-onboarding.md"), "utf8");
   assert.match(commandFlowDoc, /## Source Evidence/);
   assert.match(commandFlowDoc, /## Representative Snippet/);
+  assert.match(commandFlowDoc, /## Verification Targets/);
   assert.match(commandFlowDoc, /scripts\/commands\/beer-cli\.mjs/);
   assert.match(commandFlowDoc, /export function main|Representative snippet from/);
 });
@@ -287,8 +292,10 @@ test("initializeKnowledgeBase prefers GitNexus evidence when provided and still 
   assert.equal(index.conventions.discovery_execution, "parallel-child-agents");
   assert.equal(index.conventions.evidence_priority, "gitnexus-first");
   assert.ok(index.entries.some((entry) => entry.file === "critical-flows/graph-routed-workflow.md"));
+  assert.ok(index.task_index["change workflow routing"]);
   assert.match(graphDoc, /## Source Evidence/);
   assert.match(graphDoc, /## Representative Snippet/);
+  assert.match(graphDoc, /## Verification Targets/);
   assert.match(graphDoc, /scripts\/commands\/beer-cli\.mjs/);
   assert.match(graphDoc, /export function main/);
   assert.match(readme, /Evidence priority: `GitNexus-first with local confirmation`/);

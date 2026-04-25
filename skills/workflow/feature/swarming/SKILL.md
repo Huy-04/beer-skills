@@ -56,10 +56,12 @@ orchestration. `swarming` exists to manage concurrency, not to do the work.
 2. Confirm `approved_gates.execution = true` before launch.
 3. Confirm the slice is still swarm-worthy and coordination tools are available.
 4. Run `beer-auto-accept.mjs --gate swarming` when launch would auto-advance.
-5. Initialize coordinator state and launch only the workers the slice actually needs.
-6. Tend the swarm: monitor progress, resolve collisions, and surface blockers.
-7. Close the slice only after the swarm finishes cleanly and execution evidence exists.
-8. Hand off to `beer:planning` or `beer:reviewing`.
+5. Run `beer orchestrate --apply` to materialize the coordinator/worker plan in `.beer/state.json`.
+6. Run `beer worker-bootstrap --json` and use the generated assignments as the spawn-ready contract for workers.
+7. Follow [Host Runtime Contract](../../../../docs/host-runtime-contract.md) when the runtime must actually launch and collect workers.
+8. Tend the swarm: monitor progress, resolve collisions, and surface blockers.
+9. Close the slice only after the swarm finishes cleanly and execution evidence exists.
+10. Hand off to `beer:planning` or `beer:reviewing`.
 
 ## Scope and Ownership
 
@@ -67,6 +69,7 @@ orchestration. `swarming` exists to manage concurrency, not to do the work.
 - `swarming` owns worker orchestration, active coordination, and phase-complete handoff.
 - `executing` owns the actual implementation loop.
 - `swarming` does not rewrite the plan, expand scope, or implement code directly.
+- `swarming` chooses worker model profiles from Beer config; it does not hardcode one model for every worker.
 
 ## Readiness Contract
 
@@ -98,6 +101,10 @@ If those conditions are not met, stop and route back to `beer:validating` or
 
 - `state.json` is authoritative.
 - Record `phase`, `execution_target`, `swarm_status`, active workers, and next handoff target in `.beer/state.json`.
+- Record each active worker with the assigned role/profile when coordination tooling supports it.
+- Keep `active_workers[*].status` and `active_workers[*].notes` current enough
+  that a resumed coordinator can tell whether each worker is active, complete,
+  blocked, or stalled.
 - Record aggregate worker evidence at `history/<feature>/execution-evidence.md` and store that path in `execution_evidence_path` before handing off to `reviewing`.
 - Regenerate `.beer/STATE.md` after `state.json` changes.
 

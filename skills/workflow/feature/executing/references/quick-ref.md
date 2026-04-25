@@ -6,7 +6,7 @@ version: "1.0"
 
 # executing Quick Reference
 
-## Mode Check
+## Execution Path Check
 
 | Route | What to confirm |
 |---|---|
@@ -49,3 +49,6 @@ Write it to:
 Then set `execution_evidence_path` and `verification_status` in `.beer/state.json`.
 
 If review would auto-start, run `beer-auto-accept.mjs --gate reviewing` first.
+
+Direct execution may hand off to review.
+Swarm-worker execution reports back to the coordinator; it does not self-advance the whole workflow.

@@ -40,7 +40,7 @@ stopped.
 | | |
 |---|---|
 | **Use when** | A slice or feature is complete and needs review before closeout |
-| **Needs** | Execution evidence, current diff, locked decisions or repair goal, and the active route |
+| **Needs** | Execution evidence, current diff, locked decisions or repair goal, the active route, and any relevant KB pattern/boundary hints |
 | **Produces** | Findings, review disposition, optional UAT result, and closeout or reroute decision |
 | **Next** | `beer:compounding` after successful closeout, or back to repair work when review fails |
 
@@ -66,6 +66,8 @@ route can stop at findings without running full Beer closeout.
 
 - `executing` and `swarming` own implementation and execution evidence.
 - `reviewing` owns the quality gate and finish/no-finish judgment.
+- the orchestrator owns the final Gate 4 decision and next-handoff mutation in `.beer/state.json`.
+- review guards and explicit review lenses inform the decision; they do not silently self-approve the gate.
 - `reviewing` does not silently reopen planning scope; it either records findings or routes the work back clearly.
 - `reviewing` does not need subagents by default. Multi-perspective review can still be done locally with explicit lenses.
 
@@ -73,12 +75,14 @@ route can stop at findings without running full Beer closeout.
 
 1. Detect the review route from Beer state and the user request.
 2. Read the diff, the execution evidence, and the relevant contract or `CONTEXT.md`.
-3. Produce findings first, ordered by severity.
-4. Verify the work is real, wired, and consistent with the approved goal.
-5. Run UAT only when the route or deliverable actually needs it.
-6. Mark Gate 4 as approved only when findings, evidence, and required UAT are green.
-7. Run `beer-auto-accept.mjs --gate compounding` if closeout would auto-advance.
-8. Only close out when the review gate is truly green.
+3. Determine the already-known task purpose, affected layer(s), and affected BE/FE/boundary scope from the approved workflow context.
+4. Use knowledge-base cache only to load the expected pattern and verification targets for that known scope.
+5. Produce findings first, ordered by severity.
+6. Verify the work is real, wired, and consistent with the approved goal and the repo's layer/boundary pattern.
+7. Run UAT only when the route or deliverable actually needs it.
+8. Mark Gate 4 as approved only when findings, evidence, and required UAT are green.
+9. Run `beer-auto-accept.mjs --gate compounding` if closeout would auto-advance.
+10. Only close out when the review gate is truly green.
 
 ## Findings Standard
 
@@ -98,6 +102,18 @@ Severity guide:
 If `bd` and a live epic exist, findings can become repair beads. If they do not,
 record the findings plainly and hand the work back without inventing bead state.
 
+## Review Lenses
+
+Apply the smallest set of lenses that fit the approved task:
+
+- `layout lens`: folder/file placement and responsibility fit
+- `handler-flow lens`: orchestration flow, especially inside backend handlers
+- `layer-pattern lens`: expected mission and dominant pattern for the touched backend/frontend/boundary layer
+- `boundary lens`: FE/BE seam, auth/session, proxy, contract, or error-shape risk when the task touches a cross-side seam
+
+Use the locked task purpose first. Knowledge-base entries help load the expected
+pattern; they do not define the task retroactively.
+
 ## Hard Rules
 
 - Never summarize before listing findings.
@@ -109,6 +125,7 @@ record the findings plainly and hand the work back without inventing bead state.
 - Never treat `STATE.md` as authoritative; update `state.json` first.
 - Never hide a `P1` behind auto-accept or optimistic wording.
 - Never auto-handoff to compounding unless `beer-auto-accept.mjs --gate compounding` returns `ALLOW`.
+- Never set `approved_gates.review = true` for a `manual-review` route unless the user explicitly converts it into real Beer closeout.
 
 ## State Contract
 
@@ -117,7 +134,8 @@ record the findings plainly and hand the work back without inventing bead state.
 - Read `execution_evidence_path` from `.beer/state.json` when present. If it is missing, require equivalent execution evidence before passing review.
 - Run `beer-review-guard.mjs` before claiming the review gate is green. Treat a `BLOCK` result as a repair or reslice signal, not as optional advice.
 - Set `review_status = pass` only after findings, evidence, and required UAT are green.
-- Set `approved_gates.review = true` only after the closeout decision is genuinely approved.
+- Set `approved_gates.review = true` only after the closeout decision is genuinely approved for a Beer-continuing route.
+- Keep `approved_gates.review = false` for `manual-review` unless the user explicitly requests full Beer finish/closeout.
 - Regenerate `.beer/STATE.md` after `state.json` changes.
 
 ## References

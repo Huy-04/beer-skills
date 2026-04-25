@@ -1,6 +1,6 @@
 ---
 skill: validating
-purpose: Workflow for feature, small direct-fix, and repair-intent validation routes
+purpose: Workflow for feature, small-fix, and repair-intent validation routes
 version: "1.0"
 ---
 
@@ -62,7 +62,7 @@ Optional:
 
 - compact contract
 
-### Debug-Escalation Route Prerequisites
+### Feature Repair Route Prerequisites
 
 Required:
 
@@ -102,7 +102,7 @@ Run the compact set:
 4. verification completeness
 5. direct execution credibility
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 Run the compact set plus root-cause retention:
 
@@ -124,7 +124,7 @@ Run a spike only when:
 - the answer affects whether execution is safe
 - the answer cannot be obtained by reading the current artifacts alone
 
-Do not run spikes by default on small direct fixes.
+Do not run spikes by default on compact small-fix routes.
 
 If a spike returns NO:
 
@@ -152,7 +152,7 @@ Polish:
 - verify command or manual test path
 - any file overlap risk if more than one task remains
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 Polish:
 
@@ -169,7 +169,7 @@ Before approval, answer:
 1. If this slice executes successfully, does the claimed outcome become true?
 2. Is the verification path believable?
 3. Does the execution route match the scope?
-4. For debug escalation: does the repair still target the proven root cause?
+4. For feature repair: does the repair still target the proven root cause?
 
 Any unclear answer means FAIL until repaired.
 
@@ -179,7 +179,7 @@ Without auto-accept:
 
 ```text
 Validation complete.
-Route: [feature | small direct fix | debug escalation]
+Route: [feature | small-fix | feature repair]
 Current slice: [name]
 Risk notes: [summary]
 Execution route: [swarming | direct executing]
@@ -212,7 +212,7 @@ node .beer\scripts\commands\beer-auto-accept.mjs --gate validating --json
 
 - route to direct `beer:executing`
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 - route to direct `beer:executing` by default
 - route to `beer:swarming` only if the validated repair still has multiple explicit tasks and dependency management matters
@@ -240,6 +240,6 @@ Record:
 |---|---|
 | Feature route has only seed context | Stop and return to `beer:exploring` |
 | Compact route is missing beads | Acceptable if direct execution remains credible |
-| Debug route lost the root cause | Stop and repair the plan first |
+| Feature repair route lost the root cause | Stop and repair the plan first |
 | Auto-accept hides real risk | Pause for approval |
 | Execution target looks too large for direct execution | Route back to planning or switch to swarm path explicitly |

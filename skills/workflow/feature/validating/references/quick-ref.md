@@ -35,7 +35,7 @@ version: "1.0"
 - verification completeness
 - direct execution credibility
 
-### Debug Escalation
+### Feature Repair
 
 - current-slice clarity
 - root-cause coverage
@@ -65,3 +65,4 @@ Run a spike only when a high-risk unknown still blocks safe execution.
 - `approved_gates.execution` becomes `true` only after the execution gate passes
 - Auto-accept requires `beer-auto-accept.mjs --gate validating` to return `ALLOW`
 - validating proposes `swarming` vs direct `executing` based on the route and actual slice size, then approves that target through the execution gate
+- `small-fix` is valid only when it arrived as a compact plan from upstream; validating does not invent the compact route locally

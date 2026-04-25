@@ -18,14 +18,14 @@ I am checking whether the current phase is ready for its approved execution path
 ### Small Direct-Fix Route
 
 ```text
-Validation route: small direct fix.
+Validation route: small-fix.
 This is a compact safety gate before direct execution.
 ```
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 ```text
-Validation route: debug escalation.
+Validation route: feature repair.
 I am checking whether the planned repair still matches the proven root cause and is safe to execute.
 ```
 
@@ -33,7 +33,7 @@ I am checking whether the planned repair still matches the proven root cause and
 
 ```text
 Validation complete.
-Route: [feature | small direct fix | debug escalation]
+Route: [feature | small-fix | feature repair]
 Current slice: [name]
 Execution target: [swarming | executing]
 Risk notes: [summary]
@@ -48,7 +48,7 @@ Stop immediately if:
 
 1. feature validation starts from seed-only context
 2. compact routes are being failed only because they do not have beads
-3. debug escalation no longer mentions the root cause
+3. feature repair no longer mentions the root cause
 4. the chosen execution target does not match slice size
 5. auto-accept is being used to hide a high-risk pause
 
@@ -65,12 +65,12 @@ Correct:
 ### Anti-Pattern 2: "Every route needs the full 8-dimension pass"
 
 Wrong:
-- force small direct fixes through full feature validation or a swarm path
+- force small-fix work through full feature validation or a swarm path
 
 Correct:
 - use the full set for feature routes and compact checks for compact routes
 
-### Anti-Pattern 3: "Debug escalation is just feature work now"
+### Anti-Pattern 3: "Feature repair is just feature work now"
 
 Wrong:
 - ignore the root cause and validate a broadened redesign

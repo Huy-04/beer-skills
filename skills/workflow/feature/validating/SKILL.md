@@ -2,8 +2,8 @@
 name: validating
 description: >
   This skill should be used when a planned execution slice needs a go/no-go
-  check before code is written, including feature work after planning, small
-  direct-fix work that still needs a compact safety gate, or repair work that
+  check before code is written, including feature work after planning,
+  small-fix work that still needs a compact safety gate, or repair work that
   should be verified before execution.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
@@ -38,7 +38,7 @@ Verify that the current execution slice is ready to execute. Scale the gate to t
 | | |
 |---|---|
 | **Use when** | Planning has prepared the current slice and execution needs a go/no-go check |
-| **Needs** | A planned route, a current slice, clear verification path, and enough artifacts for that route |
+| **Needs** | A planned route from upstream, a current slice, clear verification path, and enough artifacts for that route |
 | **Produces** | PASS/FAIL validation result, optional spike findings, approval decision, and execution-route handoff |
 | **Next** | `beer:swarming` for full feature execution, or direct `beer:executing` for compact routes |
 
@@ -72,7 +72,7 @@ Expected artifacts:
 
 This is the full validation path.
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 Use when planning kept the work compact and local.
 
@@ -84,6 +84,7 @@ Expected artifacts:
 - optional compact phase contract
 
 This route uses a compact gate. It must still verify scope, verification path, and execution safety.
+`validating` must not invent this compact route locally; it should already arrive from `planning`.
 
 ### Repair Intent On Feature Route
 
@@ -108,7 +109,7 @@ Required compact check:
 - `validating` owns readiness checks, optional spike findings, the orchestration sanity check, and the execution go/no-go decision.
 - `validating` does not author a new feature plan from scratch.
 - `validating` does not force beads or swarming when the approved route does not need them.
-- `validating` may propose or reject an execution target, but the gate only becomes approved when `approved_gates.execution = true`.
+- `validating` may propose or reject an execution target, but it must not invent a new route locally; the gate only becomes approved when `approved_gates.execution = true`.
 
 ## Structural Checks
 
@@ -127,7 +128,7 @@ Run the full validation set:
 
 ### Compact Routes
 
-For `small direct-fix` and repair-intent validation, focus on:
+For `small-fix` and repair-intent validation, focus on:
 
 1. current-slice clarity
 2. decision or root-cause coverage

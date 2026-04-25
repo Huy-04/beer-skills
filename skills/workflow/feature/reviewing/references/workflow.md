@@ -24,6 +24,11 @@ Detection guide:
 
 If the route is unclear, default to the smallest honest route and say so.
 
+Route guard:
+
+- `manual-review` reports findings and may stop there
+- only Beer-continuing routes may approve Gate 4 and hand off to `compounding`
+
 ## Phase 1: Load Review Inputs
 
 Read:
@@ -33,8 +38,13 @@ Read:
 - execution evidence from `state.execution_evidence_path` when present, or equivalent completion notes from the just-finished slice
 - `history/<feature>/CONTEXT.md` when product decisions matter
 - `history/<feature>/approach.md` when the intended implementation shape matters
+- relevant `.beer/knowledge-base/` entries only after the task purpose, affected layers, and affected boundary scope are already known from workflow context
 
 For debug-derived repairs, keep the root-cause sentence visible during review.
+
+Do not use the knowledge base to guess what the task is. Use it to load the
+expected BE/FE/boundary pattern and verification targets for the task that is
+already known.
 
 ## Phase 2: Produce Findings
 
@@ -44,6 +54,8 @@ Review locally through explicit lenses:
 2. safety and edge cases
 3. regression coverage and verification quality
 4. maintainability and scope discipline
+5. layer-pattern fit for the touched backend/frontend/boundary scope
+6. handler-flow fit when backend orchestration is the task's main surface
 
 List findings first and order them by severity.
 
@@ -66,6 +78,16 @@ Compact routes can apply this only to the touched deliverables.
 Feature-final routes should apply it to every deliverable promised by the
 current phase or feature.
 
+Pattern-fit checks:
+
+- if the task is backend-focused, verify backend handler/lifecycle/infra responsibilities against backend layer patterns
+- if the task is frontend-focused, verify frontend page/api/state/session responsibilities against frontend layer patterns
+- if the task touches a seam, verify the boundary pattern separately instead of pretending BE and FE share one verification unit
+
+When GitNexus-backed verification targets exist in the knowledge-base cache, use
+them to guide structural validation. If KB hints conflict with GitNexus or
+current source, trust GitNexus/current source and treat the KB entry as stale.
+
 Before passing the review gate, run:
 
 ```powershell
@@ -75,6 +97,12 @@ node .beer/scripts/commands/beer-review-guard.mjs --json
 Treat `allow = false` as a repair or reslice signal. The guard exists to catch
 diffs that are too large for the current orchestration strategy or that spread
 across too many implementation areas for one review pass.
+
+When the guard points to route mismatch rather than a local defect:
+
+- return to `beer:planning` when the slice needs to be reshaped
+- return to `beer:validating` when the plan remains viable but execution needs a different target or smaller review unit
+- return to `beer:executing` only when the fix is still inside the current approved slice
 
 ## Phase 4: UAT Decision
 
@@ -132,5 +160,5 @@ Before handing off to `beer:compounding`, record:
 Next owner:
 
 - review passed and workflow should continue -> `beer:compounding`
-- repair required -> route back to `beer:executing` or earlier workflow step
-- manual review-only -> no automatic Beer handoff required
+- repair required -> route back to `beer:executing`, `beer:planning`, or `beer:validating` as the findings require
+- manual review-only -> no automatic Beer handoff required and no Gate 4 mutation

@@ -38,6 +38,29 @@ Think of this skill as a knowledge compiler: it consolidates stable project
 knowledge into `.beer/knowledge-base/` after the workflow has already learned
 something worth preserving.
 
+Before scanning, record:
+
+- `invocation_reason`
+- `invoking_owner`
+- intended `return_to`
+
+Typical invoking owners:
+
+- direct user request
+- `beer:compounding`
+
+This skill refreshes the cache and returns a result. It does not approve gates,
+reset Beer to idle, or take over the parent workflow.
+
+The cache should separate:
+
+- backend layer/mission patterns
+- frontend layer/mission patterns
+- boundaries between them
+
+Do not force one full-stack end-to-end story when BE and FE flows are usually
+verified differently.
+
 ## Phase 0: One-Pass Scan Setup
 
 ### Step 0.0: Check Optional Tooling
@@ -74,6 +97,9 @@ If it is missing:
 
 Then continue into the real scan immediately. Do not stop after scaffolding.
 
+If the invocation came from `compounding-approved-refresh`, treat that approval
+as already granted. Do not ask for a second refresh approval inside this skill.
+
 If GitNexus is available, gather graph evidence first through `graph-explore` or direct GitNexus tools, then hand that evidence to the writer.
 
 Run the one-pass helper with:
@@ -98,6 +124,9 @@ Before lane fan-out, answer:
 - how many apps exist?
 - where are the entrypoints?
 - which boundaries matter enough to deserve their own docs?
+- which BE patterns are stable enough to become canonical?
+- which FE patterns are stable enough to become canonical?
+- which seams deserve boundary-specific verification targets?
 
 This pre-scan is mandatory and belongs to the same run. It is not a separate bootstrap layer. Its job is to collect the repo shape and evidence needed to assign lane work cleanly. Prefer GitNexus for this pass when available; local scan fills file-level gaps and snippet extraction.
 
@@ -143,10 +172,11 @@ architecture/conventions synthesis.
 
 Purpose:
 
-- document request lifecycle
+- document backend layer missions and request/handler flow
 - document module template
 - document data access and write/read boundaries
-- detect domain rules, events, outbox, jobs, or workflow machinery if present
+- detect domain rules, events, lifecycle, outbox, jobs, or workflow machinery if present
+- propose backend verification targets for later review
 
 Focus questions:
 
@@ -162,6 +192,8 @@ Typical outputs:
 - `backend/data-access-and-unit-of-work.md`
 - `backend/domain-rules-and-lifecycle.md`
 - optional async docs only if supported by evidence
+- `index.json.backend.layer_patterns`
+- `index.json.backend.flow_patterns`
 
 ### Lane C: Frontend Discovery
 
@@ -171,6 +203,7 @@ Purpose:
 - document API access pattern
 - document state/session/auth patterns
 - document UI or composable conventions when they are stable enough to reuse
+- propose frontend verification targets for later review
 
 Focus questions:
 
@@ -183,6 +216,8 @@ Typical outputs:
 - `frontend/app-structure-and-api-access.md`
 - `frontend/session-and-refresh-patterns.md`
 - optional `frontend/ui-and-state-conventions.md`
+- `index.json.frontend.layer_patterns`
+- `index.json.frontend.flow_patterns`
 
 ### Lane D: Boundary Discovery
 
@@ -191,6 +226,7 @@ Purpose:
 - identify seams between backend and frontend
 - identify DTO/contract coupling
 - identify proxy, auth, middleware, caching, and error-shape boundaries
+- propose boundary verification targets for review and flow checks
 
 Focus questions:
 
@@ -202,6 +238,7 @@ Typical outputs:
 
 - `boundaries/frontend-backend-proxy.md`
 - `boundaries/contracts-and-error-shape.md`
+- `index.json.boundaries`
 - boundary-heavy critical flows
 
 ### Optional Lanes
@@ -227,6 +264,7 @@ For every candidate pattern or doc:
 - why it matters
 - key files
 - confidence
+- verification targets
 - whether it deserves a canonical doc or only a note
 
 Promote only patterns that are:
@@ -303,11 +341,16 @@ Index requirements:
 - dominant pattern summary
 - critical files
 - entries pointing only to files that actually exist
+- backend patterns split by layer mission
+- frontend patterns split by layer mission
+- boundaries stored separately from BE and FE flow patterns
+- verification targets attached to task/layer/flow entries when graph-backed validation is possible
 
 ## Phase 6: Report Back
 
 Use the communication shape from `references/communication.md` and include:
 
+- `return_to`
 - output path
 - invocation reason
 - scan scope

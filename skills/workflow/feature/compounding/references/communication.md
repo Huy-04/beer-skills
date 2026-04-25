@@ -50,3 +50,5 @@ Compounding is complete. This task produced reusable project patterns. Refresh `
 ```text
 Compounding complete for <route>. Learnings file: <path>. Critical promotions: <count>. GitNexus reindex: <completed | skipped | failed>. Knowledge-base refresh: <not-needed | approved | declined>.
 ```
+
+Only use the completion line after `beer-closeout-guard` confirms closeout is complete.

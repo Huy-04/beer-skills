@@ -57,6 +57,24 @@ Only launch on `allow = true`; otherwise pause or route back to validating.
 
 4. Regenerate `.beer/STATE.md`.
 
+Coordinator model-role rule:
+
+- keep the coordinator on the `orchestrator` profile
+- assign `coding` to implementation-heavy workers
+- assign `research_synthesis` to search, read, or synthesis-heavy workers
+- resolve the active profile from `.beer/config.json` instead of hardcoding model choices
+
+Recommended runtime sequence:
+
+```powershell
+node .beer/scripts/commands/beer-orchestrate.mjs --apply --json
+node .beer/scripts/commands/beer-worker-bootstrap.mjs --json
+```
+
+Use the generated worker payloads with the shared
+[Host Runtime Contract](../../../../../docs/host-runtime-contract.md) when the
+runtime must map Beer output into real worker launches.
+
 Worker budget guide:
 
 | Slice shape | Suggested workers |
@@ -76,8 +94,10 @@ Each worker receives only what it needs:
 - locked decisions from `CONTEXT.md`
 - verification expectations
 - coordinator identity and reporting channel
+- assigned model profile for the worker's task shape
 
 Do not flood workers with unrelated session history.
+Do not assign the same model profile blindly when task shapes differ.
 
 If the runtime cannot launch workers or cannot coordinate them safely, stop and
 route back to `beer:validating`. The correct action is to change the execution
@@ -99,6 +119,8 @@ Coordinator responsibilities:
 - stop workers from touching overlapping files without a resolution
 - preserve the validated scope
 - pause cleanly when context pressure becomes unsafe
+- keep `active_workers[*].status` and `active_workers[*].notes` current enough
+  for resume, review, and handoff
 
 Silence ladder:
 
@@ -123,6 +145,15 @@ Aggregate worker evidence into the stable evidence file:
 
 The evidence file must list each worker/task, files touched, verification run,
 and unresolved limitations.
+
+Minimum coordinator record per worker:
+
+- worker name
+- assigned work item
+- status: `active`, `complete`, `blocked`, or `stalled`
+- files touched
+- verification run
+- blocker summary, if any
 
 Then update `.beer/state.json`:
 

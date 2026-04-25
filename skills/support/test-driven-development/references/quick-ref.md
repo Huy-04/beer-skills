@@ -6,6 +6,13 @@ version: "1.0.0"
 
 # test-driven-development - Quick Reference
 
+## Nested Loop Reminder
+
+- record `tdd_entry_phase`
+- keep one target behavior explicit
+- return to the parent workflow with a named `tdd_exit_target`
+- do not treat TDD as a replacement top-level route
+
 ## Use By Default
 
 - new feature behavior
@@ -58,6 +65,7 @@ version: "1.0.0"
 - [ ] Execution work stays inside the approved phase contract
 - [ ] Feature work does not bypass `validating`
 - [ ] Changed code routes to `reviewing` after the TDD loop
+- [ ] Exit target is explicit before handoff
 
 ## Minimum Handoff
 
@@ -81,3 +89,11 @@ version: "1.0.0"
 - waiver reason was urgency or confidence
 - missing harness was treated as a clean waiver
 - config change waived despite runtime behavior change
+
+## Exit Targets
+
+- `beer:executing`
+- `beer:debugging`
+- `beer:validating`
+- `beer:reviewing`
+- user handoff

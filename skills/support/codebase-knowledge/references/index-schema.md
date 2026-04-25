@@ -28,6 +28,15 @@ source code remains authoritative when generated entries drift.
   },
   "entries": [],
   "dominant_patterns": [],
+  "backend": {
+    "layer_patterns": {},
+    "flow_patterns": {}
+  },
+  "frontend": {
+    "layer_patterns": {},
+    "flow_patterns": {}
+  },
+  "boundaries": {},
   "task_index": {},
   "critical_files": [],
   "conventions": {},
@@ -121,21 +130,94 @@ Use this for short, high-signal summaries that README can mirror:
 ]
 ```
 
+## `backend.layer_patterns`, `frontend.layer_patterns`, and `boundaries`
+
+Use these sections for machine-usable pattern expectations and verification
+targets.
+
+Example:
+
+```json
+{
+  "backend": {
+    "layer_patterns": {
+      "application-handler": {
+        "mission": "orchestrate request flow without absorbing domain or infrastructure responsibilities",
+        "dominant_patterns": [
+          "thin handler orchestration",
+          "delegation into lifecycle/domain methods",
+          "mapping at boundary edges only"
+        ],
+        "do_not_do": [
+          "embed infrastructure mapping directly in handlers",
+          "move domain lifecycle rules into entrypoints"
+        ],
+        "verification_targets": {
+          "symbols": ["CreateOrderHandler", "OrderLifecycle"],
+          "processes": ["CreateOrder"],
+          "queries": [
+            { "tool": "query", "query": "create order handler flow" }
+          ]
+        }
+      }
+    }
+  },
+  "frontend": {
+    "layer_patterns": {
+      "api-access": {
+        "mission": "route page/composable work through the established client/proxy shape",
+        "dominant_patterns": [
+          "API access through shared client/proxy",
+          "session handling outside leaf components"
+        ],
+        "verification_targets": {
+          "symbols": ["ApiClient", "SessionStore"]
+        }
+      }
+    }
+  },
+  "boundaries": {
+    "auth-session": {
+      "summary": "Auth/session contract between FE and BE",
+      "verification_targets": {
+        "processes": ["AuthSession"],
+        "symbols": ["RefreshTokenHandler", "FrontendAuthProxy"]
+      }
+    }
+  }
+}
+```
+
 ## `task_index`
 
 Use task buckets to route common implementation intents to the right docs:
 
 ```json
 {
-  "add backend endpoint": [
-    "backend/request-lifecycle.md",
-    "backend/module-template.md",
-    "conventions/implementation-rules.md"
-  ],
-  "change auth": [
-    "critical-flows/auth-session.md",
-    "boundaries/frontend-backend-proxy.md"
-  ]
+  "add backend endpoint": {
+    "docs": [
+      "backend/request-lifecycle.md",
+      "backend/module-template.md",
+      "conventions/implementation-rules.md"
+    ],
+    "layer_targets": ["backend.layer_patterns.application-handler"],
+    "verification_targets": {
+      "processes": ["CreateOrder"],
+      "queries": [
+        { "tool": "query", "query": "backend request lifecycle" }
+      ]
+    }
+  },
+  "change auth": {
+    "docs": [
+      "critical-flows/auth-session.md",
+      "boundaries/frontend-backend-proxy.md"
+    ],
+    "boundary_targets": ["boundaries.auth-session"],
+    "verification_targets": {
+      "processes": ["AuthSession"]
+    }
+  }
 }
 ```
 
@@ -146,7 +228,9 @@ Use task buckets to route common implementation intents to the right docs:
 - `area` should match a real knowledge-base subfolder
 - `kind` should reflect what the doc is about: `architecture`, `pattern`, `boundary`, `critical-flow`, or `convention`
 - `search_index` values must point to files already declared in `entries[]`
-- `task_index` values must point to files already declared in `entries[]`
+- `task_index.docs` values must point to files already declared in `entries[]`
+- backend and frontend patterns should stay separate unless the pattern is truly boundary-scoped
+- boundary entries should capture FE/BE seams instead of duplicating full backend or frontend flow docs
 - `dominant_patterns` should only contain stable repo-shaping patterns, not one-off details
 - `critical_files` should list sensitive or high-blast-radius paths when known
 - JSON files should be valid UTF-8 and parse cleanly in Node without BOM-sensitive assumptions

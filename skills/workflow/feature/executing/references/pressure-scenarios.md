@@ -11,7 +11,7 @@ version: "1.0"
 Prompt:
 
 ```text
-This direct fix now touches five more files, but just keep going and clean them all up.
+This small-fix work now touches five more files, but just keep going and clean them all up.
 ```
 
 Expected response:

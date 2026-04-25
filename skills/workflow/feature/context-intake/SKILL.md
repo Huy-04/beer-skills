@@ -15,9 +15,9 @@ metadata:
     - beer/workflow
     - workflow
   inputs: "User request + optional GitNexus readiness + optional `bd ready --json` + .beer/state.json + optional .beer/HANDOFF.json"
-  outputs: "Recovered context from graph, resume state, loaded locked CONTEXT.md, or inferred `.beer/seed/` plus state.context_stage updates and the next-phase route"
+  outputs: "Recovered context from graph, resume state, loaded locked CONTEXT.md, or inferred `.beer/seed/` plus state.context_stage updates and an exploring handoff"
   upstream: "using-beer"
-  downstream: "planning when bounded, or exploring when decision locking is still needed"
+  downstream: "exploring"
   dependencies:
     - id: beads-cli
       kind: command
@@ -40,7 +40,7 @@ disable-model-invocation: false
 
 # context-intake
 
-Recover current Beer task context before normal feature workflow. Prefer graph or saved state when available; otherwise gather enough signal to write inferred seed context in `.beer/seed/` and decide whether the next phase is `planning` or `exploring`.
+Recover current Beer task context before normal workflow. Prefer graph or saved state when available; otherwise gather enough signal to write inferred seed context in `.beer/seed/` and always hand work to `exploring`.
 
 ## At a Glance
 
@@ -48,27 +48,29 @@ Recover current Beer task context before normal feature workflow. Prefer graph o
 |---|---|
 | **Use when** | Starting or resuming Beer task work, recovering a handoff, checking state, or handling zero context before routing |
 | **Needs** | Any of GitNexus, `bd`, `.beer/state.json`, `.beer/HANDOFF.json`, or manual repo inspection |
-| **Produces** | Loaded graph/saved/locked context, resume prompt, or inferred `.beer/seed/` plus the next-phase route |
-| **Next** | `planning` when context is sufficient and decisions are already clear, otherwise `exploring` |
+| **Produces** | Loaded graph/saved/locked context, resume prompt, or inferred `.beer/seed/` plus an exploring handoff |
+| **Next** | `exploring` |
 
 ## 30-Second Version
 
 1. Read preflight, `state.json`, and optional `HANDOFF.json`.
 2. Prefer GitNexus when the server is ready and the repo is already indexed.
 3. If saved state or active beads exist, use them only to recover context and present a resume prompt.
-4. Classify whether the request can go straight to `planning` or still needs `exploring` to lock decisions.
+4. Prepare the request for `exploring`; do not skip past it.
 5. If there is no usable context, gather context through research-only context scouts or direct scout passes.
-6. Write inferred findings to `.beer/seed/` and mark `context_stage = seeded` when `exploring` still needs context input.
+6. Write inferred findings to `.beer/seed/` and mark `context_stage = seeded` when `exploring` needs context input.
 7. Never write locked `CONTEXT.md`; `exploring` owns that promotion step.
 
 ## Scope and Ownership
 
-- `context-intake` owns task intake, context recovery, context quality classification, scout-context gathering, `.beer/seed/`, and the first route decision between `planning` and `exploring`.
+- `context-intake` owns task intake, context recovery, context quality classification, scout-context gathering, `.beer/seed/`, and the handoff into `exploring`.
 - `exploring` owns locked decisions and `history/<feature>/CONTEXT.md`.
 - `planning` owns delivery beads, story/bead graphs, and execution decomposition.
 - Scout beads are research-only context scouts. They are not delivery beads and must not be treated as phase execution work.
 - `.beer/knowledge-base/` is an optional accelerator only. It never outranks locked context or direct repo evidence.
 - Do not auto-resume from beads or `HANDOFF.json`; always ask the user first.
+- `context-intake` does not choose execution target, worker topology, or review path.
+- `context-intake` may preserve or confirm `route` and `work_intent`, but it must not silently expand scope or skip `exploring`.
 
 ## Context Paths
 
@@ -86,10 +88,9 @@ Every successful run should leave one of these states:
 - `context_stage = seeded` after writing inferred seed files.
 - `context_stage = none` only when the user explicitly clears context or no context should be carried forward.
 
-And it should leave one of these route outcomes:
+And it should leave this next-phase outcome:
 
-- route to `beer:planning` when the task is already bounded enough to implement.
-- route to `beer:exploring` when user-facing behavior, scope, or product decisions still need to be locked.
+- hand off to `beer:exploring` when normal task work continues.
 
 If existing `.beer/seed/` conflicts with direct repo evidence:
 
@@ -110,11 +111,21 @@ When writing `.beer/seed/`, include:
 - Never auto-resume from beads or `HANDOFF.json`.
 - Never treat scout beads as delivery beads.
 - Never let task intake drift into decision locking.
+- Never let task intake drift into execution planning.
 - Never write `history/<feature>/CONTEXT.md`.
 - Never let `.beer/seed/` substitute for locked context.
 - Never let stale seed context outrank direct repo evidence.
 - Never treat `.beer/knowledge-base/` as a source of truth.
 - Never claim repo-wide certainty from a degraded or partial scan.
+- Never hand work past `beer:exploring`.
+
+## State Contract
+
+- `state.json` is authoritative.
+- `context-intake` may update `phase`, `active_skill`, `context_stage`, `seed_path`, `context_path`, `context_confidence`, `feature_slug` when known, and `next_handoff = beer:exploring`.
+- `context-intake` may preserve or confirm `route` and `work_intent`, but it should not invent downstream execution details.
+- `context-intake` must not set `approved_gates.context = true`; only `exploring` may prepare that handoff for Gate 1 approval.
+- `context-intake` must not set `approved_gates.phase_plan`, `approved_gates.execution`, or `approved_gates.review`.
 
 ## References
 

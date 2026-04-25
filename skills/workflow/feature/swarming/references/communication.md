@@ -12,13 +12,14 @@ Use short factual updates:
 
 - what route is active
 - how many workers are active
+- which worker profiles are active when it matters
 - whether blockers exist
 - whether the slice is still on the validated scope
 
 Good:
 
 ```text
-Swarm active for Phase 1. Three workers online. No blockers. Current scope unchanged.
+Swarm active for Phase 1. Three workers online. Profiles: 2 coding, 1 research_synthesis. No blockers. Current scope unchanged.
 ```
 
 Bad:

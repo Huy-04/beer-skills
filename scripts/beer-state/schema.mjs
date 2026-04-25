@@ -17,6 +17,21 @@ const DEFAULT_AUTO_ACCEPT = {
   compounding: false,
 };
 
+const DEFAULT_MODEL_PROFILES = {
+  orchestrator: {
+    model: "gpt-5.4",
+    reasoning_effort: "high",
+  },
+  coding: {
+    model: "gpt-5.3-codex",
+    reasoning_effort: "high",
+  },
+  research_synthesis: {
+    model: "gpt-5.4-mini",
+    reasoning_effort: "medium",
+  },
+};
+
 function utcNow() {
   return new Date().toISOString();
 }
@@ -39,6 +54,10 @@ function normalizeActiveWorkers(value) {
       codex_name: typeof worker.codex_name === "string" ? worker.codex_name : "",
       status: typeof worker.status === "string" ? worker.status : "",
       bead_id: typeof worker.bead_id === "string" ? worker.bead_id : "",
+      role: typeof worker.role === "string" ? worker.role : "",
+      task_kind: typeof worker.task_kind === "string" ? worker.task_kind : "",
+      model: typeof worker.model === "string" ? worker.model : "",
+      reasoning_effort: typeof worker.reasoning_effort === "string" ? worker.reasoning_effort : "",
     }));
 }
 
@@ -164,6 +183,20 @@ function normalizeConfigAutoAccept(value) {
   };
 }
 
+function normalizeReasoningEffort(value, fallback) {
+  return value === "low" || value === "medium" || value === "high" || value === "xhigh"
+    ? value
+    : fallback;
+}
+
+function normalizeModelProfile(value, fallback) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    model: typeof source.model === "string" && source.model.trim() !== "" ? source.model : fallback.model,
+    reasoning_effort: normalizeReasoningEffort(source.reasoning_effort, fallback.reasoning_effort),
+  };
+}
+
 function normalizeDefaultOrchestrationStrategy(value) {
   return value === "single-worker" || value === "multi-worker" || value === "auto" ? value : "auto";
 }
@@ -271,6 +304,10 @@ export function buildDefaultConfig(overrides = {}) {
     overrides.dependencies && typeof overrides.dependencies === "object" && !Array.isArray(overrides.dependencies)
       ? overrides.dependencies
       : {};
+  const models =
+    overrides.models && typeof overrides.models === "object" && !Array.isArray(overrides.models)
+      ? overrides.models
+      : {};
 
   return {
     schema_version: CONFIG_SCHEMA_VERSION,
@@ -300,6 +337,14 @@ export function buildDefaultConfig(overrides = {}) {
     dependencies: {
       task_tracker: typeof dependencies.task_tracker === "string" ? dependencies.task_tracker : "beads",
       graph_engine: typeof dependencies.graph_engine === "string" ? dependencies.graph_engine : "gitnexus",
+    },
+    models: {
+      orchestrator: normalizeModelProfile(models.orchestrator, DEFAULT_MODEL_PROFILES.orchestrator),
+      coding: normalizeModelProfile(models.coding, DEFAULT_MODEL_PROFILES.coding),
+      research_synthesis: normalizeModelProfile(
+        models.research_synthesis,
+        DEFAULT_MODEL_PROFILES.research_synthesis,
+      ),
     },
   };
 }

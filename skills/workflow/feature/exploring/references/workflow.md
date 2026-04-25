@@ -10,7 +10,7 @@ version: "1.0"
 
 `exploring` locks user decisions for feature work after intake. It does not write code, choose libraries, decompose execution work, or create delivery beads.
 
-- `context-intake` prepares inferred context and decides whether the task needs `exploring` at all.
+- `context-intake` prepares inferred or reopened context and hands normal task work to `exploring`.
 - `exploring` converts clarified user decisions into locked context.
 - `planning` researches implementation and owns delivery structure.
 
@@ -25,7 +25,15 @@ If the request is:
 - likely under 3 files,
 - and not a new feature or behavior-shaping change,
 
-exit `exploring` and route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
+exit `exploring` and route to `beer:planning` with:
+
+- `route = small-fix`
+- `orchestration_strategy = single-worker`
+- `next_handoff = beer:planning`
+- no `CONTEXT.md`
+- no Gate 1
+
+Do not take this exit when the task is still missing a proven failure path, root-cause statement, or behavior boundary.
 
 ## Phase 1: Context Gate
 
@@ -135,7 +143,11 @@ Check for:
 
 Fix issues locally. Do not spawn a review agent by default.
 
-## Phase 7: Gate 1 Approval, State Update, and Handoff
+## Phase 7: Handoff Path
+
+Choose exactly one path.
+
+### Path A: Locked Context Path
 
 After `CONTEXT.md` is ready:
 
@@ -159,6 +171,28 @@ CONTEXT.md is now the single source of truth for downstream planning.
 Invoke `beer:planning`.
 ```
 
+### Path B: Direct-Fix Exemption
+
+If the exemption applies:
+
+1. Do not write `history/<feature>/CONTEXT.md`.
+2. Update `.beer/state.json` with:
+   - `route = small-fix`
+   - `orchestration_strategy = single-worker`
+   - preserve the current `context_stage`
+   - `next_handoff = beer:planning`
+3. Do not request Gate 1 approval.
+4. Regenerate `.beer/STATE.md`.
+5. Deliver the compact-planning handoff and stop.
+
+Direct-fix handoff phrase:
+
+```text
+This is a small, local, low-ambiguity fix.
+Skipping locked-context capture.
+Invoke `beer:planning` with the compact small-fix route.
+```
+
 ## Hard Rules
 
 - Never skip exploring for feature work once intake has decided that decision locking is required.
@@ -175,5 +209,5 @@ Invoke `beer:planning`.
 | Seed exists but is incomplete | Use it as input, record gaps, continue the dialogue |
 | Seed conflicts with repo evidence | Trust repo evidence and clarify with the user |
 | User wants to move fast | Keep the dialogue short, but still lock the decisions that matter |
-| Request is actually a direct fix | Exit exploring and route to `small-fix` planning |
+| Request is actually small-fix work | Exit exploring into the compact small-fix planning path |
 | Too many gray areas appear | Narrow scope before continuing |

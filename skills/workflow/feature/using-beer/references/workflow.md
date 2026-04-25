@@ -51,22 +51,22 @@ node .beer/scripts/commands/onboard-beer.mjs
 
 ## Direct-Fix Signal
 
-Intake should recognize when the request is a small direct fix, but normal task work still enters through `beer:context-intake`.
+Intake should recognize when the request is a `small-fix`, but normal task work still enters through `beer:context-intake`.
 
-Treat it as a direct-fix exemption when all of these are true:
+Treat it as a small-fix exemption when all of these are true:
 
 - the task is local and low ambiguity,
 - it is a bug fix or cleanup like type, format, rename, or obvious wiring repair,
 - it is likely to touch fewer than 3 files,
 - it does not introduce a new feature boundary or product decision.
 
-If the direct-fix signal applies:
+If the small-fix signal applies:
 
 - keep `beer:context-intake` as the intake gate,
-- let intake skip `beer:exploring`,
-- route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
+- still hand off to `beer:exploring`,
+- let `beer:exploring` take the small-fix exemption into `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
-If the signal does not apply, intake decides whether the work needs `beer:exploring` or can move straight to `beer:planning`.
+If the signal does not apply, intake still hands work to `beer:exploring`.
 
 ## Context Intake (Step 0)
 
@@ -84,7 +84,7 @@ Check GitNexus -> Path 1 if ready
 
 1. Check active bead and handoff context.
 2. Check `.beer/state.json` and inspect `context_stage`.
-3. If `context_stage = locked`, reopen `history/<feature>/CONTEXT.md` and let intake decide whether to continue with `beer:planning` or reopen decisions in `beer:exploring`.
+3. If `context_stage = locked`, reopen `history/<feature>/CONTEXT.md` and hand off to `beer:exploring`.
 4. If `context_stage = seeded`, reopen `.beer/seed/` and route to `beer:exploring`.
 5. If no reliable context exists, create seed-backed context before exploring.
 6. Enrich incomplete bead descriptions instead of guessing.
@@ -116,7 +116,7 @@ Run these checks on every session start:
 3. Run context intake first for normal task intake.
 4. Read `node .beer/scripts/commands/beer-status.mjs --json`.
 5. Check GitNexus readiness.
-6. If a feature is already active and `context_stage = locked`, reopen its `history/<feature>/CONTEXT.md` and let intake choose `beer:planning` or `beer:exploring`.
+6. If a feature is already active and `context_stage = locked`, reopen its `history/<feature>/CONTEXT.md` and hand off to `beer:exploring`.
 7. If a feature is already active and `context_stage = seeded`, reopen `.beer/seed/` and route to `beer:exploring`.
 8. Read `history/learnings/critical-patterns.md` when it exists.
 
@@ -228,7 +228,7 @@ Use this as the minimum state handoff contract:
 
 | Phase owner | Minimum state written before handoff |
 |---|---|
-| `context-intake` | `phase`, `context_stage`, `feature_slug` when known, `route` when routing to planning, `next_handoff = beer:planning | beer:exploring` |
+| `context-intake` | `phase`, `context_stage`, `feature_slug` when known, `route` when already credible, `next_handoff = beer:exploring` |
 | `exploring` | `phase = exploring`, `context_stage = locked`, `context_path`, `context_confidence = 1.0`, `approved_gates.context = true` only after Gate 1 passes, then `next_handoff = beer:planning` |
 | `planning` | `phase = planning`, `route`, `orchestration_strategy`, `current_phase_name`, `current_slice`, `slice_count`, `planned_workers`, `prep_depth`, `approved_gates.phase_plan = true` only after Gate 2 passes, then `next_handoff = beer:validating` |
 | `validating` | `phase = validating`, `validation_status`, proposed then approved `execution_target`, `approved_gates.execution = true` only after Gate 3 passes, then `next_handoff = beer:executing | beer:swarming` |

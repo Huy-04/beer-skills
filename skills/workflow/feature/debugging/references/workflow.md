@@ -1,16 +1,16 @@
 ---
 skill: debugging
-purpose: Detailed workflow for systematic root-cause analysis
-version: "1.1"
+purpose: Detailed workflow for recursive root-cause analysis
+version: "1.2"
 ---
 
 # debugging - Workflow Details
 
 ## Overview
 
-**Role:** Root-cause analysis and blocker resolution  
-**Job:** Triage, reproduce, diagnose, fix, verify, and capture reusable learning  
-**Output:** Verified fix or escalation plus a debug note when the pattern is reusable  
+**Role:** Nested debug loop inside a parent Beer phase  
+**Job:** Enter from a parent phase, observe, reproduce, narrow, prove, exit, and capture reusable learning  
+**Output:** Explicit root cause plus a safe exit target for the parent workflow  
 **TDD integration:** After root cause is known, route behavior-changing fixes through `beer:test-driven-development`
 
 ## Core Sequence
@@ -18,16 +18,45 @@ version: "1.1"
 Run in order unless a known pattern fully explains the failure.
 
 ```text
-1. Triage - classify the issue
-2. Known-pattern check - search critical learnings
-3. Reproduce - prove the failure
-4. Diagnose - identify the root cause
-5. Fix or escalate - choose the safest repair path
-6. Verify - rerun original command plus nearby scope
-7. Learn - capture reusable patterns
+1. Enter - record the parent phase and reason
+2. Observe - classify the issue
+3. Known-pattern check - search critical learnings
+4. Reproduce - prove the failure
+5. Narrow - isolate the fault area
+6. Prove - identify the root cause
+7. Exit - choose the safest parent-flow return
+8. Verify - rerun original command plus nearby scope
+9. Learn - capture reusable patterns
 ```
 
-## Step 1: Triage
+## Step 1: Enter
+
+Record the nested-loop context before deep investigation:
+
+- `debug_entry_phase`
+- `debug_reason`
+
+Typical parent phases:
+
+- `exploring`
+- `planning`
+- `executing`
+- `reviewing`
+
+Typical reasons:
+
+- `build-failure`
+- `test-failure`
+- `runtime-failure`
+- `integration-failure`
+- `uat-failure`
+- `worker-blocker`
+- `unknown-behavior`
+
+`debugging` does not become the new top-level workflow. It temporarily serves
+the parent phase until root cause and exit target are clear.
+
+## Step 2: Observe
 
 Classify before investigating.
 
@@ -46,7 +75,7 @@ Write:
 [TYPE] in [component]: [symptom]
 ```
 
-## Step 2: Check Known Patterns
+## Step 3: Check Known Patterns
 
 Search before deep debugging:
 
@@ -54,11 +83,15 @@ Search before deep debugging:
 rg -i "<error symbol|component|symptom>" history/learnings/critical-patterns.md
 ```
 
-If the pattern matches exactly, use the documented resolution but still verify with the original failing command. If the documented resolution is stale, record that in the debug note.
+If the pattern matches exactly, use the documented resolution but still verify
+with the original failing command. If the documented resolution is stale,
+record that in the debug note.
 
-## Step 3: Reproduce
+## Step 4: Reproduce
 
-Run the exact command that failed whenever possible. Capture enough output to preserve the first meaningful error, not the entire log unless the user asks for it.
+Run the exact command that failed whenever possible. Capture enough output to
+preserve the first meaningful error, not the entire log unless the user asks
+for it.
 
 ```bash
 npm run build
@@ -78,11 +111,11 @@ For flaky failures:
 - record pass/fail count
 - investigate shared state, timing, random data, test order, and external services before changing product code
 
-## Step 4: Diagnose
+## Step 5: Narrow
 
-Use the smallest evidence path that can prove cause.
+Use the smallest evidence path that can isolate cause.
 
-### 4a. Read Implicated Files
+### 5a. Read Implicated Files
 
 Start with the file/line from the error output. Use `rg` for symbols:
 
@@ -90,9 +123,10 @@ Start with the file/line from the error output. Use `rg` for symbols:
 rg -n "<symbol|error text|route|test name>" .
 ```
 
-Read only the implicated files first. Expand scope only when evidence points outward.
+Read only the implicated files first. Expand scope only when evidence points
+outward.
 
-### 4b. Inspect Recent Changes
+### 5b. Inspect Recent Changes
 
 Use non-destructive git commands:
 
@@ -105,7 +139,7 @@ git blame <file> -L <start>,<end>
 
 Do not revert user changes unless explicitly instructed.
 
-### 4c. Check Beer Context
+### 5c. Check Beer Context
 
 When present, inspect:
 
@@ -115,11 +149,14 @@ When present, inspect:
 - bd (beads) for related swarm blockers
 - `graph-explore` for call flow or blast-radius context when available
 
-Decision violations are not normal bugs. Report them before changing behavior unless the conservative fix clearly honors the locked decision.
+Decision violations are not normal bugs. Report them before changing behavior
+unless the conservative fix clearly honors the locked decision.
 
-### 4d. State Root Cause
+## Step 6: Prove
 
-Do not proceed to fix until this is specific:
+Once the fault area is isolated, state root cause explicitly.
+
+Do not proceed until this is specific:
 
 ```text
 Root cause: <file>:<line or component> - <what is wrong and why it causes the symptom>
@@ -137,7 +174,50 @@ Good:
 Root cause: src/auth/session.ts:88 - refreshToken is consumed twice during concurrent requests, so the second request throws and clears the session.
 ```
 
-## Step 5: Fix or Escalate
+## Step 7: Exit
+
+Choose the safest parent-flow return.
+
+### Exit to `beer:executing`
+
+Use when the fix remains inside the current approved slice.
+
+### Exit to `beer:test-driven-development`
+
+Use when behavior must be proven RED -> GREEN before the fix is trusted.
+
+### Exit to `beer:planning`
+
+Use when the repair is larger than a local patch, changes architecture, or cuts
+across worker boundaries.
+
+Before the handoff, update `.beer/state.json` with:
+
+- keep the current route explicit
+- `work_intent = repair`
+- `phase = planning`
+- `approved_gates.phase_plan = false`
+- `next_handoff = beer:planning`
+
+### Exit to `beer:validating`
+
+Use when the plan still exists, but the current execution target, review unit,
+or slice shape is no longer honest.
+
+### Exit to `beer:reviewing`
+
+Use when review opened the debug loop and now has enough evidence to continue
+with a repair judgment.
+
+### Exit to `beer:compounding`
+
+Use only when no more implementation work is needed and the session produced a
+standalone reusable debug lesson.
+
+### Exit to User Handoff
+
+Use when missing dependencies, environment, permissions, or product decisions
+block safe progress.
 
 ### Small Fix
 
@@ -150,7 +230,8 @@ Use when the fix is obvious, local, and low risk.
 
 ### Behavior Bug
 
-Use `beer:test-driven-development` after root cause is known when the fix changes observable behavior or should prevent regression.
+Use `beer:test-driven-development` after root cause is known when the fix
+changes observable behavior or should prevent regression.
 
 Minimum evidence:
 
@@ -160,24 +241,9 @@ Minimum evidence:
 
 ### Substantial or Cross-Cutting Fix
 
-Route to planned repair work when the repair is larger than a local patch,
-changes architecture, or cuts across worker boundaries.
-
-```bash
-node .beer/scripts/commands/beer-planning-gate.mjs --route feature --json
-```
-
-Before the handoff, update `.beer/state.json` with:
-
-- keep the current route explicit
-- `work_intent = repair`
-- `phase = planning`
-- `approved_gates.phase_plan = false`
-- `next_handoff = beer:planning`
-
-If `bd` is available and a live epic exists, create or request a fix bead linked
-to the original work. If `bd` is unavailable, report the proposed fix scope and
-missing bead tooling without blocking the repair route.
+If `bd` is available and a live epic exists, create or request a fix bead
+linked to the original work. If `bd` is unavailable, report the proposed fix
+scope and missing bead tooling without blocking the repair route.
 
 ### Decision Violation
 
@@ -193,7 +259,8 @@ Needed decision: proceed, revise scope, or update context
 
 ### Integration and DI Failure Note
 
-When the failure is request-time activation, configuration binding, or startup wiring:
+When the failure is request-time activation, configuration binding, or startup
+wiring:
 
 - inspect service registration, configuration keys, and environment-specific settings before editing feature code
 - verify the failing route or startup command after the fix, not only `dotnet build`
@@ -205,7 +272,7 @@ This is especially important for DI failures such as:
 Unable to resolve service for type '<service>' while attempting to activate '<controller or service>'
 ```
 
-## Step 6: Verify
+## Step 8: Verify
 
 Verification must include:
 
@@ -215,7 +282,7 @@ Verification must include:
 - limitations if any command could not run
 - a clean rebuild when runtime or integration symptoms may be reading stale build output
 
-For direct fixes completed inside debugging, record execution evidence before
+For small-fix work completed inside debugging, record execution evidence before
 review:
 
 - set `verification_status = passed | failed | limited`
@@ -229,7 +296,7 @@ Do not claim success if:
 - the environment blocked verification and no limitation is reported
 - a baseline failure hides the result
 
-## Step 7: Learn
+## Step 9: Learn
 
 Capture reusable patterns with:
 
@@ -242,7 +309,8 @@ node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
   --signal "<how to recognize it next time>"
 ```
 
-The script appends to `.beer/tmp/debug-notes.md` by default. `beer:compounding` can promote useful notes into `history/learnings/`.
+The script appends to `.beer/tmp/debug-notes.md` by default. `beer:compounding`
+can promote useful notes into `history/learnings/`.
 
 ## Blocker-Specific Protocol
 
@@ -267,10 +335,11 @@ Needed action: <wait, unblock dependency, choose option A/B, or revise scope>
 
 Debugging is complete when:
 
+- the parent phase and debug reason are explicit
 - classification is explicit
 - reproduction or known-pattern match is documented
 - root cause is specific and evidence-backed
-- fix path is appropriate for risk and behavior impact
+- exit target is appropriate for risk and behavior impact
 - original failing command is rerun or limitation is stated
 - reusable pattern is captured when applicable
 - broad repairs are routed through planned repair work instead of being implemented ad hoc

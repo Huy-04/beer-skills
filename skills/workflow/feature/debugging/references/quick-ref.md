@@ -6,6 +6,13 @@ version: "1.1"
 
 # debugging - Quick Reference
 
+## Nested Loop Reminder
+
+- record `debug_entry_phase` before deep investigation
+- keep `debug_reason` explicit
+- exit back to the parent workflow with a named target
+- do not treat debugging as a replacement top-level route
+
 ## Failure Types
 
 | Type | First move |
@@ -21,10 +28,11 @@ version: "1.1"
 
 | Gate | Must have |
 |---|---|
+| Enter | parent phase and debug reason |
 | Triage | `[TYPE] in [component]: [symptom]` |
 | Reproduce | exact command, output excerpt, reproducibility status |
 | Diagnose | `Root cause: <file/component> - <why>` |
-| Fix | smallest safe fix or explicit escalation |
+| Exit | smallest safe return target or explicit escalation |
 | Verify | original failing command rerun, nearby regression scope |
 | Learn | debug note for reusable patterns |
 
@@ -70,6 +78,15 @@ node .beer/scripts/commands/beer-planning-gate.mjs --route feature --json
 ```
 
 Preserve the root-cause sentence in `discovery.md` and `approach.md`.
+
+## Exit Targets
+
+- `beer:executing` for local in-slice fixes
+- `beer:test-driven-development` for behavior repairs needing RED/GREEN
+- `beer:planning` for broad repair
+- `beer:validating` when the slice or execution target no longer fits
+- `beer:reviewing` when review opened the loop and now has enough evidence
+- `beer:compounding` only for standalone debug-learning closeout
 
 ## Integration Reminder
 

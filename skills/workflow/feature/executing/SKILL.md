@@ -70,10 +70,12 @@ Use when:
 ## Scope and Ownership
 
 - `planning` and `validating` decide the slice.
+- the orchestrator owns route lock, gate approval, and next-phase control.
 - `swarming` coordinates workers when the route is parallel.
 - `executing` implements and verifies the slice.
 - `executing` consumes an already approved current slice; it does not approve its own entry.
 - `executing` does not widen scope, invent new decisions, or silently promote direct work into a swarm.
+- `executing` does not choose a new route, execution target, or review handoff on its own; it either reports back to the coordinator or hands the approved direct route forward with evidence.
 
 ## 30-Second Version
 
@@ -117,6 +119,12 @@ complete. For behavior-changing slices, record `tdd_required = true` in
 - Record TDD state for behavior changes: `tdd_required`, `tdd_status`, and `tdd_evidence_path`.
 - Write execution evidence to `history/<feature>/execution-evidence.md` for every Beer route that reached approved execution.
 - Store that path in `execution_evidence_path`.
+- For swarm-worker execution, report completion or blockers back to the coordinator instead of self-advancing the global route.
+- For swarm-worker execution, the completion report should always name:
+  - files touched
+  - verification run
+  - blocker or `no blocker`
+  - recommended next owner action
 - Regenerate `.beer/STATE.md` after `state.json` changes.
 
 ## References

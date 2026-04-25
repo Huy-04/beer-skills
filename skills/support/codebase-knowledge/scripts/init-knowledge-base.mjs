@@ -636,6 +636,7 @@ function normalizeGraphDoc(doc) {
     doNotDo: normalizeStringArray(doc.do_not_do || doc.doNotDo),
     riskWhenChanging: typeof doc.risk_when_changing === "string" ? doc.risk_when_changing : (typeof doc.riskWhenChanging === "string" ? doc.riskWhenChanging : ""),
     confidenceReason: typeof doc.confidence_reason === "string" ? doc.confidence_reason : (typeof doc.confidenceReason === "string" ? doc.confidenceReason : "graph evidence prioritized current source links and graph context"),
+    verificationTargets: normalizeVerificationTargets(doc.verification_targets || doc.verificationTargets),
   };
 }
 
@@ -647,6 +648,64 @@ function normalizeStringMap(value) {
   const normalized = {};
   for (const [key, items] of Object.entries(value)) {
     normalized[key] = normalizeStringArray(items);
+  }
+  return normalized;
+}
+
+function normalizeVerificationTargets(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {
+      symbols: [],
+      processes: [],
+      queries: [],
+    };
+  }
+
+  const normalizedQueries = Array.isArray(value.queries)
+    ? value.queries
+      .filter((item) => item && typeof item === "object" && typeof item.tool === "string")
+      .map((item) => ({
+        tool: item.tool,
+        query: typeof item.query === "string" ? item.query : undefined,
+        target: typeof item.target === "string" ? item.target : undefined,
+        direction: typeof item.direction === "string" ? item.direction : undefined,
+      }))
+    : [];
+
+  return {
+    symbols: normalizeStringArray(value.symbols),
+    processes: normalizeStringArray(value.processes),
+    queries: normalizedQueries,
+  };
+}
+
+function normalizeTaskIndex(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  const normalized = {};
+  for (const [key, rawEntry] of Object.entries(value)) {
+    if (Array.isArray(rawEntry)) {
+      normalized[key] = {
+        docs: normalizeStringArray(rawEntry),
+        layer_targets: [],
+        boundary_targets: [],
+        verification_targets: normalizeVerificationTargets({}),
+      };
+      continue;
+    }
+
+    if (!rawEntry || typeof rawEntry !== "object") {
+      continue;
+    }
+
+    normalized[key] = {
+      docs: normalizeStringArray(rawEntry.docs),
+      layer_targets: normalizeStringArray(rawEntry.layer_targets || rawEntry.layerTargets),
+      boundary_targets: normalizeStringArray(rawEntry.boundary_targets || rawEntry.boundaryTargets),
+      verification_targets: normalizeVerificationTargets(rawEntry.verification_targets || rawEntry.verificationTargets),
+    };
   }
   return normalized;
 }
@@ -669,7 +728,7 @@ function loadGitNexusEvidence(args) {
       ? (raw.dominant_patterns || raw.dominantPatterns).map(normalizeGraphPattern).filter(Boolean)
       : [],
     docs: Array.isArray(raw.docs) ? raw.docs.map(normalizeGraphDoc).filter(Boolean) : [],
-    taskIndex: normalizeStringMap(raw.task_index || raw.taskIndex),
+    taskIndex: normalizeTaskIndex(raw.task_index || raw.taskIndex),
     searchIndex: normalizeStringMap(raw.search_index || raw.searchIndex),
     criticalFiles: normalizeStringArray(raw.critical_files || raw.criticalFiles),
     notes: normalizeStringArray(raw.notes),
@@ -864,6 +923,7 @@ function createDoc({
   doNotDo,
   riskWhenChanging,
   confidenceReason,
+  verificationTargets = { symbols: [], processes: [], queries: [] },
   textFiles,
 }) {
   const normalizedKeyFiles = clampList(unique(keyFiles), 8);
@@ -918,6 +978,23 @@ function createDoc({
     "",
     "## Confidence",
     summarizeConfidence(confidence, confidenceReason),
+    "",
+    "## Verification Targets",
+    verificationTargets.symbols.length > 0
+      ? `- Symbols: ${verificationTargets.symbols.map((item) => `\`${item}\``).join(", ")}`
+      : "- Symbols: none promoted",
+    verificationTargets.processes.length > 0
+      ? `- Processes: ${verificationTargets.processes.map((item) => `\`${item}\``).join(", ")}`
+      : "- Processes: none promoted",
+    ...(verificationTargets.queries.length > 0
+      ? verificationTargets.queries.map((item) => {
+          const parts = [`tool=\`${item.tool}\``];
+          if (item.query) parts.push(`query=\`${item.query}\``);
+          if (item.target) parts.push(`target=\`${item.target}\``);
+          if (item.direction) parts.push(`direction=\`${item.direction}\``);
+          return `- ${parts.join(" ")}`;
+        })
+      : ["- Queries: none promoted"]),
   ].join("\n");
 
   return {
@@ -929,6 +1006,9 @@ function createDoc({
     summary,
     tags,
     keyFiles: normalizedKeyFiles,
+    howToFollow,
+    doNotDo,
+    verificationTargets,
     content,
   };
 }
@@ -969,6 +1049,13 @@ function buildArchitectureDoc(facts) {
     ],
     riskWhenChanging: "High. Repo-shape changes alter how later contributors discover entrypoints, conventions, and cross-cutting flows.",
     confidenceReason: "repo shape, entrypoints, and dominant surfaces were inferred from repeated files and directory structure",
+    verificationTargets: {
+      symbols: [],
+      processes: ["RepositoryShape"],
+      queries: [
+        { tool: "query", query: "repo architecture and entrypoints" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1018,6 +1105,13 @@ function buildConventionsDoc(facts) {
     ],
     riskWhenChanging: "Medium to high. Convention drift makes the repo harder to scan and weakens downstream automation assumptions.",
     confidenceReason: "the promoted rules were repeated across multiple files and folder surfaces",
+    verificationTargets: {
+      symbols: [],
+      processes: [],
+      queries: [
+        { tool: "query", query: "implementation conventions and repeated package structure" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1054,6 +1148,13 @@ function buildCliFlowDoc(facts) {
     ],
     riskWhenChanging: "High. Entrypoint regressions make the repo feel broken even when most implementation code is intact.",
     confidenceReason: "root manifests and repeated command script paths provide direct evidence for the command flow",
+    verificationTargets: {
+      symbols: ["main", "onboard", "status"],
+      processes: ["CLIEntrypoints"],
+      queries: [
+        { tool: "query", query: "CLI entrypoints and onboarding flow" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1091,6 +1192,13 @@ function buildWorkflowRoutingDoc(facts) {
     ],
     riskWhenChanging: "High. Routing drift creates broken handoffs, stale docs, and conflicting ownership assumptions.",
     confidenceReason: "multiple workflow/support skill packages and routing docs point to the same staged flow model",
+    verificationTargets: {
+      symbols: ["using-beer", "planning", "validating"],
+      processes: ["WorkflowRouting"],
+      queries: [
+        { tool: "query", query: "workflow routing and skill handoff flow" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1123,6 +1231,13 @@ function buildCommandBoundaryDoc(facts) {
     ],
     riskWhenChanging: "High. Boundary regressions often surface as broken routing or stale state rather than obvious compilation failures.",
     confidenceReason: "command scripts and state-contract references were both detected in current source",
+    verificationTargets: {
+      symbols: ["approved_gates", "next_handoff"],
+      processes: ["CommandStateBoundary"],
+      queries: [
+        { tool: "query", query: "command state boundary and workflow handoff" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1155,6 +1270,13 @@ function buildBackendDoc(facts) {
     ],
     riskWhenChanging: "High. Request-flow changes affect auth, validation, persistence, and external side effects together.",
     confidenceReason: "route, service, and backend-oriented files were repeated strongly enough to promote a canonical flow",
+    verificationTargets: {
+      symbols: facts.backendFiles.slice(0, 3).map((file) => path.basename(file, path.extname(file))),
+      processes: ["BackendRequestLifecycle"],
+      queries: [
+        { tool: "query", query: "backend request lifecycle and handler flow" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1187,6 +1309,13 @@ function buildFrontendDoc(facts) {
     ],
     riskWhenChanging: "Medium to high. Frontend structure drift creates inconsistent API usage and makes the app harder to navigate.",
     confidenceReason: "page/component files and frontend-specific source markers were repeated across the scan",
+    verificationTargets: {
+      symbols: facts.frontendFiles.slice(0, 3).map((file) => path.basename(file, path.extname(file))),
+      processes: ["FrontendApiAccess"],
+      queries: [
+        { tool: "query", query: "frontend app structure and api access" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1219,6 +1348,13 @@ function buildBoundaryDoc(facts) {
     ],
     riskWhenChanging: "High. Boundary changes often fail at runtime through mismatched contracts or auth/caching drift.",
     confidenceReason: "frontend and backend evidence was paired with proxy or API-client markers in current source",
+    verificationTargets: {
+      symbols: facts.boundaryFiles.slice(0, 3).map((file) => path.basename(file, path.extname(file))),
+      processes: ["FrontendBackendBoundary"],
+      queries: [
+        { tool: "query", query: "frontend backend proxy and contract boundary" },
+      ],
+    },
     textFiles: facts.textFiles,
   });
 }
@@ -1226,8 +1362,39 @@ function buildBoundaryDoc(facts) {
 function buildTaskIndex(docEntries) {
   const taskIndex = {};
 
-  function add(task, file) {
-    taskIndex[task] = unique([...(taskIndex[task] || []), file]);
+  function add(task, file, options = {}) {
+    if (!taskIndex[task]) {
+      taskIndex[task] = {
+        docs: [],
+        layer_targets: [],
+        boundary_targets: [],
+        verification_targets: {
+          symbols: [],
+          processes: [],
+          queries: [],
+        },
+      };
+    }
+
+    taskIndex[task].docs = unique([...(taskIndex[task].docs || []), file]);
+    taskIndex[task].layer_targets = unique([
+      ...(taskIndex[task].layer_targets || []),
+      ...(options.layerTargets || []),
+    ]);
+    taskIndex[task].boundary_targets = unique([
+      ...(taskIndex[task].boundary_targets || []),
+      ...(options.boundaryTargets || []),
+    ]);
+
+    const currentTargets = taskIndex[task].verification_targets;
+    taskIndex[task].verification_targets = {
+      symbols: unique([...(currentTargets.symbols || []), ...normalizeStringArray(options.verificationTargets?.symbols)]),
+      processes: unique([...(currentTargets.processes || []), ...normalizeStringArray(options.verificationTargets?.processes)]),
+      queries: unique([
+        ...(currentTargets.queries || []).map((item) => JSON.stringify(item)),
+        ...((options.verificationTargets?.queries || []).filter(Boolean).map((item) => JSON.stringify(item))),
+      ]).map((item) => JSON.parse(item)),
+    };
   }
 
   for (const entry of docEntries) {
@@ -1248,20 +1415,48 @@ function buildTaskIndex(docEntries) {
       add("change routing", entry.file);
     }
     if (entry.file === "boundaries/command-entrypoints-and-state.md") {
-      add("touch command boundary", entry.file);
-      add("change workflow state", entry.file);
+      add("touch command boundary", entry.file, {
+        boundaryTargets: ["boundaries.command-entrypoints-and-state"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("change workflow state", entry.file, {
+        boundaryTargets: ["boundaries.command-entrypoints-and-state"],
+        verificationTargets: entry.verificationTargets,
+      });
     }
     if (entry.file === "backend/request-lifecycle.md") {
-      add("add backend endpoint", entry.file);
-      add("change backend flow", entry.file);
+      add("add backend endpoint", entry.file, {
+        layerTargets: ["backend.layer_patterns.request-lifecycle"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("change backend handler flow", entry.file, {
+        layerTargets: ["backend.layer_patterns.request-lifecycle"],
+        verificationTargets: entry.verificationTargets,
+      });
     }
     if (entry.file === "frontend/app-structure-and-api-access.md") {
-      add("add frontend api call", entry.file);
-      add("change frontend structure", entry.file);
+      add("add frontend api call", entry.file, {
+        layerTargets: ["frontend.layer_patterns.app-structure-and-api-access"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("change frontend page/composable flow", entry.file, {
+        layerTargets: ["frontend.layer_patterns.app-structure-and-api-access"],
+        verificationTargets: entry.verificationTargets,
+      });
     }
     if (entry.file === "boundaries/frontend-backend-proxy.md") {
-      add("change proxy", entry.file);
-      add("change api boundary", entry.file);
+      add("change proxy", entry.file, {
+        boundaryTargets: ["boundaries.frontend-backend-proxy"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("change api boundary", entry.file, {
+        boundaryTargets: ["boundaries.frontend-backend-proxy"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("change auth", entry.file, {
+        boundaryTargets: ["boundaries.frontend-backend-proxy"],
+        verificationTargets: entry.verificationTargets,
+      });
     }
   }
 
@@ -1285,13 +1480,28 @@ function buildSearchIndex(docEntries) {
   return searchIndex;
 }
 
-function mergeStringMaps(primary, fallback) {
-  const merged = {};
-  for (const [key, value] of Object.entries(fallback || {})) {
-    merged[key] = normalizeStringArray(value);
-  }
-  for (const [key, value] of Object.entries(primary || {})) {
-    merged[key] = unique([...(merged[key] || []), ...normalizeStringArray(value)]);
+function mergeTaskIndex(primary, fallback) {
+  const merged = normalizeTaskIndex(fallback);
+  for (const [key, value] of Object.entries(normalizeTaskIndex(primary))) {
+    const existing = merged[key] || {
+      docs: [],
+      layer_targets: [],
+      boundary_targets: [],
+      verification_targets: { symbols: [], processes: [], queries: [] },
+    };
+    merged[key] = {
+      docs: unique([...(existing.docs || []), ...(value.docs || [])]),
+      layer_targets: unique([...(existing.layer_targets || []), ...(value.layer_targets || [])]),
+      boundary_targets: unique([...(existing.boundary_targets || []), ...(value.boundary_targets || [])]),
+      verification_targets: {
+        symbols: unique([...(existing.verification_targets?.symbols || []), ...(value.verification_targets?.symbols || [])]),
+        processes: unique([...(existing.verification_targets?.processes || []), ...(value.verification_targets?.processes || [])]),
+        queries: unique([
+          ...((existing.verification_targets?.queries || []).map((item) => JSON.stringify(item))),
+          ...((value.verification_targets?.queries || []).map((item) => JSON.stringify(item))),
+        ]).map((item) => JSON.parse(item)),
+      },
+    };
   }
   return merged;
 }
@@ -1314,6 +1524,7 @@ function buildGraphDocEntry(doc, facts) {
     doNotDo: doc.doNotDo.length > 0 ? doc.doNotDo : ["Do not rewrite this pattern without checking the graph-backed callers, consumers, or route flows first."],
     riskWhenChanging: doc.riskWhenChanging || "High. This doc was promoted from graph evidence because it shapes shared flows or boundaries.",
     confidenceReason: doc.confidenceReason,
+    verificationTargets: doc.verificationTargets,
     textFiles: facts.textFiles,
   });
 }
@@ -1355,7 +1566,7 @@ function mergeGraphEvidence(scan, graphEvidence) {
   const fallbackTaskIndex = buildTaskIndex(merged.docEntries);
   const fallbackSearchIndex = buildSearchIndex(merged.docEntries);
   merged.taskIndex = Object.keys(graphEvidence.taskIndex).length > 0
-    ? mergeStringMaps(graphEvidence.taskIndex, fallbackTaskIndex)
+    ? mergeTaskIndex(graphEvidence.taskIndex, fallbackTaskIndex)
     : fallbackTaskIndex;
   merged.searchIndex = Object.keys(graphEvidence.searchIndex).length > 0
     ? mergeStringMaps(graphEvidence.searchIndex, fallbackSearchIndex)
@@ -1374,7 +1585,7 @@ export function buildReadme(args, scan) {
 
   const taskBuckets = Object.entries(scan.taskIndex);
   const taskLines = taskBuckets.length > 0
-    ? taskBuckets.map(([task, files]) => `- ${titleCase(task)}: ${files.map((file) => `\`${file}\``).join(", ")}`)
+    ? taskBuckets.map(([task, entry]) => `- ${titleCase(task)}: ${(entry.docs || []).map((file) => `\`${file}\``).join(", ")}`)
     : ["- No task-oriented routing entries were promoted from this scan."];
 
   const boundaryEntries = scan.docEntries.filter((entry) => entry.area === "boundaries");
@@ -1439,6 +1650,11 @@ export function buildIndex(scan) {
     critical_flows: scan.docEntries.filter((entry) => entry.area === "critical-flows").length,
   };
 
+  const backendRequestLifecycle = scan.docEntries.find((entry) => entry.file === "backend/request-lifecycle.md");
+  const frontendApiAccess = scan.docEntries.find((entry) => entry.file === "frontend/app-structure-and-api-access.md");
+  const frontendBackendBoundary = scan.docEntries.find((entry) => entry.file === "boundaries/frontend-backend-proxy.md");
+  const commandStateBoundary = scan.docEntries.find((entry) => entry.file === "boundaries/command-entrypoints-and-state.md");
+
   return {
     version: "1.0",
     generated_at: scan.generatedAt,
@@ -1460,6 +1676,68 @@ export function buildIndex(scan) {
       summary: pattern.summary,
       key_files: pattern.keyFiles,
     })),
+    backend: {
+      layer_patterns: backendRequestLifecycle
+        ? {
+            "request-lifecycle": {
+              mission: "orchestrate backend request flow without collapsing boundaries between entrypoints, deeper layers, and side effects",
+              dominant_patterns: backendRequestLifecycle.howToFollow,
+              do_not_do: backendRequestLifecycle.doNotDo,
+              docs: [backendRequestLifecycle.file],
+              verification_targets: backendRequestLifecycle.verificationTargets,
+            },
+          }
+        : {},
+      flow_patterns: backendRequestLifecycle
+        ? {
+            "request-lifecycle": {
+              docs: [backendRequestLifecycle.file],
+              verification_targets: backendRequestLifecycle.verificationTargets,
+            },
+          }
+        : {},
+    },
+    frontend: {
+      layer_patterns: frontendApiAccess
+        ? {
+            "app-structure-and-api-access": {
+              mission: "keep frontend pages, components, and API access aligned with the established app shape",
+              dominant_patterns: frontendApiAccess.howToFollow,
+              do_not_do: frontendApiAccess.doNotDo,
+              docs: [frontendApiAccess.file],
+              verification_targets: frontendApiAccess.verificationTargets,
+            },
+          }
+        : {},
+      flow_patterns: frontendApiAccess
+        ? {
+            "app-structure-and-api-access": {
+              docs: [frontendApiAccess.file],
+              verification_targets: frontendApiAccess.verificationTargets,
+            },
+          }
+        : {},
+    },
+    boundaries: {
+      ...(frontendBackendBoundary
+        ? {
+            "frontend-backend-proxy": {
+              summary: frontendBackendBoundary.summary,
+              docs: [frontendBackendBoundary.file],
+              verification_targets: frontendBackendBoundary.verificationTargets,
+            },
+          }
+        : {}),
+      ...(commandStateBoundary
+        ? {
+            "command-entrypoints-and-state": {
+              summary: commandStateBoundary.summary,
+              docs: [commandStateBoundary.file],
+              verification_targets: commandStateBoundary.verificationTargets,
+            },
+          }
+        : {}),
+    },
     task_index: scan.taskIndex,
     critical_files: scan.criticalFiles,
     conventions: {

@@ -12,6 +12,7 @@ agent through feature work, repair/investigation, validation, review, and learni
 
 - [Commands](COMMANDS.md)
 - [Setup Guide](docs/setup.md)
+- [Host Runtime Contract](docs/host-runtime-contract.md)
 - [Skill Catalog](skill-catalog.md)
 - [Flow Overview](docs/ecosystem-flow-overview.md)
 - [Docs Index](docs/README.md)
@@ -23,7 +24,7 @@ agent through feature work, repair/investigation, validation, review, and learni
 | Entry skill | `beer:using-beer` |
 | Public CLI | `beer` / `beer-skills` |
 | Skills shipped | `17` |
-| Main feature flow | `context-intake -> exploring/planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
+| Main feature flow | `context-intake -> exploring -> planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
 | Investigation / repair lens | `using-beer -> context-intake/exploring/planning` with `debugging` as needed |
 | Required runtime | `node >= 18` |
 | Optional accelerators | `bd`, GitNexus MCP + local index |
@@ -60,6 +61,13 @@ beer status
 `beer:using-beer` is the entry skill. It chooses the smallest viable route from
 the task shape, current Beer state, and available local dependencies.
 
+Beer also keeps repo-local model-role defaults in `.beer/config.json`, so an
+orchestrator can resolve different profiles for orchestration, coding, and
+search/synthesis-heavy work instead of treating every worker the same.
+For swarm-approved slices, `beer orchestrate` can resolve and materialize worker
+assignments from the current Beer state, while `beer worker-bootstrap` emits the
+spawn-ready payloads a host runtime can map into actual subagent launches.
+
 Use `--repo-root /path/to/project` only when you want to target a different repo
 than the current working directory.
 
@@ -75,6 +83,7 @@ Full command reference: [COMMANDS.md](COMMANDS.md)
 | Validation before coding | feature work passes through a go/no-go step before implementation begins |
 | Parallel execution support | validated slices can run directly or through a swarm when `bd` is available |
 | Reusable learning capture | completed work can promote durable patterns into `history/learnings/` |
+| Repo-local model roles | `.beer/config.json` can pin different model/reasoning defaults for orchestrator, coding, and research/synthesis work |
 
 ## Runtime Profile
 
@@ -95,10 +104,9 @@ Beer command reference lives in [COMMANDS.md](COMMANDS.md).
 ```mermaid
 flowchart TD
     U[beer:using-beer] --> C[context-intake]
-    C -->|small direct fix| P[planning]
-    C -->|locked context already sufficient| P
-    C -->|decisions still unlocked| X[exploring]
-    X --> P2[planning]
+    C --> X[exploring]
+    X -->|direct-fix exemption or locked context| P[planning]
+    X -->|new context locked| P2[planning]
     P --> V[validating]
     V --> E[executing]
     P2 --> V2[validating]
@@ -138,7 +146,7 @@ missing coordination tool makes the move unsafe.
 
 | Common combination | Typical route |
 |---|---|
-| `small-fix + normal + single-worker + guided` | compact planning, validation, and direct execution |
+| `small-fix + normal + single-worker + guided` | intake, exploring sanity-check, compact planning, validation, and direct execution |
 | `feature + normal + single-worker + guided` | full feature workflow with one bounded implementation stream |
 | `feature + normal/high + multi-worker + guided` | full workflow plus coordinated worker slices and deeper validation |
 | `feature + normal/high + single/multi-worker + go` | same workflow with configurable auto-advance where allowed |
@@ -151,6 +159,7 @@ viable route and orchestration strategy during the agent session itself.
 - [Documentation Index](docs/README.md)
 - [Commands Reference](COMMANDS.md)
 - [Setup Guide](docs/setup.md)
+- [Host Runtime Contract](docs/host-runtime-contract.md)
 - [Skill Catalog](skill-catalog.md)
 - [Ecosystem Flow Overview](docs/ecosystem-flow-overview.md)
 - [Seed Context Contract](docs/seed-context-contract.md)

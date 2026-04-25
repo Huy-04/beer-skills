@@ -19,7 +19,7 @@ version: "1.0"
 
 ```text
 This looks like a small, local, low-ambiguity fix.
-Skipping context-intake and exploring.
+Skipping locked-context capture in `exploring`.
 
 Next step: route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 ```
@@ -61,7 +61,7 @@ Stop immediately if:
 3. You turned seed statements into locked decisions without confirmation.
 4. You treated a delegated area as if the user had already chosen the final answer.
 5. You drifted into planning, library selection, or execution detail.
-6. You kept exploring when the task really qualified for the direct-fix exemption.
+6. You kept exploring when the task really qualified for the small-fix exemption.
 
 ## Anti-Patterns
 
@@ -72,7 +72,7 @@ Wrong:
 
 Correct:
 - If product or behavior decisions still matter, run exploring.
-- If it is truly a tiny local fix, skip exploring entirely.
+- If it is truly a tiny local fix, exit exploring through the small-fix exemption.
 
 ### Anti-Pattern 2: "Seed already tells us what to do"
 

@@ -35,6 +35,7 @@ In PowerShell, use single quotes when the prompt contains backticks so preserved
 - mark unresolved file/path mentions as unknowns
 - ask up to 3 questions only when critical context is missing
 - carry working/output language intent exactly as defined in `references/language-policy.md`
+- record `invoking_owner` and `return_to` when this upgrade is part of a larger Beer workflow
 
 ## Good Upgrade Pattern
 
@@ -65,12 +66,14 @@ Inspect the planning skill, rename CONTEXT.md into a Vietnamese equivalent, and 
 
 - the raw user request, unchanged
 - the contextual prompt
+- the context packet
 - a clearer objective
 - grounded local context
 - preserved technical terms
 - explicit unknowns or assumptions
 - explicit response-language intent when needed
 - suggested downstream route only when the raw request and context support it
+- `return_to` so the caller remains the workflow owner
 
 ## Language Policy
 

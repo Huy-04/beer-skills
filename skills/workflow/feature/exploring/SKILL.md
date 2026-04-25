@@ -47,7 +47,7 @@ Lock decisions after intake, before planning. Ask one question at a time, confir
 ## 30-Second Version
 
 1. Treat `exploring` as the second phase after intake. If it is invoked with `context_stage = none`, bounce to `beer:context-intake` first.
-2. Sanity-check for a misrouted direct fix before going deeper.
+2. Sanity-check for a misrouted small-fix request before going deeper.
 3. Classify scope as `quick`, `standard`, or `deep`.
 4. Identify 2-4 gray areas that would force planning to guess.
 5. Run Socratic dialogue with one question per message.
@@ -57,7 +57,7 @@ Lock decisions after intake, before planning. Ask one question at a time, confir
 
 ## Direct-Fix Exemption
 
-Skip `exploring` when all of these are true:
+Exit `exploring` early into compact planning when all of these are true:
 
 - the task is local and low ambiguity,
 - it is likely to touch fewer than 3 files,
@@ -71,12 +71,18 @@ Examples:
 - obvious wiring fix,
 - small bug fix with clear expected behavior.
 
-If the exemption applies, route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
+If the exemption applies:
+
+- set `route = small-fix`,
+- set `orchestration_strategy = single-worker`,
+- set `next_handoff = beer:planning`,
+- do not write `CONTEXT.md`,
+- do not request Gate 1 approval.
 
 ## Scope and Ownership
 
 - `exploring` owns user-facing decision locking and `history/<feature>/CONTEXT.md`.
-- `context-intake` owns task intake, context recovery, and the first route decision between `planning` and `exploring`.
+- `context-intake` owns task intake, context recovery, and the handoff into `exploring`.
 - `context-intake` owns inferred seed context in `.beer/seed/`.
 - `planning` owns architecture synthesis, delivery breakdown, and beads.
 - `exploring` may use seed inputs to ask better questions, but seed never becomes a locked decision by itself.
@@ -93,7 +99,7 @@ If the exemption applies, route to `beer:planning` with `route = small-fix` and 
 - Never ask more than one question in the same message.
 - Never bypass `context-intake` in normal workflow.
 - Never skip Socratic dialogue for feature work because the answer "seems obvious".
-- Never hand off to `beer:planning` before Gate 1 approval is recorded.
+- Never hand off to `beer:planning` before Gate 1 approval is recorded unless the small-fix exemption applies.
 - Never write code, propose libraries, or decompose execution work.
 - Never create beads in this phase.
 - Never treat `.beer/seed/` as locked context.
@@ -106,6 +112,7 @@ If the exemption applies, route to `beer:planning` with `route = small-fix` and 
 - Set `approved_gates.context = false` while `CONTEXT.md` is waiting for Gate 1 approval.
 - Set `approved_gates.context = true` only after Gate 1 approves the locked context for planning.
 - After Gate 1 passes, set `next_handoff = beer:planning`.
+- If the small-fix exemption applies, do not write `context_path` or request Gate 1. Set `route = small-fix`, `orchestration_strategy = single-worker`, preserve the existing `context_stage`, and set `next_handoff = beer:planning`.
 - Regenerate `.beer/STATE.md` from `state.json`; do not treat `STATE.md` as the source of truth.
 
 ## References

@@ -103,11 +103,47 @@ This is an illustrative output shape. Real entries must be generated from curren
     }
   ],
   "task_index": {
-    "add backend endpoint": [
-      "backend/request-lifecycle.md",
-      "backend/module-template.md",
-      "conventions/implementation-rules.md"
-    ]
+    "add backend endpoint": {
+      "docs": [
+        "backend/request-lifecycle.md",
+        "backend/module-template.md",
+        "conventions/implementation-rules.md"
+      ],
+      "layer_targets": ["backend.layer_patterns.application-handler"]
+    }
+  },
+  "backend": {
+    "layer_patterns": {
+      "application-handler": {
+        "mission": "orchestrate backend request flow without absorbing domain or infrastructure responsibilities",
+        "dominant_patterns": [
+          "thin handler orchestration",
+          "delegation into domain lifecycle",
+          "boundary-only mapping"
+        ],
+        "verification_targets": {
+          "symbols": ["CreateUserHandler"],
+          "processes": ["CreateUser"]
+        }
+      }
+    },
+    "flow_patterns": {
+      "request-lifecycle": {
+        "docs": ["backend/request-lifecycle.md"]
+      }
+    }
+  },
+  "frontend": {
+    "layer_patterns": {},
+    "flow_patterns": {}
+  },
+  "boundaries": {
+    "auth-session": {
+      "docs": ["critical-flows/auth-session.md"],
+      "verification_targets": {
+        "processes": ["AuthSession"]
+      }
+    }
   },
   "critical_files": [
     "src/auth/session.ts"
@@ -184,4 +220,8 @@ Medium to high. Request flow changes can affect auth, persistence, and async sid
 
 ## Confidence
 High: repeated across multiple backend features.
+
+## Verification Targets
+- Process: `CreateUser`
+- Symbol: `CreateUserHandler`
 ```

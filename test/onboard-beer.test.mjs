@@ -14,12 +14,19 @@ function makeTempRepo() {
 test("applyRepo creates managed Beer files", () => {
   const repoRoot = makeTempRepo();
   const result = applyRepo(repoRoot);
+  const config = JSON.parse(fs.readFileSync(path.join(repoRoot, ".beer", "config.json"), "utf8"));
 
   assert.equal(result.applied, true);
   assert.equal(result.status, "up_to_date");
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "state.json")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "skills")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "scripts")), true);
+  assert.equal(config.models.orchestrator.model, "gpt-5.4");
+  assert.equal(config.models.orchestrator.reasoning_effort, "high");
+  assert.equal(config.models.coding.model, "gpt-5.3-codex");
+  assert.equal(config.models.coding.reasoning_effort, "high");
+  assert.equal(config.models.research_synthesis.model, "gpt-5.4-mini");
+  assert.equal(config.models.research_synthesis.reasoning_effort, "medium");
 });
 
 test("removeRepo deletes the managed .beer directory", () => {

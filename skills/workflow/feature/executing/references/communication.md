@@ -24,6 +24,8 @@ Assigned work complete: <task>. Files: <list>. Verified with: <commands>. No blo
 Evidence: <worker evidence or aggregate evidence path>.
 ```
 
+Do not claim `beer:reviewing` from a worker-completion note unless the coordinator explicitly assigned that handoff.
+
 ## Route Rejection
 
 ```text

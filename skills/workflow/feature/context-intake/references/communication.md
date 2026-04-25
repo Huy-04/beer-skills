@@ -15,7 +15,7 @@ Context recovered from locked artifacts.
 Feature: [feature]
 Source: history/[feature]/CONTEXT.md
 
-Ready for Session Scout.
+Next step: hand off to `beer:exploring`.
 ```
 
 ### Resume Prompt
@@ -36,6 +36,15 @@ Context stage: seeded
 Confidence: [high|medium|low]
 
 Next step: route through `beer:exploring` before planning.
+```
+
+### Planning Not Yet Honest
+
+```text
+Context was recovered, but the task is not yet bounded enough for planning.
+Gap: [decision | root cause | scope boundary | stale resume ambiguity]
+
+Next step: route through `beer:exploring`.
 ```
 
 ### Degraded Workflow Notice
@@ -65,6 +74,7 @@ Stop immediately if:
 4. The skill is about to write `history/<feature>/CONTEXT.md`.
 5. `.beer/knowledge-base/` is being used as a substitute for direct evidence.
 6. Degraded context is being described as high-confidence without gaps.
+7. Work is being handed past `beer:exploring`.
 
 ## Anti-Patterns
 
@@ -124,5 +134,5 @@ Correct:
 ```text
 Context phase complete.
 Result: locked | seeded | none
-Next owner: using-beer session scout | beer:exploring
+Next owner: beer:exploring
 ```

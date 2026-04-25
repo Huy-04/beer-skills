@@ -37,7 +37,7 @@ Fix the wrong serializer type in this one endpoint.
 
 **Expected Behavior**
 
-- Choose the small direct-fix route.
+- Choose the small-fix route.
 - Keep the plan compact and single-phase.
 
 ## Scenario 3: Beads Before Approval
@@ -67,7 +67,7 @@ The crash came from the auth refresh path, but now let's redesign the whole acco
 
 **Failure Mode**
 
-- Lets debug escalation drift into unrelated feature work.
+- Lets feature repair planning drift into unrelated feature work.
 
 **Expected Behavior**
 

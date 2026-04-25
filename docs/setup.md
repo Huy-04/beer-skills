@@ -58,6 +58,36 @@ Keep the file compact for `small-fix`, repair, and investigation work. Reserve
 
 `beer init`, `beer refresh`, `beer install`, and `beer update` all resync Beer skills into `.claude/skills` and `.agents/skills`, sync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`, refresh the managed Beer hook entries in `.claude/settings.json`, and refresh the managed Codex hook/config entries in `.codex/`.
 
+## Custom Model Roles
+
+Beer now keeps repo-local model-role preferences in `.beer/config.json`:
+
+```json
+{
+  "models": {
+    "orchestrator": { "model": "gpt-5.4", "reasoning_effort": "high" },
+    "coding": { "model": "gpt-5.3-codex", "reasoning_effort": "high" },
+    "research_synthesis": { "model": "gpt-5.4-mini", "reasoning_effort": "medium" }
+  }
+}
+```
+
+Edit these values when you want a repo to prefer different models by role.
+Beer treats them as the default runtime contract for:
+
+- orchestration and phase control
+- coding and implementation workers
+- search, reading, and synthesis-heavy tasks
+
+`beer status` prints the active role mapping so you can confirm the repo-local configuration quickly.
+Use `beer model-profile --role coding --json` or `beer model-profile --task-kind search --json`
+when the coordinator needs the effective worker profile for a concrete task shape.
+Use `beer orchestrate --json` to see the current coordinator decision, or
+`beer orchestrate --apply --json` to materialize worker assignments for a swarm-approved slice.
+Use `beer worker-bootstrap --json` to emit spawn-ready worker payloads, then
+follow the [Host Runtime Contract](host-runtime-contract.md) when a host runtime
+is responsible for the actual subagent launch.
+
 ## Tooling Options
 
 During `beer init`, Beer asks whether to install the full toolchain.

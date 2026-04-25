@@ -8,12 +8,21 @@ version: "1.0"
 
 ## Authority and Boundaries
 
-`context-intake` loads or seeds context, then decides whether normal workflow should continue to `planning` or `exploring`. It does not lock decisions, create delivery plans, or decompose execution work.
+`context-intake` loads or seeds context, then hands normal workflow to `exploring`. It does not lock decisions, create delivery plans, or decompose execution work.
 
 - Locked context lives in `history/<feature>/CONTEXT.md` and is owned by `beer:exploring`.
 - Seeded context lives in `.beer/seed/` and is inferred only.
 - Delivery beads belong to `beer:planning`.
 - Scout beads belong to `context-intake` only when they are research-only and exist solely to gather enough signal to write `.beer/seed/`.
+- `context-intake` may preserve or confirm `route` and `work_intent`, but it must not invent execution target or worker topology.
+
+## Exploring-Only Handoff
+
+`context-intake` does not skip directly to `beer:planning`.
+
+- If locked context already exists, load it and still hand off to `beer:exploring`.
+- If only seed exists, hand off to `beer:exploring`.
+- If the task later qualifies for a small-fix exemption, `beer:exploring` may take that exit after the sanity check.
 
 ## Phase 0: Read Recovery Inputs
 
@@ -49,7 +58,7 @@ Read in this order:
 
 If `state.context_stage` is already set:
 
-- `locked` -> read `history/<feature>/CONTEXT.md`, then route to `beer:planning` unless the user is explicitly reopening decisions.
+- `locked` -> read `history/<feature>/CONTEXT.md`, then route to `beer:exploring`.
 - `seeded` -> read `.beer/seed/` and route to `beer:exploring`. Do not promote it here.
 - `none` or missing -> continue path selection.
 
@@ -89,10 +98,7 @@ Graph-backed context is enough when it gives:
 - the feature or module boundary,
 - the main technical constraints.
 
-If that context is sufficient, classify the next phase:
-
-- route to `beer:planning` when the task is bounded and decision locking is not needed,
-- route to `beer:exploring` when user-facing decisions still need to be locked.
+If that context is sufficient, hand it to `beer:exploring` rather than promoting it further here.
 
 If not, continue to Path 2 for saved-state or scout recovery.
 
@@ -124,7 +130,7 @@ If active work or handoff exists, ask the user whether to resume.
 
 After reading state:
 
-- If `context_stage = locked`, read the locked `CONTEXT.md` and route to `beer:planning` unless the user is reopening decisions.
+- If `context_stage = locked`, read the locked `CONTEXT.md` and route to `beer:exploring`.
 - If `context_stage = seeded`, read `.beer/seed/` and route to `beer:exploring`.
 
 ### Step 2.4: Zero Context -> Context Scouts
@@ -136,8 +142,7 @@ Recommended scout set:
 1. Map structure and likely module boundaries.
 2. Read conventions, AGENTS, README, and critical patterns.
 3. Find relevant files for the user request.
-4. Decide whether the task can route straight to `beer:planning` or needs seeded input for `beer:exploring`.
-5. Synthesize findings into `.beer/seed/` only when `exploring` still needs inferred context.
+4. Synthesize findings into `.beer/seed/` only when `exploring` still needs inferred context.
 
 Rules for context scouts:
 
@@ -203,10 +208,13 @@ Write `.beer/seed/` only when `exploring` still needs inferred context. Include:
 
 Set:
 
+- `active_skill = context-intake`
+- `phase = context-intake`
 - `context_stage = seeded`
 - `seed_path = .beer/seed/`
 - `context_path = ""`
 - `context_confidence` based on the actual scan quality
+- `next_handoff = beer:exploring`
 
 If auto-accept is enabled and the context is degraded, disable it for downstream phases.
 
@@ -293,6 +301,7 @@ If the user declines resume:
 - Never let context scouts become delivery beads.
 - Never use `.beer/knowledge-base/` as a substitute for direct evidence.
 - Never claim repo-wide certainty from a degraded scan.
+- Never hand work past `beer:exploring`.
 
 ## Troubleshooting
 
@@ -309,6 +318,30 @@ If the user declines resume:
 
 | Outcome | Next owner |
 |---|---|
-| Locked context loaded | `using-beer` session scout |
+| Locked context loaded | `beer:exploring` |
 | Seeded context written | `beer:exploring` |
 | Degraded context with large gaps | user clarification or `beer:exploring` |
+
+## Minimum State Mutation
+
+`context-intake` may write:
+
+- `active_skill = context-intake`
+- `phase = context-intake`
+- `context_stage`
+- `seed_path`
+- `context_path`
+- `context_confidence`
+- `feature_slug` when known
+- `route` when already credible for downstream planning after exploring
+- `work_intent` when already clear from the request or saved state
+- `next_handoff = beer:exploring`
+
+`context-intake` must not write:
+
+- `approved_gates.context = true`
+- `approved_gates.phase_plan = true`
+- `approved_gates.execution = true`
+- `approved_gates.review = true`
+- `execution_target`
+- delivery decomposition artifacts

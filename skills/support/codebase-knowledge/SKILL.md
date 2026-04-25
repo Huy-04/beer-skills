@@ -51,7 +51,7 @@ real shape of the repo instead of rediscovering it from scratch.
 |---|---|
 | **Use when** | The user explicitly wants the knowledge base created/refreshed, or compounding already won approval because finished work revealed reusable patterns |
 | **Do not use when** | A one-off repo question can be answered from current source, GitNexus, or locked context without generating cache artifacts |
-| **Produces** | Project-local `.beer/knowledge-base/` with evidence-backed docs, `index.json`, and `00-metadata.json` |
+| **Produces** | Project-local `.beer/knowledge-base/` with evidence-backed docs, `index.json`, `00-metadata.json`, verification targets, and a return-to-caller refresh summary |
 | **Consumers** | Planning, validating, reviewing, debugging, and onboarding read it as optional context only |
 
 ## 30-Second Version
@@ -61,7 +61,7 @@ real shape of the repo instead of rediscovering it from scratch.
 3. Fan out child agents by lane to inspect architecture/conventions, backend, frontend, boundaries, and critical flows in parallel.
 4. Add optional lanes only when the codebase actually shows those patterns.
 5. Synthesize a small set of canonical docs with one writer and evidence-backed confidence.
-6. Update `README.md`, `index.json`, `00-metadata.json`, generated docs, and report the refresh outcome.
+6. Update `README.md`, `index.json`, `00-metadata.json`, generated docs, and return the refresh outcome to the invoking owner.
 
 ## Scope and Authority
 
@@ -73,19 +73,22 @@ real shape of the repo instead of rediscovering it from scratch.
 - Use GitNexus first for structure, flow, route, and boundary evidence when available. Use local source scanning to confirm snippets, fill gaps, and degrade cleanly when graph support is unavailable.
 - This skill owns a one-pass real scan. Discovery lanes fan out through child agents by default and collapse back into one writer for synthesis.
 - This skill is a knowledge compiler, not a generic repo Q&A helper.
+- The invoking owner still owns workflow state and approval context. `codebase-knowledge` refreshes the cache and returns a result; it does not take over Beer closeout or route control.
+- If the refresh came from `compounding` approval, do not ask for a second approval prompt inside this skill.
 
 ## Output Philosophy
 
 The output should help future work answer:
 
-- What dominant patterns shape this repo?
-- How does backend work usually flow?
-- How does frontend work usually flow?
-- Where are the risky cross-boundary seams?
+- What dominant patterns shape backend work here?
+- What dominant patterns shape frontend work here?
+- Which boundaries connect BE and FE and carry the highest risk?
 - Which files should a developer read first before changing a critical area?
+- Which GitNexus targets should review use to verify that a task still follows the repo's real pattern?
 
 Do not optimize for producing many notes. Optimize for a small set of durable,
-implementation-oriented docs that help someone code correctly.
+implementation-oriented docs plus a machine-usable index that helps review and
+planning verify real BE/FE/boundary patterns quickly.
 
 ## Stable Skeleton, Adaptive Content
 
@@ -132,10 +135,10 @@ This pre-scan is part of the same run. It is not a separate bootstrap phase.
 | Lane | Purpose | Typical outputs |
 |---|---|---|
 | Architecture + conventions | Consolidate repo shape, major folders, entrypoints, and repeated implementation rules | `README.md`, `architecture/system-overview.md`, `conventions/implementation-rules.md` |
-| Backend | Detect request lifecycle, module template, data access, domain rules, async patterns | `backend/*.md` |
-| Frontend | Detect app structure, API access, state/session patterns, UI conventions | `frontend/*.md` |
-| Boundaries | Detect FE/BE seams, command/state seams, contract coupling, auth/session boundary, error shapes | `boundaries/*.md` |
-| Critical flows | Capture high-blast-radius command, routing, auth, or orchestration flows | `critical-flows/*.md` |
+| Backend | Detect backend layer missions, handler/lifecycle/data-access patterns, and backend verification targets | `backend/*.md`, `index.json.backend.*` |
+| Frontend | Detect frontend layer missions, page/API/state/session patterns, and frontend verification targets | `frontend/*.md`, `index.json.frontend.*` |
+| Boundaries | Detect FE/BE seams, command/state seams, contract coupling, auth/session boundaries, and boundary verification targets | `boundaries/*.md`, `index.json.boundaries.*` |
+| Critical flows | Capture only high-blast-radius flows that are strong enough to deserve their own docs | `critical-flows/*.md` |
 
 ### Optional Lanes
 
@@ -166,7 +169,8 @@ This avoids duplicated, contradictory, or uneven output.
 - dominant patterns
 - start here by task
 - high-risk boundaries
-- critical flows
+- backend and frontend entry guidance
+- critical flows when they are truly high value
 - source-of-truth and freshness reminder
 - generated docs available for this repo
 
@@ -184,6 +188,7 @@ Each generated markdown doc should aim to include:
 - `Representative snippet`
 - `Risk when changing`
 - `Confidence`
+- `Verification targets`
 
 Not every repo will support every section equally, but the writer should prefer
 this schema over ad hoc summaries.
@@ -194,8 +199,12 @@ this schema over ad hoc summaries.
 - `00-metadata.json` should record the one-pass topology using `pre_scan`, `execution`, `synthesis`, and the discovery lanes used.
 - `00-metadata.json` should also record `evidence_priority = gitnexus-first | local-fallback`.
 - `index.json` should support both keyword lookup and task-oriented lookup.
+- `index.json` should separate backend, frontend, and boundary patterns instead of pretending one end-to-end document can verify both sides equally well.
 - Prefer task buckets such as:
   - `add backend endpoint`
+  - `change backend handler flow`
+  - `change domain lifecycle`
+  - `change infrastructure mapping`
   - `add command`
   - `change auth`
   - `change session`
@@ -203,6 +212,8 @@ this schema over ad hoc summaries.
   - `touch middleware`
   - `touch outbox`
   - `add frontend api call`
+  - `change frontend state/session flow`
+  - `change frontend page/composable flow`
 
 ## Update Triggers
 

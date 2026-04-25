@@ -8,12 +8,13 @@ version: "1.0.0"
 
 ## Overview
 
-**Role:** Test-first behavior gate  
-**Job:** Prove the target behavior with a failing test before writing production code, then pass it with the smallest change  
-**Output:** Focused test evidence, minimal implementation, and a trustworthy TDD handoff
+**Role:** Nested test-first behavior proof loop  
+**Job:** Prove the target behavior with a failing test before writing production code, then pass it with the smallest change and return evidence to the parent phase  
+**Output:** Focused test evidence, minimal implementation, and a trustworthy TDD exit target
 
 ## Beer Flow Integration
 
+- `test-driven-development` is a nested subflow, not a replacement top-level Beer route.
 - From `debugging`: preserve root-cause evidence and return RED/GREEN proof to the debug or planned repair path.
 - From `executing`: stay inside the current phase contract. TDD does not expand scope.
 - Before `validating`: provide test evidence as validation input; do not bypass Beer gates.
@@ -24,14 +25,31 @@ version: "1.0.0"
 Run in order unless TDD is legitimately waived.
 
 ```text
-1. Confirm the change should use TDD
-2. Write one focused failing test
-3. Verify RED fails for the right reason
-4. Write minimal production code
-5. Verify GREEN on focused and nearby regression scope
-6. Refactor without changing behavior
-7. Report evidence or waiver
+1. Enter from the parent phase
+2. Confirm the change should use TDD
+3. Write one focused failing test
+4. Verify RED fails for the right reason
+5. Write minimal production code
+6. Verify GREEN on focused and nearby regression scope
+7. Refactor without changing behavior
+8. Exit back to the parent phase
+9. Report evidence or waiver
 ```
+
+## Step 0: Enter
+
+Record:
+
+- `tdd_entry_phase`
+- target behavior
+- intended `tdd_exit_target`
+
+Typical entry phases:
+
+- `executing`
+- `debugging`
+- pre-`validating`
+- direct user request
 
 ## Step 1: Confirm TDD Applies
 
@@ -177,10 +195,18 @@ Minimum report content:
 - blocked attempts, if any
 - waiver or limitation, if any
 
+## Exit Targets
+
+- `beer:executing` for in-slice implementation work
+- `beer:debugging` when root-cause/repair framing still owns the parent loop
+- `beer:validating` when the proof was gathered before approval and should strengthen the next gate
+- `beer:reviewing` when changed code is ready for post-execution quality review
+- user handoff when blockers prevent trustworthy TDD progress
+
 ## Integration
 
 ```text
-executing implements a validated change
+executing owns an approved slice
     |
     v
 test-driven-development
@@ -188,7 +214,7 @@ test-driven-development
     +--> proving new behavior before writing code
     |
     v
-executing closes bead with stronger verification evidence
+executing continues with stronger verification evidence
 
 debugging finds root cause
     |
@@ -213,6 +239,7 @@ This workflow is done when:
 - blocked attempts were reported if any command could not produce valid TDD evidence
 - any refactor preserved green tests
 - the handoff records concrete TDD evidence or a legitimate waiver
+- the exit target is explicit
 
 ## Guardrails
 

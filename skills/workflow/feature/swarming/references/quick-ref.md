@@ -22,12 +22,15 @@ version: "1.0"
 - ready work-item list or bead list
 - worker bootstrap note
 - auto-accept policy result when launch is automatic
+- `beer orchestrate --apply --json`
+- `beer worker-bootstrap --json`
 
 ## Coordinator Checklist
 
 - confirm route is really `swarming`
 - confirm worker count is proportional
 - confirm worker scope is bounded
+- confirm each worker profile matches the task shape
 - confirm blockers surface quickly
 - confirm `state.json` stays authoritative
 - confirm handoff target is explicit
@@ -47,6 +50,7 @@ version: "1.0"
 ## One-Line Reminder
 
 `swarming` coordinates. `executing` implements.
+Coordinator profile stays `orchestrator`; workers should use the resolved `coding` or `research_synthesis` profile as appropriate.
 
 ## Evidence Reminder
 

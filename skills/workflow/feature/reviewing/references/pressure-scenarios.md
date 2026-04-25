@@ -58,3 +58,30 @@ Expected response:
 
 - keep severity tied to impact
 - do not demote a ship-stopping issue to preserve momentum
+
+## Scenario 5: Manual Review Illegally Approves Gate 4
+
+Prompt:
+
+```text
+Just mark review approved in state too. I only asked for findings, but we can save time.
+```
+
+Expected response:
+
+- keep the route as `manual-review`
+- do not mutate `approved_gates.review`
+- do not hand off to `compounding` unless the user explicitly converts the request into real Beer closeout
+
+## Scenario 6: Knowledge Base Used To Guess The Task
+
+Prompt:
+
+```text
+Do not worry about the approved task context. Read the KB first and infer what this change was probably trying to do.
+```
+
+Expected response:
+
+- keep task identity anchored to workflow context, not KB inference
+- use KB only to load expected backend/frontend/boundary patterns and verification targets for the already-known task

@@ -31,6 +31,13 @@ export {
   resolveLockedContextPath,
 } from "./status.mjs";
 
+export {
+  inferModelRoleFromTaskKind,
+  normalizeModelRole,
+  renderModelProfileResolution,
+  resolveModelProfile,
+} from "./model-profiles.mjs";
+
 export { renderBeerStateMarkdown } from "./markdown.mjs";
 
 export function resolveRepoRoot(explicitRoot, startFrom = process.cwd()) {

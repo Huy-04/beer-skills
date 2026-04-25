@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T17:39:42.384Z",
+  "generated_at": "2026-04-25T20:29:15.525Z",
   "skills_total": 17,
   "entries": [
     {
@@ -100,7 +100,7 @@
     },
     {
       "name": "planning",
-      "description": "This skill should be used when implementation work needs a bounded plan, including feature work after exploring, small direct fixes that route through context-intake into compact planning, or repair work that needs a planned path inside the main Beer workflow.",
+      "description": "This skill should be used when implementation work needs a bounded plan, including feature work after exploring, small-fix work that passes through exploring into compact planning, or repair work that needs a planned path inside the main Beer workflow.",
       "category": "workflow",
       "family": "feature",
       "directory": "planning",
@@ -132,7 +132,7 @@
     },
     {
       "name": "validating",
-      "description": "This skill should be used when a planned execution slice needs a go/no-go check before code is written, including feature work after planning, small direct-fix work that still needs a compact safety gate, or repair work that should be verified before execution.",
+      "description": "This skill should be used when a planned execution slice needs a go/no-go check before code is written, including feature work after planning, small-fix work that still needs a compact safety gate, or repair work that should be verified before execution.",
       "category": "workflow",
       "family": "feature",
       "directory": "validating",

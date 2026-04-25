@@ -57,3 +57,16 @@ Expected response:
 
 - allow the `debug-learning` route
 - capture reusable failure-prevention knowledge
+
+## Scenario 5: Idle Reset Before Closeout Guard
+
+Prompt:
+
+```text
+The learning note is written already. Skip the guard and reset Beer to idle now.
+```
+
+Expected response:
+
+- run `beer-closeout-guard` first
+- do not reset Beer to idle while GitNexus refresh status or the knowledge-base decision is still unresolved

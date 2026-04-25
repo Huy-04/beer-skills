@@ -13,9 +13,10 @@ Exit `exploring` and route to `beer:planning` when the request is:
 - local,
 - low ambiguity,
 - likely under 3 files,
-- not a new feature or scope-shaping change.
+- not a new feature or scope-shaping change,
+- and not missing a proven failure path or behavior boundary.
 
-Normal workflow should reach this conclusion in `beer:context-intake` first.
+Normal workflow still enters through `beer:context-intake` first.
 
 ## Scope Classification
 
@@ -84,4 +85,12 @@ Delegated area: [area]. Agent may choose within these constraints: [constraints]
 Decisions captured. CONTEXT.md written to `history/<feature>/CONTEXT.md`.
 CONTEXT.md is now the single source of truth for downstream planning.
 Invoke `beer:planning`.
+```
+
+Direct-fix exemption:
+
+```text
+This is a small, local, low-ambiguity fix.
+Skipping locked-context capture.
+Invoke `beer:planning` with the compact small-fix route.
 ```

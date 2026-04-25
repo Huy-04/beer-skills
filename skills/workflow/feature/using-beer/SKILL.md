@@ -58,8 +58,8 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 
 1. **Preflight**: Run `node scripts/commands/beer-preflight.mjs --json` to probe dependencies and determine workflow readiness.
 2. **Onboard or check state**: Run `node scripts/commands/onboard-beer.mjs --repo-root <path>` if needed.
-3. **Run intake first**: Hand normal task work to `context-intake` so it can recover context and choose between `planning` and `exploring`.
-4. **Use the intake result**: If the task is a small direct fix, intake may route straight to `planning`; if decisions remain unlocked, intake routes to `exploring`.
+3. **Run intake first**: Hand normal task work to `context-intake` so it can recover or seed context for `exploring`.
+4. **Use the exploring result**: `context-intake` always hands normal work to `exploring`; `exploring` decides whether to lock context or take the small-fix exemption into `planning`.
 5. **Scout**: Read `node .beer/scripts/commands/beer-status.mjs --json`.
 6. **Classify inside the session**: Use the current model to decide `route`, `risk`, `run_style`, and `orchestration_strategy`.
 7. **Lock the route**: State the chosen Beer skill and why coding is or is not allowed yet.
@@ -97,9 +97,9 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 
 | Request shape | First skill | Notes |
 |---|---|---|
-| Build, change, investigate, or resume normal repo work | `beer:context-intake` | Intake gate. Recover context first, then route to `planning` or `exploring` |
-| Small direct fix | `beer:context-intake` | Intake may route directly to `planning` when the fix is local, low ambiguity, and likely under 3 files |
-| Locked-context implementation task | `beer:context-intake` | Intake reopens the current state and typically routes to `planning` |
+| Build, change, investigate, or resume normal repo work | `beer:context-intake` | Intake gate. Recover or seed context first, then hand off to `exploring` |
+| Small-fix work | `beer:context-intake` | Intake still hands off to `exploring`; `exploring` may take the small-fix exemption into compact planning |
+| Locked-context implementation task | `beer:context-intake` | Intake reopens the current state, then hands off to `exploring` |
 | Use TDD, write test first, or add regression test before fixing | `beer:test-driven-development` | Can run directly or be invoked by `executing` / `debugging` |
 | Review or verify completed work | `beer:reviewing` | Jump straight to review flow |
 | Debug failing behavior | `beer:debugging` | Root-cause lens inside the active Beer flow |
@@ -110,7 +110,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 
 Internal helpers stay off the main first-skill table. Pull them in only when an active skill needs prompt transformation, graph depth, or a background pattern cache.
 
-**When in doubt:** start with `beer:context-intake` for normal task work. Let intake decide whether the next phase is `planning` or `exploring`.
+**When in doubt:** start with `beer:context-intake` for normal task work. Let intake hand the task to `exploring`.
 
 ## Flow Lock
 
@@ -149,9 +149,9 @@ Trigger: `/go [feature]` or "run full pipeline"
 
 ```mermaid
 flowchart TD
-    CC[context-intake] -->|locked context or small fix| PL[planning]
-    CC -->|decisions still unlocked| EX[exploring]
-    EX --> G1{Gate 1<br/>Approve CONTEXT.md?}
+    CC[context-intake] --> EX[exploring]
+    EX -->|small-fix exemption| PL[planning]
+    EX -->|lock CONTEXT.md| G1{Gate 1<br/>Approve CONTEXT.md?}
     G1 -->|Yes| PL
     PL --> G2{Gate 2<br/>Approve phase-plan.md?}
     G2 -->|Yes| VA[validating]
@@ -168,7 +168,7 @@ flowchart TD
 
 | Gate | When | Ask |
 |---|---|---|
-| **GATE 1** | After exploring | "Approve `CONTEXT.md` before planning?" |
+| **GATE 1** | After exploring when `CONTEXT.md` was written | "Approve `CONTEXT.md` before planning?" |
 | **GATE 2** | After planning | "Approve `phase-plan.md` before current-phase prep?" |
 | **GATE 3** | After validating | "Approve execution target: `swarming` or direct `executing`?" |
 | **GATE 4** | After reviewing | "Approve closeout and compounding?" |
@@ -198,7 +198,7 @@ If `.beer/HANDOFF.json` exists:
 6. Failed spikes send the work back to planning.
 7. Never skip validating for feature work.
 8. Read `history/learnings/critical-patterns.md` before planning when it exists.
-9. Small, local, low-ambiguity fixes under 3 files still pass through intake, but intake can route them straight to `planning` without `exploring`.
+9. Small, local, low-ambiguity fixes under 3 files still pass through intake and `exploring`; only `exploring` may take the small-fix exemption into compact planning.
 10. Non-trivial coding work does not start until Beer route lock is explicit.
 11. Build failures are not an acceptable substitute for checking exact contracts before implementation.
 
@@ -234,7 +234,7 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Combination | Use when | Typical path |
 |---|---|---|
-| `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with compact artifacts and validator gate |
+| `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with compact artifacts and validator gate |
 | `route = feature`, `work_intent = delivery`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
 | `route = feature`, `work_intent = repair`, `risk = normal|high`, `orchestration_strategy = single-worker`, `run_style = guided` | Broader repair work after a bug or failing build/test is understood | Same main workflow, but planning and validation stay anchored to the proven failure path |
 | `route = feature`, `risk = normal|high`, `orchestration_strategy = multi-worker`, `run_style = guided` | Feature work that decomposes cleanly into disjoint slices | Full workflow plus worker dispatch, coordination, and stricter validation |

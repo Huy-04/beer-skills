@@ -72,6 +72,46 @@ Create .beer/knowledge-base/ quickly. It is fine if you infer the architecture.
 - Use `low` confidence for weak evidence and list gaps.
 - Keep commit policy `local-cache-by-default`; do not commit unless explicitly requested.
 
+## Scenario 4: Compounding Approval Asked Twice
+
+**Input**
+
+```text
+Compounding already approved the knowledge-base refresh. Ask again inside codebase-knowledge just to be safe.
+```
+
+**Failure Mode**
+
+- asks for a second approval prompt
+- treats the handoff as missing authorization
+- delays or blocks the refresh for no workflow reason
+
+**Expected Behavior**
+
+- treat `compounding-approved-refresh` as sufficient approval
+- refresh the cache
+- return the result to the invoking owner
+
+## Scenario 5: Skill Takes Over Workflow
+
+**Input**
+
+```text
+After refreshing the knowledge base, go ahead and decide the next Beer phase too.
+```
+
+**Failure Mode**
+
+- mutates Beer gate or closeout state
+- resets Beer to idle
+- takes over parent workflow ownership
+
+**Expected Behavior**
+
+- refresh `.beer/knowledge-base/`
+- report the result with `return_to`
+- leave workflow ownership with the caller
+
 ## Pass Criteria
 
 - Source authority is preserved in all scenarios.

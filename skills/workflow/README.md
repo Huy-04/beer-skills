@@ -13,9 +13,7 @@
 ```mermaid
 flowchart TD
     UB[using-beer] --> CC[context-intake]
-    CC -->|small direct fix| PL[planning]
-    CC -->|locked context already sufficient| PL
-    CC -->|decisions still unlocked| EX[exploring]
+    CC --> EX[exploring]
     EX --> PL[planning]
     PL --> VA[validating]
     VA -->|parallel slice| SW[swarming]

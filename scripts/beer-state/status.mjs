@@ -96,16 +96,16 @@ export function assessPlanningGate(status, options = {}) {
     return {
       ok: true,
       code: "ready_small_fix",
-      summary: "Planning may proceed on the small direct-fix route without locked feature context.",
+      summary: "Planning may proceed on the small-fix route without locked feature context.",
       route: requestedRoute,
       work_intent: workIntent,
       context_stage: contextStage,
       context_path: taskContextPath || (contextStage === "seeded" ? seedPath : contextPath),
       next_steps: [
         taskContextPath
-          ? `Read ${taskContextPath} to keep the ${workIntent === "delivery" ? "direct-fix" : workIntent} scope explicit.`
-          : `Write a bounded history/<feature>/CONTEXT.md so the ${workIntent === "delivery" ? "direct fix" : workIntent} scope stays explicit.`,
-        "Keep planning compact and confirm the direct-fix exemption still applies.",
+          ? `Read ${taskContextPath} to keep the ${workIntent === "delivery" ? "small-fix" : workIntent} scope explicit.`
+          : `Write a bounded history/<feature>/CONTEXT.md so the ${workIntent === "delivery" ? "small-fix" : workIntent} scope stays explicit.`,
+        "Keep planning compact and confirm the small-fix exemption still applies.",
         "If scope expands or product decisions appear, route through beer:context-intake and beer:exploring.",
       ],
     };
@@ -308,7 +308,7 @@ export function buildRecommendedActions(status) {
     }
     if (featureSlug && (route === "small-fix" || workIntent !== "delivery")) {
       const routeLabel = route === "small-fix"
-        ? (workIntent === "delivery" ? "direct-fix" : workIntent)
+        ? (workIntent === "delivery" ? "small-fix" : workIntent)
         : workIntent;
       return [
         `Resume by reopening the active context for ${activeSkill || "the current skill"}.`,
@@ -345,6 +345,12 @@ export function renderBeerStatus(status) {
   const risk = status.state_json.risk || "normal";
   const runStyle = status.state_json.run_style || "guided";
   const orchestrationStrategy = status.state_json.orchestration_strategy || "(none)";
+  const orchestratorModel = status.config.models?.orchestrator?.model || "(none)";
+  const orchestratorReasoning = status.config.models?.orchestrator?.reasoning_effort || "(none)";
+  const codingModel = status.config.models?.coding?.model || "(none)";
+  const codingReasoning = status.config.models?.coding?.reasoning_effort || "(none)";
+  const researchModel = status.config.models?.research_synthesis?.model || "(none)";
+  const researchReasoning = status.config.models?.research_synthesis?.reasoning_effort || "(none)";
   const contextStage = status.state_json.context_stage || "none";
   const contextPath =
     deriveContextPath(status) ||
@@ -354,6 +360,7 @@ export function renderBeerStatus(status) {
   const contractVerified = status.state_json.contract_verified ? "yes" : "no";
   const sliceCount = Number(status.state_json.slice_count || 0);
   const plannedWorkers = Number(status.state_json.planned_workers || 0);
+  const activeWorkers = Array.isArray(status.state_json.active_workers) ? status.state_json.active_workers : [];
   const closeoutReady = status.state_json.closeout_ready ? "yes" : "no";
   const handoff = status.handoff.exists ? "present" : "absent";
   const onboarding = status.onboarding.exists
@@ -370,12 +377,14 @@ export function renderBeerStatus(status) {
     `Risk: ${risk}`,
     `Run style: ${runStyle}`,
     `Orchestration: ${orchestrationStrategy}`,
+    `Model roles: orchestrator=${orchestratorModel} (${orchestratorReasoning}), coding=${codingModel} (${codingReasoning}), research_synthesis=${researchModel} (${researchReasoning})`,
     `Skill: ${skill}`,
     `Context: ${contextStage}`,
     `Context path: ${contextPath}`,
     `Phase: ${phase}`,
     `Slices: ${sliceCount}`,
     `Planned workers: ${plannedWorkers}`,
+    `Active workers: ${activeWorkers.length}`,
     `Execution target: ${executionTarget}`,
     `Gate approvals: context=${approvedGates.context ? "yes" : "no"}, phase_plan=${approvedGates.phase_plan ? "yes" : "no"}, execution=${approvedGates.execution ? "yes" : "no"}, review=${approvedGates.review ? "yes" : "no"}`,
     `Contract verified: ${contractVerified}`,
@@ -393,6 +402,15 @@ export function renderBeerStatus(status) {
     "",
     "Next reads:",
     ...status.next_reads.map((item) => `- ${item}`),
+    ...(activeWorkers.length > 0
+      ? [
+          "",
+          "Active worker profiles:",
+          ...activeWorkers.map((worker) =>
+            `- ${worker.codex_name || "(unnamed)"}: ${worker.role || "(no role)"} -> ${worker.model || "(no model)"} (${worker.reasoning_effort || "(no reasoning)"})${worker.task_kind ? ` [${worker.task_kind}]` : ""}${worker.bead_id ? ` bead=${worker.bead_id}` : ""}${worker.status ? ` status=${worker.status}` : ""}`,
+          ),
+        ]
+      : []),
     "",
     "Recommended actions:",
     ...status.recommended_actions.map((item) => `- ${item}`),

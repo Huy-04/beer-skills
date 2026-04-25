@@ -10,6 +10,7 @@ version: "1.1"
 
 - Only run on explicit user request or compounding-approved refresh.
 - If invoked from compounding's refresh handoff, do not ask for a second approval prompt here.
+- Record `invoking_owner` and `return_to` before scanning.
 - Normal feature planning/validation may read existing KB entries but must not auto-generate a new KB.
 - Current repository source wins over `.beer/knowledge-base/`.
 - Store `.beer/knowledge-base/` inside the current project/repo, not globally.
@@ -21,6 +22,8 @@ version: "1.1"
 - Default execution is one-pass real scan -> child-agent lane fan-out -> single-writer synthesis.
 - Evidence priority is `gitnexus-first` when graph evidence is available, otherwise `local-fallback`.
 - If child agents are unavailable, degrade locally but keep the same output contract.
+- This skill refreshes cache artifacts only; it does not own Beer gates or idle reset.
+- Separate backend, frontend, and boundary patterns. Do not treat a single full-stack end-to-end story as the default verification unit.
 
 ## Scan Command
 
@@ -130,6 +133,9 @@ Do not force all of these into every repo. Generate only the docs supported by e
 - [ ] `entries[]` point to real files
 - [ ] `search_index` is keyword-oriented
 - [ ] `task_index` is implementation-task-oriented
+- [ ] backend patterns are separated from frontend patterns
+- [ ] boundaries are modeled separately from BE and FE layer patterns
+- [ ] task entries can point review toward layer/boundary verification targets
 
 ## Doc Checklist
 
@@ -146,6 +152,10 @@ Do not force all of these into every repo. Generate only the docs supported by e
       "backend/request-lifecycle.md",
       "backend/module-template.md",
       "conventions/implementation-rules.md"
+    ],
+    "change backend handler flow": [
+      "backend/request-lifecycle.md",
+      "backend/domain-rules-and-lifecycle.md"
     ],
     "add frontend api call": [
       "frontend/app-structure-and-api-access.md",

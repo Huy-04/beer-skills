@@ -44,7 +44,7 @@
 - nearby pattern to follow: `<summary>`
 - why this stays small: `<summary>`
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 - root cause: `<verbatim sentence from debugging>`
 - failing command: `<command>`

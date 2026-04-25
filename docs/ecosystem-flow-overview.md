@@ -18,9 +18,9 @@ the next skill or session to continue without guessing.
 ```mermaid
 flowchart TD
     UB[using-beer] --> CI[context-intake]
-    CI -->|small direct fix| SP[planning]
-    CI -->|locked context already sufficient| PL[planning]
-    CI --> EX[exploring<br/>when context is not locked yet]
+    CI --> EX[exploring<br/>intake always hands off here]
+    EX -->|small-fix exemption| SP[planning]
+    EX -->|locked context| PL[planning]
     SP --> SV[validating]
     SV --> SE[executing]
     EX --> PL
@@ -65,7 +65,7 @@ flowchart LR
 | Skill | Purpose |
 |---|---|
 | `using-beer` | entry point, routing, gates, and resume logic |
-| `context-intake` | recover context, classify the task, and route to planning or exploring |
+| `context-intake` | recover context, load or seed it, and hand off to exploring |
 | `exploring` | lock product or implementation decisions into `CONTEXT.md` |
 | `planning` | turn the active route into an execution plan and lock worker strategy |
 | `validating` | decide whether the planned worker strategy and slice boundaries are safe to execute |

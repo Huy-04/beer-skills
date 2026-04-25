@@ -6,7 +6,7 @@ version: "1.0"
 
 # executing Workflow
 
-## Phase 0: Determine the Route
+## Phase 0: Determine the Execution Path
 
 Read `.beer/state.json` first.
 
@@ -22,7 +22,7 @@ Then identify the active work item:
 - swarm route -> worker assignment from the coordinator
 
 If the route or scope is unclear, stop and ask for clarification or hand back to
-the coordinator. Do not guess.
+the coordinator. Do not guess. `executing` does not invent a new route locally.
 
 If `approved_gates.execution` is false, stop and return to `beer:validating`.
 
@@ -52,6 +52,7 @@ changing code.
 - record the active work item in `.beer/state.json`
 - make the file scope explicit before editing
 - if the work item unexpectedly branches into multiple independent tasks, stop and return to `planning` and `validating`
+- only the orchestrator may convert this into a multi-worker path
 
 ## Phase 3: Implement
 
@@ -85,6 +86,12 @@ Completion note should include:
 - verification run
 - next owner
 
+For swarm-worker execution, the completion report back to the coordinator
+should also make blocker state explicit:
+
+- `blocker: none` when the assigned work item is complete
+- `blocker: <reason>` when the worker cannot continue safely
+
 Write the completion note to a stable evidence file:
 
 - all approved Beer routes: `history/<feature>/execution-evidence.md`
@@ -106,6 +113,8 @@ Next owner guide:
 - swarm worker finished assigned work -> report to the coordinator
 - final approved slice finished -> `beer:reviewing`
 - scope expanded or route no longer fits -> `beer:planning` then `beer:validating`
+
+Only the orchestrator or direct-route owner should advance the global workflow to `beer:reviewing`.
 
 ## Phase 6: Context Safety
 

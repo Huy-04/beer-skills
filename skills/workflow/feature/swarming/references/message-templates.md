@@ -9,7 +9,7 @@ version: "1.0"
 ## Worker Start
 
 ```text
-Swarm start for <slice>. Your assigned work is <task or bead>. Stay inside the validated scope and report blockers immediately.
+Swarm start for <slice>. Your assigned work is <task or bead>. Assigned profile: <role> -> <model> (<reasoning_effort>). Stay inside the validated scope and report blockers immediately.
 ```
 
 ## Status Check

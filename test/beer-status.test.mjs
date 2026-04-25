@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { buildNextReads, buildRecommendedActions, deriveFeatureSlug } from "../scripts/beer-state/status.mjs";
+import { buildNextReads, buildRecommendedActions, deriveFeatureSlug, renderBeerStatus } from "../scripts/beer-state/status.mjs";
 
 function baseStatus(overrides = {}) {
   return {
@@ -15,6 +15,13 @@ function baseStatus(overrides = {}) {
     handoff: {
       exists: false,
       feature: "",
+    },
+    config: {
+      models: {
+        orchestrator: { model: "gpt-5.4", reasoning_effort: "high" },
+        coding: { model: "gpt-5.3-codex", reasoning_effort: "high" },
+        research_synthesis: { model: "gpt-5.4-mini", reasoning_effort: "medium" },
+      },
     },
     state_markdown: {
       feature: "(none)",
@@ -31,6 +38,8 @@ function baseStatus(overrides = {}) {
       route: "",
       ...overrides,
     },
+    next_reads: [],
+    recommended_actions: [],
   };
 }
 
@@ -65,23 +74,6 @@ test("buildRecommendedActions resumes only when real workflow state exists", () 
   assert.equal(actions[0], "Resume by reopening the active context for using-beer.");
 });
 
-test("buildRecommendedActions asks direct-fix routes to restore missing CONTEXT", () => {
-  const actions = buildRecommendedActions(
-    baseStatus({
-      active_skill: "planning",
-      phase: "planning",
-      route: "small-fix",
-      feature_slug: "login-copy",
-      context_path: "history/login-copy/CONTEXT.md",
-    }),
-  );
-
-  assert.deepEqual(actions, [
-    "Resume by reopening the active context for planning.",
-    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix work stays explicit before planning or execution.",
-  ]);
-});
-
 test("buildRecommendedActions asks small-fix routes to create bounded CONTEXT when missing", () => {
   const actions = buildRecommendedActions(
     baseStatus({
@@ -94,7 +86,7 @@ test("buildRecommendedActions asks small-fix routes to create bounded CONTEXT wh
 
   assert.deepEqual(actions, [
     "Resume by reopening the active context for planning.",
-    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix work stays explicit before planning or execution.",
+    "Create or refresh history/login-copy/CONTEXT.md so the small-fix work stays explicit before planning or execution.",
   ]);
 });
 
@@ -126,4 +118,29 @@ test("buildNextReads includes both AGENTS.md and CLAUDE.md when present", () => 
   const reads = buildNextReads(status);
 
   assert.deepEqual(reads.slice(0, 2), ["AGENTS.md", "CLAUDE.md"]);
+});
+
+test("renderBeerStatus shows configured model roles", () => {
+  const output = renderBeerStatus(baseStatus());
+
+  assert.match(output, /Model roles: orchestrator=gpt-5\.4 \(high\), coding=gpt-5\.3-codex \(high\), research_synthesis=gpt-5\.4-mini \(medium\)/);
+});
+
+test("renderBeerStatus shows active worker profile assignments", () => {
+  const output = renderBeerStatus(baseStatus({
+    active_workers: [
+      {
+        codex_name: "worker-1",
+        role: "coding",
+        task_kind: "implement",
+        model: "gpt-5.3-codex",
+        reasoning_effort: "high",
+        bead_id: "BEAD-12",
+        status: "active",
+      },
+    ],
+  }));
+
+  assert.match(output, /Active workers: 1/);
+  assert.match(output, /worker-1: coding -> gpt-5\.3-codex \(high\) \[implement\] bead=BEAD-12 status=active/);
 });

@@ -99,6 +99,20 @@ export function buildDefaultConfig() {
       task_tracker: "beads",
       graph_engine: "gitnexus",
     },
+    models: {
+      orchestrator: {
+        model: "gpt-5.4",
+        reasoning_effort: "high",
+      },
+      coding: {
+        model: "gpt-5.3-codex",
+        reasoning_effort: "high",
+      },
+      research_synthesis: {
+        model: "gpt-5.4-mini",
+        reasoning_effort: "medium",
+      },
+    },
   };
 }
 

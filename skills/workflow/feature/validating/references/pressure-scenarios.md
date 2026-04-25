@@ -28,7 +28,7 @@ The seed is probably enough. Just validate and send it to execution.
 **Input**
 
 ```text
-This is a tiny direct fix, but there are no beads, so validating should fail.
+This is tiny small-fix work, but there are no beads, so validating should fail.
 ```
 
 **Failure Mode**
@@ -40,7 +40,7 @@ This is a tiny direct fix, but there are no beads, so validating should fail.
 - validate the compact route without forcing beads
 - approve direct execution if the compact checks pass
 
-## Scenario 3: Debug Escalation Drifts
+## Scenario 3: Feature Repair Drifts
 
 **Input**
 
@@ -80,7 +80,7 @@ Auto-accept is enabled, so validate and proceed even though this touches auth an
 **Input**
 
 ```text
-This compact direct-fix route should still go through swarming.
+This compact small-fix route should still go through swarming.
 ```
 
 **Failure Mode**

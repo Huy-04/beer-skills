@@ -32,6 +32,9 @@ beer update
 | `beer auto-accept --gate <gate> --json` | check whether a gate may auto-advance |
 | `beer dependencies` | print dependency status for the current bundle |
 | `beer planning-gate --route <route> --json` | check whether planning may proceed |
+| `beer model-profile --role <role> --json` | resolve the configured model profile for a Beer role |
+| `beer orchestrate --json` | build the current orchestration plan from Beer state |
+| `beer worker-bootstrap --json` | build spawn-ready worker payloads from current swarm state |
 
 Use `--repo-root /path/to/project` only when you want to target a different repo
 than the current working directory.
@@ -52,6 +55,9 @@ Use these when Beer is not installed globally:
 | Refresh the current repo's GitNexus index | `npx --yes --package github:Huy-04/beer-skills beer-skills index --json` |
 | Show dependency status | `npx --yes --package github:Huy-04/beer-skills beer-skills dependencies` |
 | Check planning gate | `npx --yes --package github:Huy-04/beer-skills beer-skills planning-gate --route feature --json` |
+| Resolve a configured model profile | `npx --yes --package github:Huy-04/beer-skills beer-skills model-profile --task-kind search --json` |
+| Build the current orchestration plan | `npx --yes --package github:Huy-04/beer-skills beer-skills orchestrate --json` |
+| Build spawn-ready worker payloads | `npx --yes --package github:Huy-04/beer-skills beer-skills worker-bootstrap --json` |
 
 ## Commands Inside an Onboarded Repo
 
@@ -64,6 +70,9 @@ Use these when Beer is not installed globally:
 | Refresh the current repo's GitNexus index | `node .beer/scripts/commands/beer-cli.mjs index --json` |
 | Show dependency status | `node .beer/scripts/commands/beer-dependencies.mjs` |
 | Check planning gate | `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` |
+| Resolve a configured model profile | `node .beer/scripts/commands/beer-model-profile.mjs --task-kind implement --json` |
+| Build the current orchestration plan | `node .beer/scripts/commands/beer-orchestrate.mjs --json` |
+| Build spawn-ready worker payloads | `node .beer/scripts/commands/beer-worker-bootstrap.mjs --json` |
 | Check pre-edit Beer flow lock manually | `node .beer/scripts/commands/beer-flow-guard.mjs --tool Edit --path src/foo.ts --json` |
 | Check review-time quantity and pattern guard manually | `node .beer/scripts/commands/beer-review-guard.mjs --json` |
 | Check compounding closeout obligations manually | `node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base not-needed --json` |
@@ -84,6 +93,11 @@ Use these when Beer is not installed globally:
 - `beer update` updates the global Beer package from GitHub, then resyncs Beer skills and managed guideline files in the current repo across Claude and Codex.
 - `beer init` removes old Beer skills in `./.claude/skills/` and `./.agents/skills/`, reinstalls the current set, and syncs `AGENTS.md` / `CLAUDE.md`.
 - `beer refresh` updates repo-local managed files in `.beer/` and resyncs Beer skills plus managed guideline files.
+- `beer status` includes the repo-local model-role mapping from `.beer/config.json` so you can confirm orchestrator / coding / research defaults.
+- `beer model-profile` resolves the effective profile for an explicit role or a task kind, so coordinators can choose worker models from repo-local Beer config instead of hardcoding them.
+- `beer orchestrate` reads `.beer/state.json` and `.beer/config.json`, resolves coordinator/worker profiles, and can materialize swarm worker assignments with `--apply`.
+- `beer worker-bootstrap` turns active swarm worker assignments into spawn-ready payloads/prompts for the host runtime.
+- The host runtime mapping from those payloads into real worker launches is documented in [docs/host-runtime-contract.md](docs/host-runtime-contract.md).
 - Beer installs Claude Code hooks into `.claude/settings.json` so `beer flow-guard` runs automatically on `PreToolUse` for `Edit|MultiEdit|Write`.
 - Beer installs Codex hooks into `.codex/hooks.json` and enables them from `.codex/config.toml`.
 - Both Claude and Codex get a closeout hook so `beer closeout-guard` blocks closeout when GitNexus refresh or the knowledge-base decision is still missing.

@@ -18,11 +18,11 @@ Public reference for the **17 skills** in the Beer ecosystem.
 | `beer:reviewing` | Execution is complete and quality/closeout must be checked | Findings, UAT outcome, closeout decision |
 | `beer:compounding` | Feature work or debug work finished with reusable lessons | Learnings file and promoted critical patterns |
 
-### Debug Workflow (1)
+### Nested Workflow Lens (1)
 
 | Skill | When to invoke | Key output |
 |---|---|---|
-| `beer:debugging` | Build failures, runtime errors, blocked work, failing tests, or integration issues | Root cause and repair path |
+| `beer:debugging` | Build failures, runtime errors, blocked work, failing tests, or integration issues inside the active workflow | Root cause plus explicit exit target back into the parent flow |
 
 ## Support (5)
 
@@ -46,20 +46,25 @@ Public reference for the **17 skills** in the Beer ecosystem.
 ```mermaid
 flowchart TD
     U[using-beer] --> C[context-intake]
-    C -->|small direct fix| P[planning]
-    C -->|locked context already sufficient| P
-    C -->|decisions still unlocked| X[exploring]
+    C --> X[exploring]
+    X --> P[planning]
     P --> V[validating]
-    V --> E[executing]
-    X --> P2[planning]
-    P2 --> V2[validating]
-    V2 -->|direct slice| E2[executing]
-    V2 -->|parallel slice| S[swarming]
-    S --> E2
-    E2 --> R[reviewing]
+    V -->|single-worker| E[executing]
+    V -->|multi-worker| S[swarming]
+    S --> E2[executing workers]
+    E --> R[reviewing]
+    E2 --> R
     R --> O[compounding]
+    O --> I[idle]
 
-    U -->|debug| D[debugging]
+    X -. nested debug loop .-> D[debugging]
+    P -. nested debug loop .-> D
+    E -. nested debug loop .-> D
+    R -. nested debug loop .-> D
+    D -. exit target .-> P
+    D -. exit target .-> V
+    D -. exit target .-> E
+    D -. exit target .-> R
 ```
 
 ## Human Gates
@@ -75,16 +80,18 @@ flowchart TD
 
 | Axis | Values | Notes |
 |---|---|---|
-| `mode` | `small`, `standard` | Task size and workflow depth |
+| `route` | `feature`, `small-fix` | Workflow path and prerequisite depth |
+| `work_intent` | `delivery`, `repair`, `investigation` | Whether the work is new delivery, a fix, or diagnosis |
 | `risk` | `normal`, `high` | Blast radius and reversibility |
+| `orchestration_strategy` | `single-worker`, `multi-worker` | Execution topology after validation |
 | `run_style` | `guided`, `go` | Gate automation preference |
 
 | Common combination | Typical route |
 |---|---|
-| `small + normal + guided` | `using-beer -> context-intake -> planning -> validating -> executing` |
-| `standard + normal + guided` | full feature workflow |
-| `standard + high + guided` | full feature workflow plus deeper research and stricter validation |
-| `standard + normal/high + go` | full workflow with configurable auto-accept |
+| `small-fix + repair + normal + single-worker + guided` | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with compact scope |
+| `feature + delivery + normal + single-worker + guided` | full feature workflow with one bounded execution stream |
+| `feature + delivery + normal/high + multi-worker + guided` | full workflow with validated worker slices and coordinated execution |
+| `feature + repair + normal/high + any strategy + go` | same workflow with fewer pauses where Beer auto-accept allows |
 
 ## Utility Commands
 
@@ -110,5 +117,5 @@ node scripts/commands/beer-dependencies.mjs
 - [README](README.md)
 - [Documentation Index](docs/README.md)
 - [Ecosystem Flow Overview](docs/ecosystem-flow-overview.md)
-- [Mode Selection](docs/mode-selection.md)
-- [Mode Comparison](docs/mode-comparison.md)
+- [Route Selection](docs/route-selection.md)
+- [Route And Strategy Comparison](docs/route-strategy-comparison.md)

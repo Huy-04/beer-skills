@@ -4,12 +4,15 @@ export function parseCliArgs(argv) {
     subcommand: "",
     approval: "",
     repoRoot: undefined,
+    apply: false,
     json: false,
     route: undefined,
     request: "",
     risk: undefined,
     runStyle: undefined,
     gate: undefined,
+    role: undefined,
+    taskKind: undefined,
     tool: undefined,
     yes: false,
     dryRunTools: false,
@@ -47,6 +50,10 @@ export function parseCliArgs(argv) {
     }
     if (arg === "--json") {
       args.json = true;
+      continue;
+    }
+    if (arg === "--apply") {
+      args.apply = true;
       continue;
     }
     if (arg === "--route") {
@@ -130,6 +137,24 @@ export function parseCliArgs(argv) {
     }
     if (arg.startsWith("--gate=")) {
       args.gate = arg.slice("--gate=".length);
+      continue;
+    }
+    if (arg === "--role") {
+      args.role = remaining[index + 1];
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--role=")) {
+      args.role = arg.slice("--role=".length);
+      continue;
+    }
+    if (arg === "--task-kind") {
+      args.taskKind = remaining[index + 1];
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--task-kind=")) {
+      args.taskKind = arg.slice("--task-kind=".length);
       continue;
     }
     if (arg === "--help" || arg === "-h") {

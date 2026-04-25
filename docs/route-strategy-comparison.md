@@ -26,7 +26,7 @@ before any automatic gate crossing.
 
 | Combination | Typical use case | Typical route |
 |---|---|---|
-| `small-fix + normal + single-worker + guided` | bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with a compact gate |
+| `small-fix + normal + single-worker + guided` | bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with a compact gate |
 | `feature + normal + single-worker + guided` | normal feature work with one bounded stream | `using-beer -> context-intake -> exploring -> planning -> validating -> executing -> reviewing -> compounding -> idle` |
 | `feature + normal/high + multi-worker + guided` | decomposable feature with disjoint slices | same feature route, but validation dispatches multiple workers after Gate 3 |
 | `feature + repair + normal/high + any strategy + go` | trusted end-to-end run with fewer pauses | same route, but Beer may auto-advance where confidence allows |
@@ -39,12 +39,13 @@ flowchart TD
     S --> D[feature + repair + single-worker]
 
     A --> A0[context-intake]
-    A0 --> A1[planning]
-    A1 --> A2[validating compact]
-    A2 --> A3[executing]
+    A0 --> A1[exploring]
+    A1 --> A2[compact planning]
+    A2 --> A3[validating compact]
+    A3 --> A4[executing]
 
     B --> B1[context-intake]
-    B1 --> B2[exploring or locked context]
+    B1 --> B2[exploring]
     B2 --> B3[planning]
     B3 --> B4[validating]
     B4 --> B5[executing]
@@ -52,7 +53,7 @@ flowchart TD
     B6 --> B7[compounding]
 
     C --> C1[context-intake]
-    C1 --> C2[exploring or locked context]
+    C1 --> C2[exploring]
     C2 --> C3[planning with slice ownership]
     C3 --> C4[validating worker boundaries]
     C4 --> C5[swarming / worker dispatch]

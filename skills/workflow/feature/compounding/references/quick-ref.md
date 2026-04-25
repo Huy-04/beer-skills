@@ -52,6 +52,7 @@ Promote only if all are true:
 - GitNexus reindex follows the automatic post-task path; it does not need a separate human approval prompt.
 - Knowledge-base refresh stays approval-based.
 - Post-task GitNexus refresh means re-indexing the current repo, not reinstalling or upgrading the GitNexus tool.
+- Run `beer-closeout-guard.mjs` before resetting Beer to idle.
 
 ## One-Line Reminder
 

@@ -84,7 +84,7 @@ At the end of every skill, update `.beer/state.json` first, then regenerate `.be
 
 ### Direct-Fix Signal
 
-Keep `beer:context-intake` as intake, but let it skip `beer:exploring` when the task is:
+Keep `beer:context-intake` as intake. If the task is:
 
 - local,
 - low ambiguity,

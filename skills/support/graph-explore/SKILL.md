@@ -39,8 +39,8 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 | | |
 |---|---|
 | **Use when** | Another Beer skill needs GitNexus-backed structure or impact context |
-| **Needs** | Indexed repo access or a degraded fallback path |
-| **Produces** | Graph-backed answers, confidence level, and a clear degraded signal when unavailable |
+| **Needs** | Indexed repo access or a degraded fallback path, plus the calling Beer phase/question |
+| **Produces** | Graph-backed answers, confidence level, a clear degraded signal when unavailable, and a return-to-caller evidence packet |
 | **Next** | Return to the calling Beer skill |
 
 ## 30-Second Version
@@ -48,7 +48,8 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 1. Confirm the target repo is indexed.
 2. Choose the smallest GitNexus query that answers the caller's question.
 3. Report findings with confidence and source tool.
-4. Return `status: degraded` when GitNexus or indexing is unavailable.
+4. Return findings to the calling Beer phase without mutating Beer workflow state.
+5. Return `status: degraded` when GitNexus or indexing is unavailable.
 
 ---
 
@@ -62,7 +63,9 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 ## Ownership Boundary
 
 - This helper maximizes evidence; the calling workflow skill owns decisions, state mutation, planning artifacts, and code changes.
+- Record the calling Beer phase or skill before deep graph work so the answer can return to the right owner cleanly.
 - If GitNexus is unavailable, stale, or not indexed, report the limitation with enough detail for the caller to continue locally or ask the user to index.
+- `graph-explore` does not become the active workflow route; it is a support lens that returns evidence to the caller.
 
 ---
 
@@ -171,6 +174,7 @@ Report findings using the template in `references/communication.md`. Key rules:
 - State confidence: High / Medium / Low
 - Distinguish clearly whether the answer came from `query`, `context`, `impact`, `cypher`, or route analysis
 - If confidence is Low, GitNexus is unavailable, or the target repo is not indexed, return `status: degraded` to the caller
+- Include the intended return owner, for example `return_to: beer:exploring` or `return_to: beer:debugging`
 
 ---
 
@@ -199,6 +203,7 @@ Detailed tool documentation: `references/gitnexus-tools.md`
 - `references/communication.md` - Findings report template and confidence rules
 - `references/quick-ref.md` - Common queries, troubleshooting, integration notes
 - `references/workflow.md` - Step-by-step graph exploration workflow
+- `references/pressure-scenarios.md` - Edge cases for support-lens behavior
 - `references/gitnexus-tools.md` - Full GitNexus MCP tool documentation
 
 ---

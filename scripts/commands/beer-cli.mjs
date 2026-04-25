@@ -8,7 +8,9 @@ import { assessAutoAccept, renderAutoAccept } from "./beer-auto-accept.mjs";
 import { main as closeoutGuardMain } from "./beer-closeout-guard.mjs";
 import { buildBeerDependencyReport } from "./beer-dependencies.mjs";
 import { main as flowGuardMain } from "./beer-flow-guard.mjs";
+import { main as orchestrateMain } from "./beer-orchestrate.mjs";
 import { main as reviewGuardMain } from "./beer-review-guard.mjs";
+import { main as workerBootstrapMain } from "./beer-worker-bootstrap.mjs";
 import { parseCliArgs } from "../beer-cli/args.mjs";
 import { printHelp } from "../beer-cli/help.mjs";
 import { runCheckTools } from "../beer-cli/check-tools.mjs";
@@ -21,6 +23,7 @@ import { runUpdate } from "../beer-cli/update.mjs";
 import { recordApproval, renderApproval } from "./beer-approve.mjs";
 import { resolveRepoRoot as resolveOnboardRepoRoot } from "./onboard-beer.mjs";
 import { main as planningGateMain } from "./beer-planning-gate.mjs";
+import { main as modelProfileMain } from "./beer-model-profile.mjs";
 import { readBeerStatus, renderBeerStatus } from "../beer-state/core.mjs";
 
 function runCheckToolsWrapped(args) {
@@ -78,6 +81,23 @@ function runPlanningGate(args) {
   return planningGateMain(gateArgs);
 }
 
+function runModelProfile(args) {
+  const profileArgs = [];
+  if (args.repoRoot) {
+    profileArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.role) {
+    profileArgs.push("--role", args.role);
+  }
+  if (args.taskKind) {
+    profileArgs.push("--task-kind", args.taskKind);
+  }
+  if (args.json) {
+    profileArgs.push("--json");
+  }
+  return modelProfileMain(profileArgs);
+}
+
 function runFlowGuard(args) {
   const guardArgs = [];
   if (args.repoRoot) {
@@ -123,6 +143,34 @@ function runReviewGuard(args) {
   return reviewGuardMain(guardArgs);
 }
 
+function runOrchestrate(args) {
+  const orchestrationArgs = [];
+  if (args.repoRoot) {
+    orchestrationArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.apply) {
+    orchestrationArgs.push("--apply");
+  }
+  if (args.json) {
+    orchestrationArgs.push("--json");
+  }
+  return orchestrateMain(orchestrationArgs);
+}
+
+function runWorkerBootstrap(args) {
+  const bootstrapArgs = [];
+  if (args.repoRoot) {
+    bootstrapArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.apply) {
+    bootstrapArgs.push("--apply");
+  }
+  if (args.json) {
+    bootstrapArgs.push("--json");
+  }
+  return workerBootstrapMain(bootstrapArgs);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const args = parseCliArgs(argv);
 
@@ -151,12 +199,18 @@ export async function main(argv = process.argv.slice(2)) {
       return runDependencies(args);
     case "planning-gate":
       return runPlanningGate(args);
+    case "model-profile":
+      return runModelProfile(args);
     case "flow-guard":
       return runFlowGuard(args);
     case "closeout-guard":
       return runCloseoutGuard(args);
     case "review-guard":
       return runReviewGuard(args);
+    case "orchestrate":
+      return runOrchestrate(args);
+    case "worker-bootstrap":
+      return runWorkerBootstrap(args);
     case "help":
     default:
       printHelp();

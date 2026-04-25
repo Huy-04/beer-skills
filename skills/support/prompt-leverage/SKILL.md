@@ -36,8 +36,8 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 | | |
 |---|---|
 | **Use when** | A raw prompt needs structure, repo context, or Beer-specific normalization |
-| **Needs** | The original request plus any local files, skills, or Beer artifacts it references |
-| **Produces** | A context-aware execution prompt with preserved identifiers and explicit assumptions |
+| **Needs** | The original request, the invoking owner, and any local files, skills, or Beer artifacts it references |
+| **Produces** | A context-aware execution prompt, a context packet, preserved identifiers, and explicit assumptions |
 | **Next** | Hand the upgraded prompt to the downstream Beer skill or coding agent |
 
 ## 30-Second Version
@@ -47,6 +47,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 3. Extract constraints, unknowns, and response-language intent.
 4. Synthesize a proportional execution prompt.
 5. Ask only when missing information blocks safe execution.
+6. Return the raw request plus contextual prompt to the invoking owner.
 
 ---
 
@@ -70,6 +71,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 4. **Synthesize semantically**: infer intent from the whole context, not from keyword categories.
 5. **Ask or assume**: ask up to 3 questions only when missing information blocks safe execution; otherwise state assumptions.
 6. **Hand off** a prompt with context, objective, scope, execution guidance, verification, output contract, and stop/ask criteria.
+7. **Return** the packet to the invoking owner instead of silently taking over routing.
 
 ---
 
@@ -96,6 +98,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 - `prompt-leverage` owns prompt normalization, context packet construction, Beer language-policy application during prompt synthesis, and ambiguity surfacing.
 - `using-beer` or the calling workflow skill owns routing, state mutation, and final execution decisions.
 - This skill may return a stronger execution prompt and structured context, but it must keep the raw request available for the router.
+- Record the invoking owner and intended `return_to` target when prompt upgrade is part of a larger Beer workflow.
 
 ---
 
@@ -206,9 +209,10 @@ An upgraded prompt must include:
 - `references/language-policy.md` - multilingual defaults, preservation rules, and glossary guidance
 - `references/quick-ref.md` - Escape commands, script usage, examples
 - `references/workflow.md` - Step-by-step invocation workflow
+- `references/pressure-scenarios.md` - Edge cases for prompt upgrade authority and preservation
 
 ---
 
 ## Handoff
 
-> Contextual prompt built. Route with both the raw request and the contextual prompt.
+> Contextual prompt built. Return to the invoking owner with both the raw request and the contextual prompt.

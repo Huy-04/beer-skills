@@ -1,6 +1,6 @@
 ---
 skill: planning
-purpose: Workflow for feature planning, small direct-fix planning, and repair planning inside the main flow
+purpose: Workflow for feature planning, compact small-fix planning, and repair planning inside the main flow
 version: "1.0"
 ---
 
@@ -13,13 +13,14 @@ version: "1.0"
 There are three entry routes:
 
 1. `feature route`
-2. `small direct-fix route`
+2. `small-fix route`
 3. `feature repair intent`
 
 `planning` does not choose among those routes from scratch. Upstream phases provide the route:
 
-- `context-intake` provides `small-fix` or routes the work onward to `exploring`
+- `context-intake` hands normal task work to `exploring`
 - `exploring` hands off locked feature work as `feature`
+- `exploring` also hands off small-fix exemptions as `small-fix`
 - `debugging` hands off proven repair planning as `work_intent = repair`
 
 ## Route 1: Feature Planning
@@ -79,7 +80,7 @@ After approval, write:
 - `history/<feature>/phase-<n>-story-map.md`
 - current-phase beads only when decomposition is actually needed
 
-## Route 2: Small Direct-Fix Planning
+## Route 2: Small-Fix Planning
 
 Use this route when the request is local, low ambiguity, and likely under 3 files.
 
@@ -91,10 +92,11 @@ Proceed only if all are true:
 2. no product decision needs to be locked
 3. expected scope is still bounded after a quick scout
 4. the fix is small enough that a single-phase plan is believable
+5. `exploring` already handed the work off as `route = small-fix`
 
 If any of those fail, reject the route:
 
-- bounce to `beer:context-intake` when the task is no longer clearly a small fix
+- bounce to `beer:exploring` when the task is no longer clearly a small fix
 - bounce to `beer:debugging` when the work is actually an unproven repair path
 
 Technical gate:
@@ -129,7 +131,7 @@ Rules:
 - no forced story map
 - no beads unless the work still decomposes into multiple worker-sized tasks
 
-## Route 3: Debug-Escalation Planning
+## Route 3: Feature Repair Planning
 
 Use this route after `debugging` proved the root cause but the repair is too large or risky for a direct patch.
 
@@ -223,7 +225,7 @@ Must include:
 - risk map
 - how learnings changed the plan
 
-For debug escalation, preserve the root-cause sentence verbatim.
+For feature repair planning, preserve the root-cause sentence verbatim.
 
 ## phase-plan.md
 
@@ -233,7 +235,7 @@ For debug escalation, preserve the root-cause sentence verbatim.
 - each phase describes a real observable outcome
 - select only the first phase for current prep
 
-### Small and Debug Routes
+### Small-Fix And Repair Routes
 
 - single phase by default
 - use a second phase only when there is a real before/after boundary
@@ -279,7 +281,7 @@ Prepare:
 - story map
 - beads if decomposition is needed
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 Prepare:
 
@@ -287,7 +289,7 @@ Prepare:
 
 Do not create a story map or beads unless the fix still needs them.
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 Prepare:
 
@@ -330,7 +332,7 @@ Do not mutate `route` just because planning disagrees with it. Reject the route 
 | Problem | Action |
 |---|---|
 | Only seed context exists | Stop and route to `beer:exploring` |
-| Incoming route says `small-fix`, but the work now needs locked decisions or broader intake | Stop and bounce to `beer:context-intake` |
+| Incoming route says `small-fix`, but the work now needs locked decisions or broader discovery | Stop and bounce to `beer:exploring` |
 | Tiny fix is being overplanned | Keep the same `small-fix` route, but shrink the artifacts and prep depth |
 | Debug repair lost the root-cause sentence | Stop and restore the debug evidence in the plan |
 | Current slice still needs too many steps | Split it or create explicit beads after approval |

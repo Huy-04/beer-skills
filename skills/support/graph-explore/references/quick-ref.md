@@ -6,6 +6,13 @@ version: "1.1"
 
 # graph-explore - Quick Reference
 
+## Support Lens Reminder
+
+- record the calling Beer phase before deep graph work
+- answer one concrete structural question at a time
+- return evidence to the caller
+- do not mutate Beer state, `CONTEXT.md`, plans, or code from this helper
+
 ---
 
 ## MCP Commands
@@ -110,6 +117,10 @@ Pass graph findings back to the calling skill as structured data. Do not write d
 ### With Planning
 
 Pass similar implementations, communities, and cross-module dependencies to `planning` as structured findings. Reference files in the plan only when they materially inform scope.
+
+### With Debugging
+
+Return caller/callee, process, or blast-radius evidence to `debugging` when local inspection is too shallow to prove the fault area confidently.
 
 ---
 

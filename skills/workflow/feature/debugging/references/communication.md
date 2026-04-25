@@ -73,7 +73,7 @@ Learned pattern: <debug note path or none>
 Ready for: <executing/reviewing/compounding/user>
 ```
 
-## Debug-Escalation Handoff
+## Debug Repair Handoff
 
 ```text
 Root cause is proven, but the repair is too broad for a direct patch.
@@ -82,6 +82,16 @@ Invoke beer:planning.
 Root cause: <verbatim sentence>
 Repair boundary: <files/modules/scope>
 Verification anchor: <original failing command>
+```
+
+## Nested Debug Exit Template
+
+```text
+Debug entry phase: <exploring/planning/executing/reviewing>
+Debug reason: <classification>
+Root cause: <verbatim sentence>
+Exit target: <beer:executing | beer:test-driven-development | beer:planning | beer:validating | beer:reviewing | beer:compounding | user>
+Why this exit: <one sentence>
 ```
 
 ## Writing Rules

@@ -62,6 +62,7 @@ full feature.
 - `reviewing` owns the quality gate and closeout decision.
 - `debugging` owns reproduction evidence and root-cause proof.
 - `compounding` owns the learning synthesis, promotion decision, and deciding whether a knowledge-base refresh is worth asking the user for.
+- the orchestrator owns the final closeout-state mutation and idle reset after compounding obligations are satisfied.
 - `compounding` does not require subagents by default. Local synthesis is the default path.
 
 ## 30-Second Version
@@ -73,7 +74,7 @@ full feature.
 5. Promote only the small subset that is truly reusable across future work.
 6. Let the workflow auto-refresh the current repo's GitNexus index when task closeout changed graph-relevant code.
 7. Ask the user about `.beer/knowledge-base/` only when the finished work produced reusable project patterns worth preserving.
-8. Run `beer closeout-guard` before claiming compounding is complete.
+8. Run `beer closeout-guard` before claiming compounding is complete or resetting Beer to idle.
 9. Update Beer state and clear temporary compounding artifacts.
 
 ## Output Contract
@@ -103,12 +104,14 @@ Optional supporting artifacts:
 - Never treat post-task GitNexus refresh as a tool update; it means re-indexing the current repo, typically via `npx gitnexus analyze`.
 - Never ask for knowledge-base refresh unless the finished work created reusable patterns, conventions, architecture notes, or critical-flow guidance worth keeping.
 - Never finish compounding while GitNexus refresh status or the knowledge-base decision is still missing from `.beer/state.json`.
+- Never reset Beer to idle before `beer closeout-guard` says closeout obligations are complete.
 
 ## State Contract
 
 - `state.json` is authoritative.
 - For review-derived closeout, use `review_route` in `.beer/state.json` as the route source instead of inventing a closeout route after the fact.
 - Record the compounding route, learnings file path, promotion count, and idle reset trail in `.beer/state.json`.
+- Treat `beer closeout-guard` as the last gate before the orchestrator resets Beer to idle.
 - Return Beer to idle after compounding while preserving the closeout trail fields (`compounding_route`, `learnings_file`, `critical_promotions`) for the just-finished work.
 - Regenerate `.beer/STATE.md` after `state.json` changes.
 

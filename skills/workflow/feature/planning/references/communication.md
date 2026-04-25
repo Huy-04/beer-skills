@@ -27,14 +27,14 @@ Locked context is present, so I am writing the full feature plan before current-
 ### Small Direct-Fix Route
 
 ```text
-Route: small direct fix.
+Route: small-fix.
 This does not need full feature planning, so I am keeping the plan compact and single-phase.
 ```
 
-### Debug-Escalation Route
+### Feature Repair Route
 
 ```text
-Route: debug escalation.
+Route: feature repair.
 The root cause is proven, but the repair is too large or risky for a direct patch.
 I am planning the repair without expanding into unrelated feature work.
 ```
@@ -43,7 +43,7 @@ I am planning the repair without expanding into unrelated feature work.
 
 ```text
 Phase plan written.
-Current route: [feature | small direct fix | debug escalation]
+Current route: [feature | small-fix | feature repair]
 Current slice: [name]
 Risk notes: [summary]
 
@@ -70,7 +70,7 @@ Stop immediately if:
 
 1. planning starts from seed instead of locked context on the feature route
 2. a tiny fix is being stretched into a multi-phase roadmap
-3. a debug repair loses its root-cause anchor
+3. a feature repair loses its root-cause anchor
 4. beads are being created before approval
 5. planning is drifting into execution details
 6. planning quietly changes the incoming route instead of bouncing back upstream
@@ -80,7 +80,7 @@ Stop immediately if:
 ### Anti-Pattern 1: "Every task needs the full planning stack"
 
 Wrong:
-- force a tiny direct fix through a large phase structure
+- force tiny small-fix work through a large phase structure
 
 Correct:
 - scale the plan to the route
@@ -93,7 +93,7 @@ Wrong:
 Correct:
 - require locked context for the feature route
 
-### Anti-Pattern 3: "Debug escalation means redesign everything"
+### Anti-Pattern 3: "Feature repair means redesign everything"
 
 Wrong:
 - turn a proven bug repair into unrelated feature planning

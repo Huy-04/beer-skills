@@ -15,6 +15,7 @@ version: "1.1"
 ```markdown
 ## Graph Exploration Summary
 
+- Return to: beer:<calling skill>
 - Source: GitNexus
 - Status: ok
 - Tooling: query + impact
@@ -56,6 +57,7 @@ High because the repo is indexed and `query` and `impact` point to the same area
 - Rank by relevance when available
 - Suggest a concrete next step
 - Link to specific files or symbols when available
+- State which Beer skill should receive the result next
 
 ### Don't
 - Be vague: "auth stuff found"
@@ -80,6 +82,7 @@ High because the repo is indexed and `query` and `impact` point to the same area
 ```markdown
 Graph exploration complete.
 
+Return to: beer:planning
 Status: ok
 Found:
 - 3 relevant processes
@@ -153,6 +156,7 @@ High because indexed process discovery and blast-radius analysis agree.
 ## Graph Exploration: [Topic]
 
 ### Metadata
+- Return to: [beer:exploring / beer:planning / beer:debugging / ...]
 - Source: GitNexus
 - Status: [ok/degraded]
 - Tooling: [query/context/impact/cypher/...]

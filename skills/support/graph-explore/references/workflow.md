@@ -11,12 +11,21 @@ version: "1.1"
 ## Overview
 
 **Role:** Codebase discovery via knowledge graph  
-**Job:** Find patterns, communities, relationships, processes, and blast radius  
+**Job:** Find patterns, communities, relationships, processes, and blast radius for a calling Beer phase  
 **When:** GitNexus is available and the target repo is indexed
+
+This helper is a support lens. It gathers graph evidence and returns it to the
+calling Beer skill. It does not take over Beer state or workflow ownership.
 
 ---
 
 ## Step 1: Check Readiness
+
+Record the calling owner before graph work:
+
+- `calling_phase`
+- the concrete question to answer
+- the expected return owner such as `beer:exploring`, `beer:planning`, `beer:validating`, `beer:debugging`, or `beer:reviewing`
 
 ```yaml
 list_repos: {}
@@ -106,6 +115,7 @@ LIMIT 20
 
 Return structured findings to the calling skill. Do not write directly to CONTEXT artifacts. The caller owns context mutation. Include:
 
+- `return_to`: the calling Beer owner
 - `source`: `gitnexus`
 - `status`: `ok` or `degraded`
 - `processes`: relevant execution flows when `query` is used
@@ -123,8 +133,9 @@ If Route or Tool nodes are absent in the index, report that explicitly rather th
 ```
 context-intake
     |
-    |-- GitNexus ready? --> graph-explore (this skill)
+    |-- GitNexus ready? --> graph-explore (this helper)
     |                       -> fast structural context
+    |                       -> returns findings to caller
     |
     `-- GitNexus not ready? --> degraded result to caller
                                 -> caller chooses Grep/Glob/Read fallback

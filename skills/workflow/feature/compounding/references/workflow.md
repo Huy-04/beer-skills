@@ -129,7 +129,18 @@ If the user declines:
 - keep the learnings and closeout trail
 - finish compounding normally
 
-## Phase 7: Update Beer State and Cleanup
+## Phase 7: Closeout Guard
+
+Before resetting Beer to idle, run:
+
+```powershell
+node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base <approved | declined | not-needed | refreshed> --json
+```
+
+Only continue when the result is an allow/pass outcome for closeout. Treat any
+block as a missing closeout obligation, not as optional advice.
+
+## Phase 8: Update Beer State and Cleanup
 
 Update `.beer/state.json` first with:
 

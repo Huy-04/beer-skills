@@ -13,7 +13,7 @@ version: "1.0"
 - Treat `.beer/knowledge-base/` as an optional accelerator only.
 - Use scout beads for context gathering only, never for delivery decomposition.
 - Never auto-resume from beads or `HANDOFF.json`.
-- Decide the next phase deliberately: `planning` for bounded work, `exploring` for unlocked decisions.
+- Always hand normal task work to `beer:exploring` after context recovery or seeding.
 
 ## Core Checks
 
@@ -106,9 +106,9 @@ Add `.beer/seed/05-gaps.md` when confidence is degraded or low.
 
 | Situation | Next phase |
 |---|---|
-| Bounded task, context already sufficient | `beer:planning` |
-| Seeded or partial context, decisions still unlocked | `beer:exploring` |
-| Existing locked context and no decision reopen | `beer:planning` |
+| Locked context recovered | `beer:exploring` |
+| Seeded or partial context created | `beer:exploring` |
+| Existing locked context reopened | `beer:exploring` |
 
 ## Quality Checklist
 
@@ -120,6 +120,7 @@ Add `.beer/seed/05-gaps.md` when confidence is degraded or low.
 - [ ] `.beer/seed/` written when context is inferred
 - [ ] `05-gaps.md` written for degraded context
 - [ ] Locked context never overwritten
+- [ ] `next_handoff` set to `beer:exploring`
 
 ## Red Flags
 
