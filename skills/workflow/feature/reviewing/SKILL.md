@@ -102,6 +102,7 @@ record the findings plainly and hand the work back without inventing bead state.
 
 - Never summarize before listing findings.
 - Never pass review without credible verification evidence.
+- Never pass review if the current diff exceeds the route's code-quantity or pattern-spread guard.
 - Never skip UAT for user-visible behavior just because code review looked clean.
 - Never require full feature closeout for a manual review-only request.
 - Never force bead creation when the active route does not have live bead state.
@@ -114,6 +115,7 @@ record the findings plainly and hand the work back without inventing bead state.
 - `state.json` is authoritative.
 - Record the review route, review status, open findings count, and next handoff in `.beer/state.json`.
 - Read `execution_evidence_path` from `.beer/state.json` when present. If it is missing, require equivalent execution evidence before passing review.
+- Run `beer-review-guard.mjs` before claiming the review gate is green. Treat a `BLOCK` result as a repair or reslice signal, not as optional advice.
 - Set `review_status = pass` only after findings, evidence, and required UAT are green.
 - Set `approved_gates.review = true` only after the closeout decision is genuinely approved.
 - Regenerate `.beer/STATE.md` after `state.json` changes.

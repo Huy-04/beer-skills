@@ -3,9 +3,10 @@
 Beer routes work by choosing:
 
 1. `route`
-2. `risk`
-3. `orchestration_strategy`
-4. `run_style`
+2. `work_intent`
+3. `risk`
+4. `orchestration_strategy`
+5. `run_style`
 
 These axes now drive the workflow directly. Beer no longer uses a separate
 workflow-size flag.
@@ -29,12 +30,21 @@ npx --yes --package github:Huy-04/beer-skills beer-skills auto-accept --repo-roo
 
 ## Choose `route`
 
-| Signal | Choose `small-fix` when... | Choose `feature` when... | Choose `debug-escalation` when... |
+| Signal | Choose `small-fix` when... | Choose `feature` when... |
+|---|---|---|
+| Scope | likely 1-3 local files | broader feature or multi-step change |
+| Decisions | no new product decision | behavior or boundary decisions matter |
+| Planning depth | compact plan is enough | full planning and review are justified |
+| Typical trigger | typo, tiny bug, obvious wiring fix | feature, refactor, contract change, or broader repair |
+
+## Choose `work_intent`
+
+| Signal | `delivery` | `repair` | `investigation` |
 |---|---|---|---|
-| Scope | likely 1-3 local files | broader feature or multi-step change | root cause is proven but repair needs planning |
-| Decisions | no new product decision | behavior or boundary decisions matter | repair must stay anchored to a proven bug |
-| Planning depth | compact plan is enough | full planning and review are justified | bounded repair plan is needed |
-| Typical trigger | typo, tiny bug, obvious wiring fix | feature, refactor, contract change | broad debug repair after investigation |
+| User goal | add/change behavior | fix proven failing behavior | find cause first |
+| Planning shape | delivery slices | repair slices anchored to the failing path | diagnosis before planning |
+| Key proof | feature completion | failing path no longer fails | root-cause sentence plus evidence |
+| Typical trigger | feature request | bug fix, regression repair, build/test fix | "why is this failing?" |
 
 ## Choose `risk`
 
@@ -83,20 +93,20 @@ belongs to `run_style`.
 
 | If the request looks like... | Recommended classification |
 |---|---|
-| typo, tiny bug fix, bounded refactor | `small-fix + normal + single-worker + guided` |
-| normal feature work with clear scope | `feature + normal + single-worker + guided` |
-| decomposable feature across multiple boundaries | `feature + normal/high + multi-worker + guided` |
-| proven bug that now needs broader repair | `debug-escalation + normal/high + single-worker + guided` |
-| trusted pipeline run with fewer pauses | keep the same route/risk/strategy, switch `run_style = go` |
+| typo, tiny bug fix, bounded refactor | `small-fix + repair + normal + single-worker + guided` |
+| normal feature work with clear scope | `feature + delivery + normal + single-worker + guided` |
+| decomposable feature across multiple boundaries | `feature + delivery + normal/high + multi-worker + guided` |
+| proven bug that now needs broader repair | `feature + repair + normal/high + single-worker + guided` |
+| trusted pipeline run with fewer pauses | keep the same route/intent/risk/strategy, switch `run_style = go` |
 
 ## Examples
 
 | Request | Classification |
 |---|---|
-| "Rename this prop and update the tests" | `small-fix + normal + single-worker + guided` |
-| "Add invoice PDF export to order history" | `feature + normal + single-worker or multi-worker + guided` |
-| "Split auth checks across API and UI safely" | `feature + high + multi-worker + guided` |
-| "We found the root cause, now plan the broader repair" | `debug-escalation + normal/high + single-worker + guided` |
+| "Rename this prop and update the tests" | `small-fix + repair + normal + single-worker + guided` |
+| "Add invoice PDF export to order history" | `feature + delivery + normal + single-worker or multi-worker + guided` |
+| "Split auth checks across API and UI safely" | `feature + delivery + high + multi-worker + guided` |
+| "We found the root cause, now plan the broader repair" | `feature + repair + normal/high + single-worker + guided` |
 
 ## Related Docs
 

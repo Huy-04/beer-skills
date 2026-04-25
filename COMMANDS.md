@@ -27,6 +27,7 @@ beer update
 | `beer install beads` | install `bd` |
 | `beer status` | read current Beer state for a repo |
 | `beer flow-guard --tool Edit --path src/foo.ts --json` | inspect the pre-edit Beer gate manually |
+| `beer review-guard --json` | inspect review-time code quantity and pattern spread manually |
 | `beer closeout-guard --knowledge-base not-needed --json` | inspect closeout readiness manually |
 | `beer auto-accept --gate <gate> --json` | check whether a gate may auto-advance |
 | `beer dependencies` | print dependency status for the current bundle |
@@ -46,6 +47,7 @@ Use these when Beer is not installed globally:
 | Remove Beer from the current repo | `npx --yes --package github:Huy-04/beer-skills beer-skills uninstall --yes` |
 | Read repo status | `npx --yes --package github:Huy-04/beer-skills beer-skills status --json` |
 | Check auto-accept gate | `npx --yes --package github:Huy-04/beer-skills beer-skills auto-accept --gate validating --json` |
+| Check review-time quantity and pattern guard | `npx --yes --package github:Huy-04/beer-skills beer-skills review-guard --json` |
 | Record guided approval | `npx --yes --package github:Huy-04/beer-skills beer-skills approve phase-plan --json` |
 | Refresh the current repo's GitNexus index | `npx --yes --package github:Huy-04/beer-skills beer-skills index --json` |
 | Show dependency status | `npx --yes --package github:Huy-04/beer-skills beer-skills dependencies` |
@@ -63,6 +65,7 @@ Use these when Beer is not installed globally:
 | Show dependency status | `node .beer/scripts/commands/beer-dependencies.mjs` |
 | Check planning gate | `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` |
 | Check pre-edit Beer flow lock manually | `node .beer/scripts/commands/beer-flow-guard.mjs --tool Edit --path src/foo.ts --json` |
+| Check review-time quantity and pattern guard manually | `node .beer/scripts/commands/beer-review-guard.mjs --json` |
 | Check compounding closeout obligations manually | `node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base not-needed --json` |
 
 ## Commands While Developing Beer
@@ -84,7 +87,7 @@ Use these when Beer is not installed globally:
 - Beer installs Claude Code hooks into `.claude/settings.json` so `beer flow-guard` runs automatically on `PreToolUse` for `Edit|MultiEdit|Write`.
 - Beer installs Codex hooks into `.codex/hooks.json` and enables them from `.codex/config.toml`.
 - Both Claude and Codex get a closeout hook so `beer closeout-guard` blocks closeout when GitNexus refresh or the knowledge-base decision is still missing.
-- `beer approve review` also runs the automatic post-task GitNexus refresh path for the current repo.
+- `beer approve review` now requires the review-quality guard to pass first, then runs the automatic post-task GitNexus refresh path for the current repo.
 - `beer index` reruns the current repo's GitNexus refresh path manually when needed.
 - `beer uninstall` removes `.beer/` only. It does not remove global tools such
   as GitNexus or `bd`.
@@ -94,7 +97,7 @@ Use these when Beer is not installed globally:
 - Route, risk, run style, and orchestration strategy now belong to
   `beer:using-beer` during the live agent session, not to a standalone CLI classifier.
 - Every task should carry a `history/<feature>/CONTEXT.md`. Keep it compact for
-  `small-fix` and `debug-escalation`; reserve `.beer/seed/` for feature/debug
-  discovery before the context is locked.
+  `small-fix`, repair, and investigation work; reserve `.beer/seed/` for
+  feature discovery before the context is locked.
 - On Windows PowerShell, `beer` resolves through `beer.ps1`. Set
   `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` so the CLI can run.

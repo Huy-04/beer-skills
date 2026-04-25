@@ -2,7 +2,8 @@
 
 **Date**: <YYYY-MM-DD>
 **Feature**: <feature-slug>
-**Route**: `feature` | `small-fix` | `debug-escalation`
+**Route**: `feature` | `small-fix`
+**Work intent**: `delivery` | `repair` | `investigation`
 
 ## 1. Institutional Learnings
 

@@ -54,6 +54,7 @@ export function resolveLockedContextPath(status) {
 
 export function assessPlanningGate(status, options = {}) {
   const requestedRoute = normalizeRoute(options.route) || status.state_json.route || "feature";
+  const workIntent = status.state_json.work_intent || "delivery";
   const contextStage = status.state_json.context_stage || "none";
   const seedPath = status.state_json.seed_path || ".beer/seed/";
   const contextPath = resolveLockedContextPath(status);
@@ -64,6 +65,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "onboarding_missing",
       summary: "Planning blocked: Beer onboarding is missing.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -79,6 +81,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "state_missing",
       summary: "Planning blocked: .beer/state.json is missing.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -95,33 +98,15 @@ export function assessPlanningGate(status, options = {}) {
       code: "ready_small_fix",
       summary: "Planning may proceed on the small direct-fix route without locked feature context.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: taskContextPath || (contextStage === "seeded" ? seedPath : contextPath),
       next_steps: [
         taskContextPath
-          ? `Read ${taskContextPath} to keep the direct-fix scope explicit.`
-          : "Write a bounded history/<feature>/CONTEXT.md so the direct fix stays explicit.",
+          ? `Read ${taskContextPath} to keep the ${workIntent === "delivery" ? "direct-fix" : workIntent} scope explicit.`
+          : `Write a bounded history/<feature>/CONTEXT.md so the ${workIntent === "delivery" ? "direct fix" : workIntent} scope stays explicit.`,
         "Keep planning compact and confirm the direct-fix exemption still applies.",
         "If scope expands or product decisions appear, route through beer:context-intake and beer:exploring.",
-      ],
-    };
-  }
-
-  if (requestedRoute === "debug-escalation") {
-    const taskContextPath = deriveContextPath(status);
-    return {
-      ok: true,
-      code: "ready_debug_escalation",
-      summary: "Planning may proceed on the debug-escalation route when a concrete root cause exists.",
-      route: requestedRoute,
-      context_stage: contextStage,
-      context_path: taskContextPath || (contextStage === "locked" ? contextPath : ""),
-      next_steps: [
-        taskContextPath
-          ? `Read ${taskContextPath} to keep the debug route anchored.`
-          : "Write a bounded history/<feature>/CONTEXT.md that preserves the root-cause sentence.",
-        "Preserve the proven root-cause sentence in discovery.md and approach.md.",
-        "If the root cause is still unclear, return to beer:debugging before planning.",
       ],
     };
   }
@@ -132,6 +117,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "context_seeded",
       summary: `Planning blocked: seed context at ${seedPath} is not locked yet.`,
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: seedPath,
       next_steps: [
@@ -147,6 +133,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "context_not_locked",
       summary: "Planning blocked: no locked context is available yet.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: "",
       next_steps: [
@@ -162,6 +149,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "context_path_missing",
       summary: "Planning blocked: locked context does not point to a CONTEXT.md path.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -178,6 +166,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "context_file_missing",
       summary: `Planning blocked: locked CONTEXT.md is missing at ${contextPath}.`,
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -193,6 +182,7 @@ export function assessPlanningGate(status, options = {}) {
       code: "context_not_approved",
       summary: "Planning blocked: locked context exists, but Gate 1 approval is not recorded yet.",
       route: requestedRoute,
+      work_intent: workIntent,
       context_stage: contextStage,
       context_path: contextPath,
       next_steps: [
@@ -205,12 +195,17 @@ export function assessPlanningGate(status, options = {}) {
   return {
     ok: true,
     code: "ready",
-    summary: `Planning may proceed with locked context at ${contextPath}.`,
+    summary:
+      workIntent === "delivery"
+        ? `Planning may proceed with locked context at ${contextPath}.`
+        : `Planning may proceed with locked context at ${contextPath} while keeping the ${workIntent} intent explicit.`,
     route: requestedRoute,
+    work_intent: workIntent,
     context_stage: contextStage,
     context_path: contextPath,
     next_steps: [
       `Read ${contextPath} before discovery and phase planning.`,
+      ...(workIntent === "delivery" ? [] : [`Preserve the proven root cause or failing path in the plan because this is ${workIntent} work.`]),
       "Continue into beer:planning.",
     ],
   };
@@ -294,6 +289,7 @@ export function buildRecommendedActions(status) {
   const phase = status.state_json.phase || status.state_markdown.phase || "";
   const featureSlug = deriveFeatureSlug(status);
   const route = status.state_json.route || "";
+  const workIntent = status.state_json.work_intent || "delivery";
   const contextPath = deriveContextPath(status);
   const hasContextFile = contextPath && fs.existsSync(resolveStatusPath(status.repo_root, contextPath));
   const hasWorkflowState =
@@ -310,11 +306,13 @@ export function buildRecommendedActions(status) {
         `Read ${contextPath} before planning or execution work.`,
       ];
     }
-    if (featureSlug && (route === "small-fix" || route === "debug-escalation")) {
-      const routeLabel = route === "small-fix" ? "direct-fix" : "debug";
+    if (featureSlug && (route === "small-fix" || workIntent !== "delivery")) {
+      const routeLabel = route === "small-fix"
+        ? (workIntent === "delivery" ? "direct-fix" : workIntent)
+        : workIntent;
       return [
         `Resume by reopening the active context for ${activeSkill || "the current skill"}.`,
-        `Create or refresh history/${featureSlug}/CONTEXT.md so the ${routeLabel} route stays explicit before planning or execution.`,
+        `Create or refresh history/${featureSlug}/CONTEXT.md so the ${routeLabel} work stays explicit before planning or execution.`,
       ];
     }
     return [
@@ -334,11 +332,15 @@ export function renderBeerStatus(status) {
   const skill = status.state_json.active_skill || status.state_markdown.skill || "(none)";
   const phase = status.state_json.phase || status.state_markdown.phase || "(none)";
   const route = status.state_json.route || "(none)";
+  const workIntent = status.state_json.work_intent || "delivery";
   const executionTarget = status.state_json.execution_target || "(none)";
   const validationStatus = status.state_json.validation_status || "(none)";
   const validatorStatus = status.state_json.validator_status || "(none)";
   const verificationStatus = status.state_json.verification_status || "not-run";
   const gitNexusRefreshStatus = status.state_json.gitnexus_refresh_status || "(none)";
+  const codeQuantityStatus = status.state_json.code_quantity_status || "(none)";
+  const patternStatus = status.state_json.pattern_status || "(none)";
+  const reviewQualityStatus = status.state_json.review_quality_status || "(none)";
   const approvedGates = status.state_json.approved_gates || {};
   const risk = status.state_json.risk || "normal";
   const runStyle = status.state_json.run_style || "guided";
@@ -364,6 +366,7 @@ export function renderBeerStatus(status) {
     `Onboarding: ${onboarding}`,
     `Feature: ${feature}`,
     `Route: ${route}`,
+    `Work intent: ${workIntent}`,
     `Risk: ${risk}`,
     `Run style: ${runStyle}`,
     `Orchestration: ${orchestrationStrategy}`,
@@ -380,6 +383,9 @@ export function renderBeerStatus(status) {
     `Validator: ${validatorStatus}`,
     `Verification: ${verificationStatus}`,
     `GitNexus refresh: ${gitNexusRefreshStatus}`,
+    `Code quantity: ${codeQuantityStatus}`,
+    `Pattern: ${patternStatus}`,
+    `Review quality: ${reviewQualityStatus}`,
     `Epic: ${epicId}`,
     `Knowledge-base refresh: ${knowledgeBaseRefreshStatus}`,
     `Closeout ready: ${closeoutReady}`,

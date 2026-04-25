@@ -2,7 +2,8 @@
 
 **Date**: <YYYY-MM-DD>
 **Feature**: <feature-slug>
-**Route**: `feature` | `small-fix` | `debug-escalation`
+**Route**: `feature` | `small-fix`
+**Work intent**: `delivery` | `repair` | `investigation`
 
 ## 1. Summary
 
@@ -21,7 +22,7 @@
 | Phase 2: `<name>` | `<outcome>` | `<reason>` | `<proof>` | `<next>` |
 | Phase 3: `<name>` | `<outcome>` | `<reason>` | `<proof>` | `<next>` |
 
-Remove unused rows. Small-fix and debug-escalation routes usually keep only Phase 1.
+Remove unused rows. Small-fix and repair-focused plans usually keep only Phase 1.
 
 ## 4. Current Slice To Prepare
 
@@ -32,7 +33,7 @@ Remove unused rows. Small-fix and debug-escalation routes usually keep only Phas
 ## 5. Approval Summary
 
 - route: `<route>`
-- route/risk/orchestration/run style: `<feature|small-fix|debug-escalation> / <normal|high> / <single-worker|multi-worker> / <guided|go>`
+- route/work-intent/risk/orchestration/run style: `<feature|small-fix> / <delivery|repair|investigation> / <normal|high> / <single-worker|multi-worker> / <guided|go>`
 - current phase: `<phase>`
 - highest risk: `<summary>`
 - proposed execution target after validation: `<executing | swarming | pending validation>`

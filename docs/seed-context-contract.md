@@ -96,15 +96,15 @@ feature contract.
 If only `.beer/seed/` exists on the feature route, planning must stop and route back to
 `beer:exploring`.
 
-Small direct fixes and debug-escalation repairs may use route-specific planning
-without locked feature context when `beer-planning-gate.mjs --route small-fix`
-or `--route debug-escalation` passes. Those routes must stay narrow and must
-return to `beer:exploring` if the work becomes scope-shaping.
+Small direct fixes may use route-specific planning without locked feature
+context when `beer-planning-gate.mjs --route small-fix` passes. Broader repair
+work stays on the `feature` route and must return to `beer:exploring` when the
+work becomes scope-shaping or decision-shaping.
 
 ## Technical Enforcement
 
 - `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` must pass before feature planning starts
-- `node .beer/scripts/commands/beer-planning-gate.mjs --route small-fix` or `--route debug-escalation` may pass without locked context for narrow repair routes
+- `node .beer/scripts/commands/beer-planning-gate.mjs --route small-fix` may pass without locked context for narrow repair routes
 - the gate fails when onboarding or state is missing
 - on the feature route, the gate fails when `context_stage != locked`
 - on the feature route, the gate fails when locked state points to a missing `CONTEXT.md`

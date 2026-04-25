@@ -2,7 +2,8 @@
 
 **Date**: <YYYY-MM-DD>
 **Feature**: <feature-slug>
-**Route**: `feature` | `small-fix` | `debug-escalation`
+**Route**: `feature` | `small-fix`
+**Work intent**: `delivery` | `repair` | `investigation`
 **Risk/Orchestration/Run style**: `normal|high` / `single-worker|multi-worker` / `guided|go`
 
 ## 1. What This Slice Changes

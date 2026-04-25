@@ -48,8 +48,8 @@ Find and fix the root cause of a failure through evidence-first triage, reproduc
 |---|---|
 | **Use when** | Build, test, runtime, integration, UAT, or worker-blocker failures need root cause analysis |
 | **Needs** | Exact symptom or failing command, relevant repo state, and any bead/context links |
-| **Produces** | Classification, reproduction evidence, root-cause sentence, verified fix or `debug-escalation` handoff, debug note when reusable |
-| **Next** | `beer:test-driven-development`, `beer:executing`, `beer:planning --route debug-escalation`, `beer:reviewing`, `beer:compounding`, or user handoff |
+| **Produces** | Classification, reproduction evidence, root-cause sentence, verified fix or repair handoff, debug note when reusable |
+| **Next** | `beer:test-driven-development`, `beer:executing`, `beer:planning`, `beer:reviewing`, `beer:compounding`, or user handoff |
 
 ## 30-Second Version
 
@@ -58,7 +58,7 @@ Find and fix the root cause of a failure through evidence-first triage, reproduc
 3. **Check known patterns**: Search `history/learnings/critical-patterns.md` before deep investigation.
 4. **Reproduce**: Run the exact failing command or define why reproduction is unavailable.
 5. **Diagnose**: Read only implicated files, inspect recent changes/context, and write one root-cause sentence.
-6. **Fix path**: Use `beer:test-driven-development` when behavior should be regression-tested; use `beer:planning --route debug-escalation` when the repair is too broad for a direct patch; otherwise make the smallest safe fix.
+6. **Fix path**: Use `beer:test-driven-development` when behavior should be regression-tested; use `beer:planning` with `work_intent = repair` when the repair is too broad for a direct patch; otherwise make the smallest safe fix.
 7. **Verify**: Re-run the original failing command plus the nearest meaningful regression scope.
 8. **Learn**: Record reusable failure patterns with `scripts/write-debug-note.mjs`.
 
@@ -86,7 +86,7 @@ Root cause: <file>:<line or component> - <what is wrong and why it causes the sy
 
 - Small, obvious fixes can be implemented directly after root cause is proven.
 - Behavior bugs should go through `beer:test-driven-development` so RED proves the regression before GREEN fixes it.
-- Cross-cutting fixes should route to `beer:planning` with `route = debug-escalation` instead of being hidden inside debugging.
+- Cross-cutting fixes should route to `beer:planning` with `work_intent = repair` instead of being hidden inside debugging.
 - Decision violations against `CONTEXT.md` must be reported before silently changing behavior.
 
 ### Phase 4: Verify and Report
@@ -102,7 +102,7 @@ Root cause: <file>:<line or component> - <what is wrong and why it causes the sy
 Use the Node note writer instead of shell heredocs when capturing reusable debug patterns:
 
 ```bash
-node skills/workflow/debug/debugging/scripts/write-debug-note.mjs \
+node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
   --classification "Build failure in api" \
   --root-cause "src/api.ts:42 - null config was passed into createClient" \
   --trigger "npm run build after config refactor" \
@@ -117,7 +117,7 @@ node skills/workflow/debug/debugging/scripts/write-debug-note.mjs \
 - Never fix a symptom when the root cause sentence is still vague.
 - Never call a behavior fix complete without TDD evidence or an explicit, narrow waiver.
 - Never silently override locked `CONTEXT.md` decisions to make a test pass.
-- Never plan a broad repair inside debugging; preserve the root-cause sentence and route through `beer:planning --route debug-escalation`.
+- Never plan a broad repair inside debugging; preserve the root-cause sentence and route through `beer:planning` with `work_intent = repair`.
 - Never spin on worker blockers; report once with evidence and stop for coordination.
 
 ## Key References

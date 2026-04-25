@@ -160,23 +160,24 @@ Minimum evidence:
 
 ### Substantial or Cross-Cutting Fix
 
-Route to debug-escalation planning when the repair is larger than a local patch,
+Route to planned repair work when the repair is larger than a local patch,
 changes architecture, or cuts across worker boundaries.
 
 ```bash
-node .beer/scripts/commands/beer-planning-gate.mjs --route debug-escalation --json
+node .beer/scripts/commands/beer-planning-gate.mjs --route feature --json
 ```
 
 Before the handoff, update `.beer/state.json` with:
 
-- `route = debug-escalation`
+- keep the current route explicit
+- `work_intent = repair`
 - `phase = planning`
 - `approved_gates.phase_plan = false`
 - `next_handoff = beer:planning`
 
 If `bd` is available and a live epic exists, create or request a fix bead linked
 to the original work. If `bd` is unavailable, report the proposed fix scope and
-missing bead tooling without blocking the debug-escalation route.
+missing bead tooling without blocking the repair route.
 
 ### Decision Violation
 
@@ -233,7 +234,7 @@ Do not claim success if:
 Capture reusable patterns with:
 
 ```bash
-node skills/workflow/debug/debugging/scripts/write-debug-note.mjs \
+node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
   --classification "<classification>" \
   --root-cause "<root cause sentence>" \
   --trigger "<what causes it>" \
@@ -272,4 +273,4 @@ Debugging is complete when:
 - fix path is appropriate for risk and behavior impact
 - original failing command is rerun or limitation is stated
 - reusable pattern is captured when applicable
-- broad repairs are routed through `route = debug-escalation` instead of being implemented ad hoc
+- broad repairs are routed through planned repair work instead of being implemented ad hoc

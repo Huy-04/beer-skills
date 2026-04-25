@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readBeerState, readBeerStatus, resolveRepoRoot, writeBeerState } from "../beer-state/core.mjs";
 import { runGitNexusIndex } from "../beer-cli/index.mjs";
+import { assessReviewQuality, buildReviewQualityStatePatch } from "../beer-session/review-quality-guard.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const APPROVALS = new Set(["context", "phase-plan", "execution", "review"]);
@@ -248,6 +249,29 @@ export function recordApproval(options = {}) {
   }
 
   const repoRoot = assessment.repo_root;
+  let reviewQuality = null;
+  if (assessment.approval === "review") {
+    reviewQuality =
+      typeof options.reviewQualityRunner === "function"
+        ? options.reviewQualityRunner({ repoRoot, state: assessment.state })
+        : assessReviewQuality({ repoRoot, state: assessment.state });
+    const qualityState = writeBeerState(repoRoot, {
+      ...assessment.state,
+      ...buildReviewQualityStatePatch(reviewQuality),
+    });
+    if (!reviewQuality.ok) {
+      return {
+        repo_root: repoRoot,
+        approval: assessment.approval,
+        ok: false,
+        code: reviewQuality.code,
+        summary: reviewQuality.summary,
+        next_steps: reviewQuality.next_steps,
+        review_quality: reviewQuality,
+        state: qualityState,
+      };
+    }
+  }
   const currentState = readBeerState(repoRoot);
   const updatedState = writeBeerState(repoRoot, applyMutation(currentState, assessment.approval));
   const gitNexusIndex =
@@ -289,6 +313,7 @@ export function recordApproval(options = {}) {
     summary: `Recorded ${assessment.approval} approval in .beer/state.json.`,
     next_steps: nextSteps,
     gitnexus_index: gitNexusIndex,
+    review_quality: reviewQuality,
     state: finalizedState,
   };
 }

@@ -3,8 +3,8 @@ name: validating
 description: >
   This skill should be used when a planned execution slice needs a go/no-go
   check before code is written, including feature work after planning, small
-  direct-fix work that still needs a compact safety gate, or debug-escalation
-  repairs that should be verified before execution.
+  direct-fix work that still needs a compact safety gate, or repair work that
+  should be verified before execution.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
@@ -85,9 +85,9 @@ Expected artifacts:
 
 This route uses a compact gate. It must still verify scope, verification path, and execution safety.
 
-### Debug-Escalation Route
+### Repair Intent On Feature Route
 
-Use when debugging proved the root cause but the repair needed planning.
+Use when debugging proved the root cause but the repair needed planning inside the main feature route.
 
 Expected artifacts:
 
@@ -127,7 +127,7 @@ Run the full validation set:
 
 ### Compact Routes
 
-For `small direct-fix` and `debug-escalation`, focus on:
+For `small direct-fix` and repair-intent validation, focus on:
 
 1. current-slice clarity
 2. decision or root-cause coverage

@@ -23,6 +23,9 @@ function status(overrides = {}) {
       },
       execution_evidence_path: "history/example/execution-evidence.md",
       verification_status: "passed",
+      code_quantity_status: "",
+      pattern_status: "",
+      review_quality_status: "",
       review_status: "pass",
       open_findings_count: 0,
       ...overrides,
@@ -36,6 +39,11 @@ function preflight(overrides = {}) {
       bd: true,
       ...overrides,
     },
+    reviewQualityRunner: () => ({
+      ok: true,
+      summary: "Review quality passed.",
+      next_steps: [],
+    }),
   };
 }
 
@@ -156,6 +164,27 @@ test("allows review gate only with evidence and credible verification", () => {
 
   assert.equal(result.allow, true);
   assert.equal(result.code, "review_allowed");
+});
+
+test("blocks review gate when review quality guard fails", () => {
+  const result = assessAutoAcceptGate({
+    gate: "reviewing",
+    status: status({
+      execution_evidence_path: "history/example/execution-evidence.md",
+      verification_status: "passed",
+    }),
+    preflight: {
+      ...preflight(),
+      reviewQualityRunner: () => ({
+      ok: false,
+      summary: "Review quality failed for the current diff.",
+      next_steps: ["Reslice the work before review approval."],
+      }),
+    },
+  });
+
+  assert.equal(result.allow, false);
+  assert.equal(result.code, "review_quality_failed");
 });
 
 test("blocks review gate when required TDD evidence is incomplete", () => {

@@ -3,8 +3,8 @@ name: planning
 description: >
   This skill should be used when implementation work needs a bounded plan,
   including feature work after exploring, small direct fixes that route through
-  context-intake into compact planning, or debug escalations that need a planned
-  repair path.
+  context-intake into compact planning, or repair work that needs a planned
+  path inside the main Beer workflow.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
@@ -37,20 +37,20 @@ disable-model-invocation: false
 
 # planning
 
-Turn a clarified request into a bounded implementation plan. Scale the planning depth to the route instead of forcing every task through the same full feature shape.
+Turn a clarified request into a bounded implementation plan. Scale the planning depth to the route and work intent instead of forcing every task through the same full feature shape.
 
 ## At a Glance
 
 | | |
 |---|---|
-| **Use when** | `CONTEXT.md` is locked, `context-intake` routes a small direct fix into compact planning, or `debugging` escalates into planned repair work |
+| **Use when** | `CONTEXT.md` is locked, `context-intake` routes a small direct fix into compact planning, or repair work needs a planned path |
 | **Needs** | One of: locked `CONTEXT.md`; a small direct-fix request with bounded scope; or a proven root cause from `debugging` |
 | **Produces** | `discovery.md`, `approach.md`, `phase-plan.md`, and proportional current-phase prep |
 | **Next** | `beer:validating` after approval |
 
 ## 30-Second Version
 
-1. Confirm the incoming route: `feature`, `small-fix`, or `debug-escalation`.
+1. Confirm the incoming route and work intent.
 2. Reject the route and bounce to the right upstream phase if prerequisites do not match.
 3. Read `history/learnings/critical-patterns.md` first.
 4. Research only enough repo reality to support the confirmed route.
@@ -87,16 +87,17 @@ Use when:
 
 This route stays compact: short discovery, short approach, single-phase plan, and no forced bead graph.
 
-### Debug-Escalation Route
+### Repair Intent On Feature Route
 
 Use when:
 
-- `route = debug-escalation`
+- `route = feature`
+- `work_intent = repair`
 - `debugging` already proved the root cause,
 - the repair is no longer a tiny local edit,
 - the next safe step is a planned repair rather than an immediate patch.
 
-This route plans from the debug evidence. It must preserve the root-cause statement and avoid drifting into unrelated feature expansion.
+This keeps repair work inside the main feature flow. It must preserve the root-cause statement and avoid drifting into unrelated feature expansion.
 
 ## Scope and Ownership
 
@@ -125,7 +126,7 @@ After approval, prepare:
 - `history/<feature>/phase-<n>-story-map.md`
 - beads only for the current phase when decomposition is actually needed
 
-### Small Direct-Fix and Debug-Escalation Routes
+### Small Direct-Fix And Repair-Intent Routes
 
 After approval, prepare only what is proportional:
 
@@ -140,7 +141,7 @@ After approval, prepare only what is proportional:
 - Never skip learnings retrieval.
 - Never create beads before approval.
 - Never force multi-phase planning onto a tiny direct fix.
-- Never lose the debug root cause when planning an escalated repair.
+- Never lose the debug root cause when planning repair work.
 - Never auto-prepare current-slice work without an `ALLOW` result from `beer-auto-accept.mjs --gate planning`.
 - Never hand off directly to `swarming`; `planning` always hands off to `beer:validating`.
 

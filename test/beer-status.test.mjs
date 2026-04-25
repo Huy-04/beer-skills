@@ -78,7 +78,7 @@ test("buildRecommendedActions asks direct-fix routes to restore missing CONTEXT"
 
   assert.deepEqual(actions, [
     "Resume by reopening the active context for planning.",
-    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix route stays explicit before planning or execution.",
+    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix work stays explicit before planning or execution.",
   ]);
 });
 
@@ -94,7 +94,24 @@ test("buildRecommendedActions asks small-fix routes to create bounded CONTEXT wh
 
   assert.deepEqual(actions, [
     "Resume by reopening the active context for planning.",
-    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix route stays explicit before planning or execution.",
+    "Create or refresh history/login-copy/CONTEXT.md so the direct-fix work stays explicit before planning or execution.",
+  ]);
+});
+
+test("buildRecommendedActions keeps repair intent explicit when context is missing", () => {
+  const actions = buildRecommendedActions(
+    baseStatus({
+      active_skill: "planning",
+      phase: "planning",
+      route: "feature",
+      work_intent: "repair",
+      feature_slug: "checkout-timeout",
+    }),
+  );
+
+  assert.deepEqual(actions, [
+    "Resume by reopening the active context for planning.",
+    "Create or refresh history/checkout-timeout/CONTEXT.md so the repair work stays explicit before planning or execution.",
   ]);
 });
 

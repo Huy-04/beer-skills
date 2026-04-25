@@ -2,7 +2,7 @@
 
 /*
 Usage:
-  node skills/workflow/debug/debugging/scripts/write-debug-note.mjs \
+  node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
     --classification "Build failure in api" \
     --root-cause "src/api.ts:42 - null config was passed into createClient" \
     --trigger "npm run build after config refactor" \

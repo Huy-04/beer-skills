@@ -6,7 +6,7 @@
 
 Beer Skills is a reusable workflow bundle for agentic software delivery. It
 packages the skills, route rules, and local scripts needed to guide an AI coding
-agent through feature work, debugging, validation, review, and learning capture.
+agent through feature work, repair/investigation, validation, review, and learning capture.
 
 ## Start Here
 
@@ -24,11 +24,11 @@ agent through feature work, debugging, validation, review, and learning capture.
 | Public CLI | `beer` / `beer-skills` |
 | Skills shipped | `17` |
 | Main feature flow | `context-intake -> exploring/planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
-| Debug flow | `using-beer -> debugging` |
+| Investigation / repair lens | `using-beer -> context-intake/exploring/planning` with `debugging` as needed |
 | Required runtime | `node >= 18` |
 | Optional accelerators | `bd`, GitNexus MCP + local index |
 
-Beer currently ships **17 skills** across feature workflow, debug workflow,
+Beer currently ships **17 skills** across feature workflow, investigation
 support, and meta layers.
 
 ## Quick Start
@@ -109,20 +109,21 @@ flowchart TD
     R --> O[compounding]
     O --> I[idle]
 
-    U -->|debug or failure investigation| D[debugging]
+    X -. root-cause lens .-> D[debugging]
     D --> T[test-driven-development]
-    D --> P3[planning when repair scope expands]
+    D -. proven repair input .-> P2
 ```
 
-Beer keeps feature delivery and debugging separate. `context-intake` is the
-entry gate for normal repo work; `debugging` is the entry gate for evidence-first
-repair.
+Beer keeps one main workflow. `context-intake` is the entry gate for repo work,
+while `debugging` is an evidence-first lens used inside that flow when the task
+is a bug, a failing build/test, or a repair that needs root-cause proof.
 
 ## Session Model
 
 | Axis | Values | Meaning |
 |---|---|---|
-| `route` | `feature`, `small-fix`, `debug-escalation` | workflow path and prerequisites |
+| `route` | `feature`, `small-fix` | workflow path and prerequisites |
+| `work_intent` | `delivery`, `repair`, `investigation` | whether the current work is new delivery, a fix, or diagnosis |
 | `risk` | `normal`, `high` | blast radius and reversibility |
 | `orchestration_strategy` | `single-worker`, `multi-worker` | execution topology after validation |
 | `run_style` | `guided`, `go` | how aggressively Beer crosses gates |

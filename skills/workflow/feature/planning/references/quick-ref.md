@@ -11,8 +11,8 @@ version: "1.0"
 | Route | Use when | Depth |
 |---|---|---|
 | `feature` | Incoming `route = feature` and locked `CONTEXT.md` exists | Full |
+| `feature + repair` | Incoming `route = feature`, `work_intent = repair`, and root cause is proven | Full, but anchored to the failing path |
 | `small-fix` | Incoming `route = small-fix` and the work is still local, low ambiguity, likely under 3 files | Compact |
-| `debug-escalation` | Incoming `route = debug-escalation` and root cause is proven | Compact by default |
 
 ## Route Gates
 
@@ -27,7 +27,7 @@ version: "1.0"
 - no product decision needs locking
 - bounded quick scout
 
-### Debug Escalation
+### Feature Repair
 
 - root-cause sentence exists
 - repair boundary is explicit
@@ -51,8 +51,8 @@ bd ready --json
 | Route | Always write | After approval |
 |---|---|---|
 | `feature` | `discovery.md`, `approach.md`, `phase-plan.md` | contract, story map, optional beads |
+| `feature + repair` | debug-anchored `discovery.md`, repair `approach.md`, bounded `phase-plan.md` | optional compact contract |
 | `small-fix` | short `discovery.md`, short `approach.md`, single-phase `phase-plan.md` | optional compact contract |
-| `debug-escalation` | debug-anchored `discovery.md`, repair `approach.md`, bounded `phase-plan.md` | optional compact contract |
 
 All three routes write under the existing `history/<feature>/...` path from `.beer/state.json`.
 

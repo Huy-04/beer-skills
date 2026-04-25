@@ -65,10 +65,14 @@ function normalizeRunStyle(value) {
 }
 
 export function normalizePlanningRoute(value) {
-  return value === "feature" || value === "small-fix" || value === "debug-escalation" ? value : "";
+  return value === "feature" || value === "small-fix" ? value : "";
 }
 
 export const normalizeRoute = normalizePlanningRoute;
+
+function normalizeWorkIntent(value) {
+  return value === "repair" || value === "investigation" ? value : "delivery";
+}
 
 function normalizeOrchestrationStrategy(value) {
   return value === "single-worker" || value === "multi-worker" ? value : "";
@@ -132,6 +136,10 @@ function normalizeValidatorStatus(value) {
   return value === "pending" || value === "pass" || value === "fail" ? value : "";
 }
 
+function normalizeReviewCheckStatus(value) {
+  return value === "pass" || value === "fail" ? value : "";
+}
+
 function normalizePathString(value, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
@@ -162,12 +170,21 @@ function normalizeDefaultOrchestrationStrategy(value) {
 
 export function buildDefaultState(overrides = {}) {
   const approvedGates = normalizeApprovedGates(overrides.approved_gates);
-  const route = normalizeRoute(overrides.route || overrides.planning_route);
+  const legacyRoute = overrides.route || overrides.planning_route;
+  const route = normalizeRoute(legacyRoute === "debug-escalation" ? "feature" : legacyRoute);
+  const workIntent = normalizeWorkIntent(
+    typeof overrides.work_intent === "string"
+      ? overrides.work_intent
+      : legacyRoute === "debug-escalation"
+        ? "repair"
+        : "delivery",
+  );
   const orchestrationStrategy = normalizeOrchestrationStrategy(overrides.orchestration_strategy);
   return {
     schema_version: STATE_SCHEMA_VERSION,
     feature_slug: typeof overrides.feature_slug === "string" ? overrides.feature_slug : "",
     route,
+    work_intent: workIntent,
     risk: normalizeRisk(overrides.risk),
     run_style: normalizeRunStyle(overrides.run_style),
     orchestration_strategy: orchestrationStrategy,
@@ -196,6 +213,9 @@ export function buildDefaultState(overrides = {}) {
     execution_evidence_path: normalizePathString(overrides.execution_evidence_path),
     verification_status: normalizeVerificationStatus(overrides.verification_status),
     gitnexus_refresh_status: normalizeGitNexusRefreshStatus(overrides.gitnexus_refresh_status),
+    code_quantity_status: normalizeReviewCheckStatus(overrides.code_quantity_status),
+    pattern_status: normalizeReviewCheckStatus(overrides.pattern_status),
+    review_quality_status: normalizeReviewCheckStatus(overrides.review_quality_status),
     review_route:
       overrides.review_route === "feature-final" ||
       overrides.review_route === "direct-completion" ||

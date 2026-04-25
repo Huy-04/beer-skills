@@ -1,6 +1,6 @@
 ---
 skill: validating
-purpose: Workflow for feature, small direct-fix, and debug-escalation validation routes
+purpose: Workflow for feature, small direct-fix, and repair-intent validation routes
 version: "1.0"
 ---
 
@@ -28,7 +28,8 @@ if (Test-Path .beer\STATE.md) { Get-Content .beer\STATE.md }
 
 Extract:
 
-- route: `feature` | `small-fix` | `debug-escalation`
+- route: `feature` | `small-fix`
+- work_intent: `delivery` | `repair` | `investigation`
 - orchestration strategy: `single-worker` | `multi-worker`
 - current slice name
 - `approved_gates.phase_plan`

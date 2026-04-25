@@ -28,6 +28,7 @@ Each finding should answer:
 - read `execution_evidence_path` when present
 - require equivalent completion notes if the path is missing
 - do not pass review without credible verification evidence
+- run `beer-review-guard.mjs` and treat `BLOCK` as a repair or reslice signal
 
 ## Severity Guide
 

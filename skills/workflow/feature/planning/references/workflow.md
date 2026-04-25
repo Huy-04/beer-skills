@@ -1,6 +1,6 @@
 ---
 skill: planning
-purpose: Workflow for feature planning, small direct-fix planning, and debug-escalation planning
+purpose: Workflow for feature planning, small direct-fix planning, and repair planning inside the main flow
 version: "1.0"
 ---
 
@@ -14,13 +14,13 @@ There are three entry routes:
 
 1. `feature route`
 2. `small direct-fix route`
-3. `debug-escalation route`
+3. `feature repair intent`
 
 `planning` does not choose among those routes from scratch. Upstream phases provide the route:
 
 - `context-intake` provides `small-fix` or routes the work onward to `exploring`
 - `exploring` hands off locked feature work as `feature`
-- `debugging` hands off proven repair planning as `debug-escalation`
+- `debugging` hands off proven repair planning as `work_intent = repair`
 
 ## Route 1: Feature Planning
 
@@ -147,7 +147,7 @@ If the root cause is still vague, reject the route and return to `debugging`.
 Technical gate:
 
 ```powershell
-node .beer\scripts\commands\beer-planning-gate.mjs --route debug-escalation
+node .beer\scripts\commands\beer-planning-gate.mjs --route feature
 ```
 
 ### Discovery Depth
@@ -313,7 +313,8 @@ Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
 
 Record:
 
-- route: `feature` | `small-fix` | `debug-escalation`
+- route: `feature` | `small-fix`
+- work_intent: `delivery` | `repair` | `investigation`
 - `orchestration_strategy`
 - `slice_count`
 - `planned_workers`

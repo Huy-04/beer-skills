@@ -57,16 +57,16 @@ Do not claim TDD if the test did not fail first for the right reason.
 - Original failing command cannot be run and no limitation is stated.
 - `CONTEXT.md` decision would be violated.
 - Fix crosses multiple components without bead/scope approval.
-- Repair is broad enough to need `route = debug-escalation`.
+- Repair is broad enough that the current route should move into planned repair work.
 - Worker blocker needs coordination rather than code changes.
 
 ## Escalation Route
 
-Use `beer:planning --route debug-escalation` when root cause is proven but the
-repair is too broad for a direct patch.
+Use `beer:planning` with `work_intent = repair` when root cause is proven but
+the repair is too broad for a direct patch.
 
 ```bash
-node .beer/scripts/commands/beer-planning-gate.mjs --route debug-escalation --json
+node .beer/scripts/commands/beer-planning-gate.mjs --route feature --json
 ```
 
 Preserve the root-cause sentence in `discovery.md` and `approach.md`.
@@ -79,7 +79,7 @@ Preserve the root-cause sentence in `discovery.md` and `approach.md`.
 ## Debug Note
 
 ```bash
-node skills/workflow/debug/debugging/scripts/write-debug-note.mjs \
+node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
   --classification "<classification>" \
   --root-cause "<root cause>" \
   --trigger "<trigger>" \

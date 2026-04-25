@@ -35,7 +35,7 @@ Beer automatically uses the current repo by default. Use `--repo-root` only when
 you want to target a different repo.
 
 For guided workflows, Beer expects each task to carry a `history/<feature>/CONTEXT.md`.
-Keep the file compact for `small-fix` and `debug-escalation` routes. Reserve
+Keep the file compact for `small-fix`, repair, and investigation work. Reserve
 `.beer/seed/` for feature or debug discovery before the context is locked.
 
 ## What `beer init` Creates

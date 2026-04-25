@@ -5,7 +5,7 @@ Beer currently ships **17 skills** across four categories:
 | Category | Count | Purpose |
 |---|---|---|
 | Workflow - feature | 9 | End-to-end feature delivery |
-| Workflow - debug | 1 | Root-cause and repair workflow |
+| Investigation / repair lens | 1 | Root-cause and repair support inside the main workflow |
 | Support | 5 | Utilities and focused helper passes |
 | Meta | 2 | Skills for evolving Beer itself |
 
@@ -39,14 +39,14 @@ flowchart TD
     AG[beer-agent-guidelines] -. support .-> PL
 ```
 
-Debugging is a parallel workflow branch:
+Debugging is an in-flow lens, not a separate branch:
 
 ```mermaid
 flowchart LR
-    UB[using-beer] --> DB[debugging]
-    DB --> DF[direct fix]
+    CI[context-intake] --> EX[exploring]
+    EX -. root-cause lens .-> DB[debugging]
     DB --> TDD[test-driven-development]
-    DB --> PL[planning]
+    DB -. repair handoff .-> PL[planning]
 ```
 
 ## Human Gates
@@ -74,11 +74,11 @@ flowchart LR
 | `reviewing` | run the quality gate before closeout |
 | `compounding` | capture reusable learnings after review or debugging |
 
-### Workflow - Debug
+### Investigation / Repair Lens
 
 | Skill | Purpose |
 |---|---|
-| `debugging` | evidence-first triage, reproduction, root cause, repair path, and verification |
+| `debugging` | evidence-first triage, reproduction, root cause, and repair guidance inside the main flow |
 
 ### Support
 

@@ -66,6 +66,16 @@ Compact routes can apply this only to the touched deliverables.
 Feature-final routes should apply it to every deliverable promised by the
 current phase or feature.
 
+Before passing the review gate, run:
+
+```powershell
+node .beer/scripts/commands/beer-review-guard.mjs --json
+```
+
+Treat `allow = false` as a repair or reslice signal. The guard exists to catch
+diffs that are too large for the current orchestration strategy or that spread
+across too many implementation areas for one review pass.
+
 ## Phase 4: UAT Decision
 
 Run UAT only when it is warranted:

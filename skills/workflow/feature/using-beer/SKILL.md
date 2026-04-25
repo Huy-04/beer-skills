@@ -74,7 +74,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 | Group | Skills |
 |---|---|
 | **Feature workflow** | `using-beer`, `context-intake`, `exploring`, `planning`, `validating`, `swarming`, `executing`, `reviewing`, `compounding` |
-| **Debug workflow** | `debugging` |
+| **Investigation / repair lens** | `debugging` |
 | **Support** | `test-driven-development`, `codebase-knowledge`, `beer-agent-guidelines` |
 | **Helpers** | `prompt-leverage` (transformer), `graph-explore` |
 | **Meta** | `writing-beer-skills`, `xia` |
@@ -87,7 +87,8 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 
 | Axis | Values | Use when... |
 |---|---|---|
-| `route` | `feature` / `small-fix` / `debug-escalation` | Workflow path and upstream prerequisites |
+| `route` | `feature` / `small-fix` | Workflow path and upstream prerequisites |
+| `work_intent` | `delivery` / `repair` / `investigation` | Whether the work is new delivery, a fix, or diagnosis |
 | `risk` | `normal` / `high` | Reversibility, blast radius, or architecture sensitivity |
 | `orchestration_strategy` | `single-worker` / `multi-worker` | How execution will be dispatched after validation |
 | `run_style` | `guided` / `go` | How aggressively Beer moves across gates |
@@ -101,7 +102,7 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 | Locked-context implementation task | `beer:context-intake` | Intake reopens the current state and typically routes to `planning` |
 | Use TDD, write test first, or add regression test before fixing | `beer:test-driven-development` | Can run directly or be invoked by `executing` / `debugging` |
 | Review or verify completed work | `beer:reviewing` | Jump straight to review flow |
-| Debug failing behavior | `beer:debugging` | Root-cause first |
+| Debug failing behavior | `beer:debugging` | Root-cause lens inside the active Beer flow |
 | Edit Beer itself | `beer:writing-beer-skills` or `beer:xia` | Use meta skills for ecosystem work |
 | Analyze or compare an external skills repo | `beer:xia` | Produce a curation brief before changing Beer skills |
 | Install or refresh Karpathy-style repo guardrails | `beer:beer-agent-guidelines` | Sync `CLAUDE.md` and `AGENTS.md`, then continue under those instructions |
@@ -223,7 +224,8 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Axis | Values | Meaning |
 |---|---|---|
-| `route` | `feature`, `small-fix`, `debug-escalation` | Workflow shape and prerequisite chain |
+| `route` | `feature`, `small-fix` | Workflow shape and prerequisite chain |
+| `work_intent` | `delivery`, `repair`, `investigation` | Why the current work exists inside that route |
 | `risk` | `normal`, `high` | Change danger and reversibility |
 | `orchestration_strategy` | `single-worker`, `multi-worker` | Execution dispatch after planning and validation |
 | `run_style` | `guided`, `go` | Gate behavior and automation preference |
@@ -232,8 +234,9 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Combination | Use when | Typical path |
 |---|---|---|
-| `route = small-fix`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with compact artifacts and validator gate |
-| `route = feature`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
+| `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with compact artifacts and validator gate |
+| `route = feature`, `work_intent = delivery`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
+| `route = feature`, `work_intent = repair`, `risk = normal|high`, `orchestration_strategy = single-worker`, `run_style = guided` | Broader repair work after a bug or failing build/test is understood | Same main workflow, but planning and validation stay anchored to the proven failure path |
 | `route = feature`, `risk = normal|high`, `orchestration_strategy = multi-worker`, `run_style = guided` | Feature work that decomposes cleanly into disjoint slices | Full workflow plus worker dispatch, coordination, and stricter validation |
 | `run_style = go` | Trusted end-to-end run preference | Same workflow, but Beer can auto-move where confidence allows |
 

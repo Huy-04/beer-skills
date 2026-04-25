@@ -42,12 +42,12 @@ function parseCliArgs(argv) {
     if (arg === "--help" || arg === "-h") {
       process.stdout.write(
         [
-          "Usage: beer-planning-gate.mjs [--repo-root <path>] [--route <feature|small-fix|debug-escalation>] [--json]",
+          "Usage: beer-planning-gate.mjs [--repo-root <path>] [--route <feature|small-fix>] [--json]",
           "",
           "Checks whether Beer planning may proceed for a route.",
           "",
           "Options:",
-          "  --route <feature|small-fix|debug-escalation>",
+          "  --route <feature|small-fix>",
         ].join("\n"),
       );
       process.exit(0);
@@ -65,6 +65,7 @@ export function renderPlanningGate(result, repoRoot) {
     `Repo: ${repoRoot}`,
     `Status: ${statusLabel}`,
     `Route: ${result.route || "feature"}`,
+    `Work intent: ${result.work_intent || "delivery"}`,
     `Context: ${result.context_stage || "none"}`,
     `Context path: ${result.context_path || "(none)"}`,
     `Reason: ${result.summary}`,

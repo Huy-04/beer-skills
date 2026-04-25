@@ -8,6 +8,7 @@ import { assessAutoAccept, renderAutoAccept } from "./beer-auto-accept.mjs";
 import { main as closeoutGuardMain } from "./beer-closeout-guard.mjs";
 import { buildBeerDependencyReport } from "./beer-dependencies.mjs";
 import { main as flowGuardMain } from "./beer-flow-guard.mjs";
+import { main as reviewGuardMain } from "./beer-review-guard.mjs";
 import { parseCliArgs } from "../beer-cli/args.mjs";
 import { printHelp } from "../beer-cli/help.mjs";
 import { runCheckTools } from "../beer-cli/check-tools.mjs";
@@ -111,6 +112,17 @@ function runCloseoutGuard(args) {
   return closeoutGuardMain(guardArgs);
 }
 
+function runReviewGuard(args) {
+  const guardArgs = [];
+  if (args.repoRoot) {
+    guardArgs.push("--repo-root", args.repoRoot);
+  }
+  if (args.json) {
+    guardArgs.push("--json");
+  }
+  return reviewGuardMain(guardArgs);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const args = parseCliArgs(argv);
 
@@ -143,6 +155,8 @@ export async function main(argv = process.argv.slice(2)) {
       return runFlowGuard(args);
     case "closeout-guard":
       return runCloseoutGuard(args);
+    case "review-guard":
+      return runReviewGuard(args);
     case "help":
     default:
       printHelp();

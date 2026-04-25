@@ -30,8 +30,7 @@ skills/workflow/<family>/<skill-name>/    # workflow families
 
 | Category | Path | Purpose |
 |----------|------|---------|
-| Workflow - feature | `skills/workflow/feature/` | Day-to-day feature workflow skills |
-| Workflow - debug | `skills/workflow/debug/` | Root-cause and repair workflow skills |
+| Workflow | `skills/workflow/feature/` | Day-to-day workflow skills, including repair and investigation support |
 | Support | `skills/support/` | Utilities, helpers, and language guide |
 | Meta | `skills/meta/` | Meta-skills for evolving Beer itself |
 
@@ -246,7 +245,9 @@ Rule of thumb: if a section exceeds 300 words, consider moving it to `references
 
 ## 6. Script Standards
 
-- Place scripts in `scripts/`
+- Use repo-root `scripts/` for shared runtime behavior: CLI, state machinery, hooks, guards, onboarding, sync, install/update/uninstall, and anything multiple skills or the whole Beer bundle depends on.
+- Use skill-local `scripts/` only for helpers that belong to one skill and would make less sense as shared runtime code.
+- Do not create a `scripts/` folder in every skill just for symmetry. Only add it when the skill genuinely owns executable helpers.
 - Must be executable or runnable via `node <script>` / `python <script>`
 - Document usage in a comment block at the top of the file
 - Prefer Node.js `.mjs` for consistency with Beer utilities
@@ -283,7 +284,8 @@ Rule of thumb: if a section exceeds 300 words, consider moving it to `references
 When a skill needs to mention session shape, use the canonical axes:
 
 ```text
-route: feature | small-fix | debug-escalation
+route: feature | small-fix
+work_intent: delivery | repair | investigation
 risk: normal | high
 orchestration_strategy: single-worker | multi-worker
 run_style: guided | go

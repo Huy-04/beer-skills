@@ -205,8 +205,9 @@ At the end of every skill, update `.beer/state.json` first, then regenerate `.be
 
 Required route fields in `.beer/state.json`:
 
-- `feature_slug`: active feature identity for feature-sized or debug-escalated work
-- `route`: `feature`, `small-fix`, or `debug-escalation`
+- `feature_slug`: active feature identity for feature-sized or repair work
+- `route`: `feature` or `small-fix`
+- `work_intent`: `delivery`, `repair`, or `investigation`
 - `orchestration_strategy`: `single-worker` or `multi-worker`
 - `validation_status`: `pending`, `pass`, or `fail`
 - `execution_target`: proposed or approved `executing` / `swarming`

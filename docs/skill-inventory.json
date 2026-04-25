@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T17:07:08.901Z",
+  "generated_at": "2026-04-25T17:39:42.384Z",
   "skills_total": 17,
   "entries": [
     {
@@ -59,14 +59,6 @@
       "file": "skills\\support\\test-driven-development\\SKILL.md"
     },
     {
-      "name": "debugging",
-      "description": "This skill should be used when the user asks to debug, fix a build failure, fix a failing test, root-cause an error, diagnose a runtime crash, unblock a stuck worker, investigate an integration failure, or perform systematic debugging before changing code.",
-      "category": "workflow",
-      "family": "debug",
-      "directory": "debugging",
-      "file": "skills\\workflow\\debug\\debugging\\SKILL.md"
-    },
-    {
       "name": "compounding",
       "description": "This skill should be used when completed feature work or debugging work should be turned into reusable Beer learnings.",
       "category": "workflow",
@@ -81,6 +73,14 @@
       "family": "feature",
       "directory": "context-intake",
       "file": "skills\\workflow\\feature\\context-intake\\SKILL.md"
+    },
+    {
+      "name": "debugging",
+      "description": "This skill should be used when the user asks to debug, fix a build failure, fix a failing test, root-cause an error, diagnose a runtime crash, unblock a stuck worker, investigate an integration failure, or perform systematic debugging before changing code.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "debugging",
+      "file": "skills\\workflow\\feature\\debugging\\SKILL.md"
     },
     {
       "name": "executing",
@@ -100,7 +100,7 @@
     },
     {
       "name": "planning",
-      "description": "This skill should be used when implementation work needs a bounded plan, including feature work after exploring, small direct fixes that route through context-intake into compact planning, or debug escalations that need a planned repair path.",
+      "description": "This skill should be used when implementation work needs a bounded plan, including feature work after exploring, small direct fixes that route through context-intake into compact planning, or repair work that needs a planned path inside the main Beer workflow.",
       "category": "workflow",
       "family": "feature",
       "directory": "planning",
@@ -132,7 +132,7 @@
     },
     {
       "name": "validating",
-      "description": "This skill should be used when a planned execution slice needs a go/no-go check before code is written, including feature work after planning, small direct-fix work that still needs a compact safety gate, or debug-escalation repairs that should be verified before execution.",
+      "description": "This skill should be used when a planned execution slice needs a go/no-go check before code is written, including feature work after planning, small direct-fix work that still needs a compact safety gate, or repair work that should be verified before execution.",
       "category": "workflow",
       "family": "feature",
       "directory": "validating",

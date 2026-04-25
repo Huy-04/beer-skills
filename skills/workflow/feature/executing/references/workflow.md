@@ -36,7 +36,7 @@ Read only what the slice needs:
 - the current contract, task note, or bead
 - any `HANDOFF.json`
 
-For debug-escalation work, also re-read the proven root-cause sentence before
+For repair work, also re-read the proven root-cause sentence before
 changing code.
 
 ## Phase 2: Claim Scope

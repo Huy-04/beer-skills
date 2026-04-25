@@ -11,8 +11,8 @@ version: "1.0"
 | Route | Required depth | Execution target rule |
 |---|---|---|
 | `feature` | Full validation | `swarming` only for a real parallel slice; otherwise direct `executing` |
+| `feature + repair` | Full validation + root-cause retention | direct `beer:executing` by default; `swarming` only when the repair truly becomes multi-task |
 | `small-fix` | Compact validation | direct `beer:executing` |
-| `debug-escalation` | Compact validation + root-cause retention | direct `beer:executing` by default; `swarming` only when the repair truly becomes multi-task |
 
 ## Required Checks
 

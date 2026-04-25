@@ -2,12 +2,11 @@
 
 `skills/workflow/` contains the explicit Beer workflow families.
 
-## Families
+## Family
 
 | Family | Path | Purpose |
 |---|---|---|
-| `feature` | `skills/workflow/feature/` | feature routing, context recovery, planning, validation, execution, review, and learnings |
-| `debug` | `skills/workflow/debug/` | root-cause, repair, and verification workflow |
+| `feature` | `skills/workflow/feature/` | feature routing, context recovery, planning, validation, execution, review, learnings, and repair/investigation support |
 
 ## Feature Flow
 
@@ -28,14 +27,14 @@ flowchart TD
     CO --> IDLE[idle]
 ```
 
-## Debug Flow
+## Investigation / Repair Lens
 
 ```mermaid
 flowchart LR
-    UB[using-beer] --> DB[debugging]
-    DB --> DF[direct fix]
+    CC[context-intake] --> EX[exploring]
+    EX -. debugging lens .-> DB[debugging]
     DB --> TDD[test-driven-development]
-    DB --> PL[planning<br/>debug-escalation]
+    DB -. repair handoff .-> PL[planning]
 ```
 
 ## Related Docs

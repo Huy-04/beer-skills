@@ -1,8 +1,9 @@
 # Route And Strategy Comparison
 
-Beer now uses four explicit axes:
+Beer now uses five explicit axes:
 
-- `route`: `feature`, `small-fix`, `debug-escalation`
+- `route`: `feature`, `small-fix`
+- `work_intent`: `delivery`, `repair`, `investigation`
 - `risk`: `normal`, `high`
 - `orchestration_strategy`: `single-worker`, `multi-worker`
 - `run_style`: `guided`, `go`
@@ -15,7 +16,8 @@ before any automatic gate crossing.
 
 | Axis | Values | What it controls |
 |---|---|---|
-| `route` | `feature`, `small-fix`, `debug-escalation` | workflow shape and prerequisites |
+| `route` | `feature`, `small-fix` | workflow shape and prerequisites |
+| `work_intent` | `delivery`, `repair`, `investigation` | whether the current work is new delivery, a fix, or diagnosis |
 | `risk` | `normal`, `high` | research depth, caution level, and whether spikes are likely |
 | `orchestration_strategy` | `single-worker`, `multi-worker` | execution topology after validation |
 | `run_style` | `guided`, `go` | how aggressively Beer crosses approval gates |
@@ -27,14 +29,14 @@ before any automatic gate crossing.
 | `small-fix + normal + single-worker + guided` | bug fix, typo, bounded refactor | `using-beer -> context-intake -> planning -> validating -> executing` with a compact gate |
 | `feature + normal + single-worker + guided` | normal feature work with one bounded stream | `using-beer -> context-intake -> exploring -> planning -> validating -> executing -> reviewing -> compounding -> idle` |
 | `feature + normal/high + multi-worker + guided` | decomposable feature with disjoint slices | same feature route, but validation dispatches multiple workers after Gate 3 |
-| `feature/debug-escalation + normal/high + any strategy + go` | trusted end-to-end run with fewer pauses | same route, but Beer may auto-advance where confidence allows |
+| `feature + repair + normal/high + any strategy + go` | trusted end-to-end run with fewer pauses | same route, but Beer may auto-advance where confidence allows |
 
 ```mermaid
 flowchart TD
-    S[Choose route + risk + strategy] --> A[small-fix + single-worker]
-    S --> B[feature + single-worker]
+    S[Choose route + intent + risk + strategy] --> A[small-fix + single-worker]
+    S --> B[feature + delivery + single-worker]
     S --> C[feature + multi-worker]
-    S --> D[debug-escalation + single-worker]
+    S --> D[feature + repair + single-worker]
 
     A --> A0[context-intake]
     A0 --> A1[planning]
@@ -57,7 +59,7 @@ flowchart TD
     C5 --> C6[reviewing]
     C6 --> C7[compounding]
 
-    D --> D1[debugging]
+    D --> D1[exploring/debugging]
     D1 --> D2[planning]
     D2 --> D3[validating]
     D3 --> D4[executing]

@@ -23,7 +23,7 @@ version: "1.1"
 Root cause: <file>:<line or component> - <what is wrong and why it causes the symptom>
 
 ### Fix
-<What changed, or why this is routing to route = debug-escalation.>
+<What changed, or why this is routing into planned repair work.>
 
 ### Verification
 - Original command: <pass/fail/not run with reason>
@@ -67,7 +67,7 @@ Needed decision: <approve fix, revisit context, or split bead>
 
 ```text
 Root cause: <one sentence>
-Fix: <what changed or debug-escalation route created>
+Fix: <what changed or what repair plan was created>
 Verification: <original command result>; <regression scope result>
 Learned pattern: <debug note path or none>
 Ready for: <executing/reviewing/compounding/user>
@@ -77,8 +77,8 @@ Ready for: <executing/reviewing/compounding/user>
 
 ```text
 Root cause is proven, but the repair is too broad for a direct patch.
-Set route = debug-escalation.
-Invoke beer:planning with --route debug-escalation.
+Keep the current route explicit and set `work_intent = repair`.
+Invoke beer:planning.
 Root cause: <verbatim sentence>
 Repair boundary: <files/modules/scope>
 Verification anchor: <original failing command>

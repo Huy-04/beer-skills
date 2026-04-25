@@ -68,6 +68,15 @@ test("recordApproval records review approval and points to compounding", () => {
   const result = recordApproval({
     repoRoot,
     approval: "review",
+    reviewQualityRunner: () => ({
+      ok: true,
+      code: "review_quality_passed",
+      summary: "Review quality passed.",
+      next_steps: [],
+      code_quantity_status: "pass",
+      pattern_status: "pass",
+      review_quality_status: "pass",
+    }),
     gitNexusIndexRunner: () => ({
       repo_root: repoRoot,
       status: "completed",
@@ -81,5 +90,40 @@ test("recordApproval records review approval and points to compounding", () => {
   assert.equal(result.state.approved_gates.review, true);
   assert.equal(result.state.next_handoff, "beer:compounding");
   assert.equal(result.state.gitnexus_refresh_status, "completed");
+  assert.equal(result.state.code_quantity_status, "pass");
+  assert.equal(result.state.pattern_status, "pass");
+  assert.equal(result.state.review_quality_status, "pass");
   assert.equal(result.gitnexus_index?.status, "completed");
+});
+
+test("recordApproval blocks review approval when review quality fails", () => {
+  const repoRoot = makeTempRepo();
+  applyRepo(repoRoot);
+
+  const state = readBeerState(repoRoot);
+  state.feature_slug = "example";
+  state.active_skill = "reviewing";
+  state.phase = "reviewing";
+  state.review_status = "pass";
+  writeBeerState(repoRoot, state);
+
+  const result = recordApproval({
+    repoRoot,
+    approval: "review",
+    reviewQualityRunner: () => ({
+      ok: false,
+      code: "review_quality_failed",
+      summary: "Review quality failed for the current diff.",
+      next_steps: ["Reslice the work before review approval."],
+      code_quantity_status: "fail",
+      pattern_status: "pass",
+      review_quality_status: "fail",
+    }),
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "review_quality_failed");
+  assert.equal(result.state.approved_gates.review, false);
+  assert.equal(result.state.code_quantity_status, "fail");
+  assert.equal(result.state.review_quality_status, "fail");
 });

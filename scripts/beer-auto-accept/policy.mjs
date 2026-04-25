@@ -1,3 +1,5 @@
+import { assessReviewQuality } from "../beer-session/review-quality-guard.mjs";
+
 export const GATES = new Set(["planning", "validating", "swarming", "reviewing", "compounding"]);
 
 export function gateEnabled(state, gate) {
@@ -118,6 +120,13 @@ export function assessAutoAcceptGate({ gate, status, preflight }) {
       return block("verification_not_credible", "Review cannot auto-accept without credible verification.", [
         "Run or record focused verification before review.",
       ]);
+    }
+    const reviewQuality =
+      typeof preflight.reviewQualityRunner === "function"
+        ? preflight.reviewQualityRunner({ repoRoot: status.repo_root, state })
+        : assessReviewQuality({ repoRoot: status.repo_root, state });
+    if (!reviewQuality.ok) {
+      return block("review_quality_failed", reviewQuality.summary, reviewQuality.next_steps);
     }
     return allow("review_allowed", "Review gate may auto-advance to findings.");
   }

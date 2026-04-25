@@ -94,7 +94,7 @@ Use when:
 - Never widen scope just because the nearby code is convenient to change.
 - Never skip verification.
 - Never ignore locked decisions from `CONTEXT.md`.
-- Never lose the debug root-cause anchor on a debug-escalation route.
+- Never lose the debug root-cause anchor on repair work.
 - Never turn a direct route into a pseudo-swarm; if coordination becomes necessary, route back to `planning` and `validating`.
 - Never treat `STATE.md` as authoritative; update `state.json` first.
 - Never mark work complete without a traceable completion note.

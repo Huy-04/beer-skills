@@ -28,6 +28,15 @@ test("closeout guard blocks compounding until knowledge-base decision is recorde
   recordApproval({
     repoRoot,
     approval: "review",
+    reviewQualityRunner: () => ({
+      ok: true,
+      code: "review_quality_passed",
+      summary: "Review quality passed.",
+      next_steps: [],
+      code_quantity_status: "pass",
+      pattern_status: "pass",
+      review_quality_status: "pass",
+    }),
     gitNexusIndexRunner: () => ({
       repo_root: repoRoot,
       status: "completed",
@@ -58,6 +67,15 @@ test("closeout guard allows compounding once closeout obligations are recorded",
   recordApproval({
     repoRoot,
     approval: "review",
+    reviewQualityRunner: () => ({
+      ok: true,
+      code: "review_quality_passed",
+      summary: "Review quality passed.",
+      next_steps: [],
+      code_quantity_status: "pass",
+      pattern_status: "pass",
+      review_quality_status: "pass",
+    }),
     gitNexusIndexRunner: () => ({
       repo_root: repoRoot,
       status: "completed",
