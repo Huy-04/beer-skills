@@ -1,61 +1,80 @@
 ---
 skill: codebase-knowledge
 purpose: Canonical schema for `.beer/knowledge-base/index.json`
-version: "1.0"
+version: "1.1"
 ---
 
 # index.json Schema
 
 Use this file as the source of truth for the generated knowledge-base index.
 
-`.beer/knowledge-base/` is project-local and local-cache-by-default. Current source code remains authoritative when generated entries drift.
+`.beer/knowledge-base/` is project-local and local-cache-by-default. Current
+source code remains authoritative when generated entries drift.
 
 ## Required Top-Level Fields
 
 ```json
 {
   "version": "1.0",
-  "generated_at": "2026-04-22T10:00:00Z",
+  "generated_at": "2026-04-25T10:00:00Z",
+  "strategy": "pattern-first",
   "stats": {
     "total_files": 0,
-    "code_patterns": 0,
-    "business_rules": 0,
-    "critical_sections": 0
+    "generated_docs": 0,
+    "backend_docs": 0,
+    "frontend_docs": 0,
+    "boundary_docs": 0,
+    "critical_flows": 0
   },
   "entries": [],
-  "conventions": {},
+  "dominant_patterns": [],
+  "task_index": {},
   "critical_files": [],
+  "conventions": {},
   "search_index": {}
 }
 ```
 
 ## `00-metadata.json`
 
-The metadata file should include source authority and commit policy:
+The metadata file should include source authority, commit policy, and the
+generation strategy:
 
 ```json
 {
   "version": "1.0",
-  "generated_at": "2026-04-22T10:00:00Z",
+  "generated_at": "2026-04-25T10:00:00Z",
   "generated_from_commit": "abc123",
   "source_authority": "current repository source",
   "commit_policy": "local-cache-by-default",
   "invocation_reason": "user-request|compounding-approved-refresh|explicit-partial-scan",
   "scan_scope": "full|partial",
   "mode": "manual|gitnexus-assisted",
+  "strategy": "pattern-first",
   "gitnexus_status": "available|missing|repo-not-indexed|not-used",
+  "source_path": ".",
+  "discovery": {
+    "model": "single-writer synthesis",
+    "lanes": ["repo-scout", "backend", "frontend", "boundaries"],
+    "optional_lanes": ["critical-flows", "async-patterns", "integration-patterns"]
+  },
   "stats": {
     "files_scanned": 0,
     "patterns_detected": 0,
-    "analysis_lanes": 7
+    "docs_generated": 0,
+    "discovery_lanes": 4
   },
-  "notes": [
-    "Record why generated_from_commit is unknown-* when git lookup is blocked or unavailable."
-  ]
+  "confidence_summary": {
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "notes": []
 }
 ```
 
-Use `generated_from_commit` for freshness checks. It may be a commit sha or an explicit `unknown-*` fallback when Git lookup is blocked or unavailable. `commit_policy` means generated files should not be committed unless the user/team explicitly wants shared repo knowledge. `scan_scope = partial` means downstream skills must not treat architecture or convention claims as repo-wide unless separately supported by source evidence.
+Use `generated_from_commit` for freshness checks. It may be a commit sha or an
+explicit `unknown-*` fallback when Git lookup is blocked or unavailable.
 
 ## `entries[]`
 
@@ -63,12 +82,46 @@ Each entry should contain:
 
 ```json
 {
-  "title": "Repository Pattern",
-  "area": "code-patterns",
-  "file": "code-patterns/repository-pattern.md",
+  "title": "Request Lifecycle",
+  "area": "backend",
+  "kind": "pattern",
+  "file": "backend/request-lifecycle.md",
   "confidence": "high",
-  "tags": ["database", "data-access"],
-  "summary": "Repository abstraction for persistence operations."
+  "tags": ["backend", "request", "lifecycle"],
+  "summary": "Shows the usual path from entrypoint to persistence and side effects."
+}
+```
+
+## `dominant_patterns[]`
+
+Use this for short, high-signal summaries that README can mirror:
+
+```json
+[
+  {
+    "name": "Layered backend with MediatR request flow",
+    "confidence": "high",
+    "areas": ["architecture", "backend"],
+    "summary": "Controllers stay thin and push work through handlers, domain rules, and unit-of-work boundaries."
+  }
+]
+```
+
+## `task_index`
+
+Use task buckets to route common implementation intents to the right docs:
+
+```json
+{
+  "add backend endpoint": [
+    "backend/request-lifecycle.md",
+    "backend/module-template.md",
+    "conventions/implementation-rules.md"
+  ],
+  "change auth": [
+    "critical-flows/auth-session.md",
+    "boundaries/frontend-backend-proxy.md"
+  ]
 }
 ```
 
@@ -77,7 +130,9 @@ Each entry should contain:
 - `file` must be relative to `.beer/knowledge-base/`
 - `confidence` must be one of `high`, `medium`, `low`
 - `area` should match a real knowledge-base subfolder
+- `kind` should reflect what the doc is about: `architecture`, `pattern`, `boundary`, `critical-flow`, or `convention`
 - `search_index` values must point to files already declared in `entries[]`
-- `conventions` is optional but recommended for cross-feature consistency
-- `critical_files` is optional but should list security-sensitive paths when known
+- `task_index` values must point to files already declared in `entries[]`
+- `dominant_patterns` should only contain stable repo-shaping patterns, not one-off details
+- `critical_files` should list sensitive or high-blast-radius paths when known
 - JSON files should be valid UTF-8 and parse cleanly in Node without BOM-sensitive assumptions

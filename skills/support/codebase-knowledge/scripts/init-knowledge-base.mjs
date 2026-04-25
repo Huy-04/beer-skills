@@ -5,13 +5,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_AREAS = [
-  "code-patterns",
-  "folder-structure",
-  "business-rules",
   "architecture",
-  "dependencies",
+  "backend",
+  "frontend",
+  "boundaries",
+  "critical-flows",
   "conventions",
-  "critical-sections",
 ];
 
 export function parseArgs(argv) {
@@ -177,11 +176,27 @@ export function buildMetadata(args) {
     scan_scope: args.scanScope,
     gitnexus_status: args.gitnexusStatus,
     mode: args.mode,
+    strategy: "pattern-first",
     source_path: args.sourcePath,
+    discovery: {
+      model: "single-writer synthesis",
+      lanes: [
+        "repo-scout",
+        "backend",
+        "frontend",
+        "boundaries",
+      ],
+      optional_lanes: [
+        "critical-flows",
+        "async-patterns",
+        "integration-patterns",
+      ],
+    },
     stats: {
       files_scanned: args.filesScanned,
       patterns_detected: 0,
-      analysis_lanes: 7,
+      docs_generated: 0,
+      discovery_lanes: 4,
     },
     confidence_summary: {
       high: 0,
@@ -196,15 +211,20 @@ export function buildIndex() {
   return {
     version: "1.0",
     generated_at: new Date().toISOString(),
+    strategy: "pattern-first",
     stats: {
       total_files: 0,
-      code_patterns: 0,
-      business_rules: 0,
-      critical_sections: 0,
+      generated_docs: 0,
+      backend_docs: 0,
+      frontend_docs: 0,
+      boundary_docs: 0,
+      critical_flows: 0,
     },
     entries: [],
-    conventions: {},
+    dominant_patterns: [],
+    task_index: {},
     critical_files: [],
+    conventions: {},
     search_index: {},
   };
 }
@@ -213,13 +233,40 @@ export function buildReadme(args) {
   return [
     "# Knowledge Base",
     "",
+    "Pattern-first implementation map for this project.",
+    "",
     `Generated from \`${args.sourcePath}\`.`,
     "",
     "- Current source remains authoritative.",
     "- Commit policy: `local-cache-by-default`.",
     `- Invocation reason: \`${args.invocationReason}\`.`,
     `- Scan scope: \`${args.scanScope}\`.`,
-    "- Populate area markdown files before treating the cache as useful.",
+    `- Generation strategy: \`pattern-first\` via \`repo-scout -> backend/frontend/boundaries -> single-writer synthesis\`.`,
+    "",
+    "## Dominant Patterns",
+    "",
+    "- Fill this section with the recurring implementation patterns that shape the repo.",
+    "- Prefer architecture, request lifecycle, module template, and boundary patterns over generic inventories.",
+    "",
+    "## Start Here By Task",
+    "",
+    "- Backend feature: `backend/request-lifecycle.md`, `backend/module-template.md`, `conventions/implementation-rules.md`",
+    "- Frontend API work: `frontend/app-structure-and-api-access.md`, `boundaries/frontend-backend-proxy.md`",
+    "- Auth/session work: `critical-flows/auth-session.md` plus the relevant boundary docs",
+    "- Cross-cutting risk: `architecture/system-overview.md` and `critical-flows/`",
+    "",
+    "## High-Risk Boundaries",
+    "",
+    "- Frontend/backend proxying, auth/session continuity, middleware order, persistence-to-side-effect transitions, and external integrations belong here once discovered.",
+    "",
+    "## Generated Docs",
+    "",
+    "- Required baseline directories: `architecture/`, `backend/`, `frontend/`, `boundaries/`, `critical-flows/`, `conventions/`",
+    "- Optional docs should only be generated when the repository actually shows the pattern.",
+    "",
+    "## Source Of Truth",
+    "",
+    "- This cache is advisory. If any entry drifts from current code, trust the repository source and refresh the cache.",
     "",
   ].join("\n");
 }

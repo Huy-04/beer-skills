@@ -3,23 +3,24 @@ name: codebase-knowledge
 description: >
   This skill should be used when the user asks to ["/scan codebase"], ["/analyze project"],
   ["build knowledge base"], ["scan project patterns"], ["refresh knowledge base"], or otherwise
-  needs a refreshed project-local knowledge cache. It is strongest when used to
-  consolidate stable knowledge after work has been completed or a reusable
-  pattern has clearly emerged.
+  needs a refreshed project-local implementation map. It is strongest when used to
+  consolidate stable repository patterns, boundaries, and critical flows after work
+  has already clarified how the codebase really operates.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
   - beer-ecosystem
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   ecosystem: beer
   tags:
     - beer/support
     - knowledge
-  inputs: "Repo root + optional GitNexus readiness"
-  outputs: "`.beer/knowledge-base/` folder with indexed patterns, plus metadata and index.json"
-  upstream: "using-beer (user-initiated or scheduled)"
-  downstream: "context-intake, planning, validating (read-only consumers)"
+    - patterns
+  inputs: "Repo root + optional GitNexus readiness + optional approved refresh handoff"
+  outputs: "`.beer/knowledge-base/` pattern-first implementation map with metadata and index.json"
+  upstream: "using-beer (user-initiated or compounding-approved refresh)"
+  downstream: "context-intake, planning, validating, reviewing (read-only consumers)"
   dependencies:
     - id: gitnexus
       kind: mcp_server
@@ -38,114 +39,179 @@ disable-model-invocation: false
 
 # codebase-knowledge
 
-Create or refresh project-local `.beer/knowledge-base/` as a workflow-backed, source-linked cache of stable codebase knowledge. The current repository source is always authoritative; this knowledge base is a durable accelerator built from work that has already been understood, implemented, or reviewed.
+Create or refresh project-local `.beer/knowledge-base/` as a pattern-first,
+source-linked implementation map. The repository source remains authoritative.
+This skill exists to preserve stable knowledge that helps future work follow the
+real shape of the repo instead of rediscovering it from scratch.
 
 ## At a Glance
 
 | | |
 |---|---|
-| **Use when** | The user wants the project knowledge cache created/refreshed, or end-of-cycle work produced reusable patterns worth consolidating |
+| **Use when** | The user explicitly wants the knowledge base created/refreshed, or compounding already won approval because finished work revealed reusable patterns |
 | **Do not use when** | A one-off repo question can be answered from current source, GitNexus, or locked context without generating cache artifacts |
-| **Produces** | Project-local `.beer/knowledge-base/` with markdown summaries, `index.json`, and `00-metadata.json` |
-| **Consumers** | Planning, validating, reviewing, debugging, and onboarding read it as optional context |
+| **Produces** | Project-local `.beer/knowledge-base/` with pattern-first docs, `index.json`, and `00-metadata.json` |
+| **Consumers** | Planning, validating, reviewing, debugging, and onboarding read it as optional context only |
 
 ## 30-Second Version
 
-1. Confirm the cache should be created or refreshed now.
-2. Check existing `.beer/knowledge-base/` metadata, commit, and staleness.
-3. Choose full scan, partial scan, incremental update, or manual degraded mode.
-4. Run only the analysis lanes needed for the approved scan scope.
-5. Synthesize stable findings with confidence levels, source references, contradictions, and gaps.
-6. Write/update markdown files, `index.json`, `00-metadata.json`, and return a cache refresh summary.
+1. Confirm this is a legitimate knowledge-base refresh request.
+2. Check existing `.beer/knowledge-base/` metadata, commit, and scope.
+3. Scout the repo shape first.
+4. Run discovery lanes for backend, frontend, and boundaries.
+5. Add optional lanes only when the codebase actually shows those patterns.
+6. Synthesize a small set of canonical docs with one writer and evidence-backed confidence.
+7. Update `README.md`, `index.json`, `00-metadata.json`, and report the refresh outcome.
 
 ## Scope and Authority
 
 - Treat `.beer/knowledge-base/` as a cache, not a source of truth.
-- Store it inside the current project/repo, not in a global user-level folder.
-- Default commit policy is local-cache-by-default: do not commit it unless the user/team explicitly wants shared repo knowledge.
-- A missing knowledge base permits baseline creation; it does not, by itself, force a scan unless the current invocation actually wants cache generation.
-- If a knowledge-base entry conflicts with current source code, trust source code for immediate analysis, mark the entry stale, and ask the user whether to update knowledge/docs or change code to match the documented pattern.
-- Build or refresh a source-linked knowledge cache when the project lacks one, when the user explicitly asks for one, or when completed work has created reusable knowledge worth consolidating.
-- Routine feature delivery should read existing cache/source/GitNexus instead of triggering a new scan just because it needs context.
-- Use GitNexus when available for graph evidence, but fall back to local source scanning.
-- Analysis lanes are conceptual units; use available local evidence thoroughly, and use parallel agents only when the user explicitly asks for parallel agent work.
-- This skill is a knowledge compiler, not a general-purpose repo Q&A helper. If the task is a single decision, flow, or blast-radius question, prefer direct source/GitNexus work over generating cache files.
-- The cache is most valuable when it is written after stable work has already clarified the real patterns, conventions, and critical flows.
+- Store it inside the current project/repo, not in a global folder.
+- Default commit policy is `local-cache-by-default`: do not commit it unless the user/team explicitly wants shared repo knowledge.
+- A missing knowledge base permits baseline creation; it does not, by itself, widen the invocation gate.
+- If a knowledge-base entry conflicts with current source code, trust source code for immediate analysis, mark the entry stale, and ask whether the user wants to update knowledge/docs or change code to match the documented pattern.
+- Use GitNexus when available for structure, flow, and impact evidence, but fall back to local source scanning.
+- Analysis lanes are conceptual units. Use parallel agents only when the user explicitly asked for parallel agent work.
+- This skill is a knowledge compiler, not a generic repo Q&A helper.
 
-## Capability First
+## Output Philosophy
 
-- When invoked legitimately, scan deeply enough to produce reusable knowledge, not a shallow inventory.
-- Use GitNexus, local source, tests, docs, and package metadata together when available.
-- Prefer source-linked claims with confidence and gaps so workflow skills can use the cache without treating it as authority.
-- Capture reusable architecture, convention, and critical-flow knowledge that would otherwise be rediscovered repeatedly.
-- Compile what the project has actually taught the workflow, rather than trying to answer every possible codebase question.
+The output should help future work answer:
 
-## Ownership Boundary
+- What dominant patterns shape this repo?
+- How does backend work usually flow?
+- How does frontend work usually flow?
+- Where are the risky cross-boundary seams?
+- Which files should a developer read first before changing a critical area?
 
-- `codebase-knowledge` owns `.beer/knowledge-base/` cache generation and refresh.
-- Workflow skills own immediate task decisions and must prefer current source/GitNexus/locked context over stale cache entries.
-- `compounding` owns deciding when completed work created reusable knowledge worth refreshing and asking the user whether that refresh should happen now.
-- When this skill is invoked from compounding's knowledge-base refresh handoff, treat that approval as already satisfied and do not ask a second refresh question.
-- `codebase-knowledge` does not own route decisions, implementation planning, or ad hoc repo Q&A outside the cache-refresh task.
+Do not optimize for producing many notes. Optimize for a small set of durable,
+implementation-oriented docs that help someone code correctly.
 
-## Analysis Lanes
+## Stable Skeleton, Adaptive Content
 
-| Lane | Purpose | Output |
+Always create the baseline files:
+
+- `README.md`
+- `00-metadata.json`
+- `index.json`
+- `architecture/system-overview.md` when evidence exists
+- `conventions/implementation-rules.md` when evidence exists
+
+Generate additional docs only when the repository actually supports them.
+Examples:
+
+- `backend/request-lifecycle.md`
+- `backend/module-template.md`
+- `backend/cqrs-and-handler-shape.md`
+- `backend/data-access-and-unit-of-work.md`
+- `backend/domain-events-and-outbox.md`
+- `frontend/app-structure-and-api-access.md`
+- `frontend/session-and-refresh-patterns.md`
+- `boundaries/frontend-backend-proxy.md`
+- `boundaries/contracts-and-error-shape.md`
+- `critical-flows/*.md`
+
+Do not force event, queue, workflow-engine, or plugin docs into a repo that
+does not have those patterns.
+
+## Discovery Model
+
+### Required Lanes
+
+| Lane | Purpose | Typical outputs |
 |---|---|---|
-| Code patterns | Detect recurring implementation patterns and variations | `code-patterns/*.md` |
-| Folder structure | Map module boundaries and directory conventions | `folder-structure/*.md` |
-| Business rules | Extract validation, constraints, and domain invariants from code | `business-rules/*.md` |
-| Architecture | Document entry points, layers, data flow, and component relationships | `architecture/*.md` |
-| Dependencies | Identify import style, cross-module coupling, and external packages | `dependencies/*.md` |
-| Conventions | Capture naming, organization, error handling, and async style | `conventions/*.md` |
-| Critical sections | Flag auth, payment, security, data integrity, and external integration flows | `critical-sections/*.md` |
+| Repo scout | Classify repo shape, frameworks, major folders, and entrypoints | `README.md`, `architecture/system-overview.md` |
+| Backend | Detect request lifecycle, module template, data access, domain rules, async patterns | `backend/*.md` |
+| Frontend | Detect app structure, API access, state/session patterns, UI conventions | `frontend/*.md` |
+| Boundaries | Detect FE/BE seams, contract coupling, auth/session boundary, error shapes | `boundaries/*.md` |
 
-Run only the lanes that match the approved scan scope. A partial refresh does not need to regenerate every lane.
+### Optional Lanes
 
-## Output Contract
+Only run or promote docs for:
 
-Every generated entry should include:
+- critical flows
+- domain events / outbox / messaging
+- schedulers and jobs
+- plugin/extension models
+- workflow engines
+- external integration seams
 
-- Source file paths or graph evidence.
-- Confidence level: high, medium, or low.
-- Applicability: when downstream skills should use the pattern.
-- Gaps or contradictions instead of invented certainty.
-- Staleness metadata through `00-metadata.json`, including `source_authority`, `generated_from_commit`, and `commit_policy`.
-- If commit lookup is blocked or unavailable, use an explicit fallback such as `unknown-safe-directory-blocked` or `unknown-git-unavailable` and record the reason in metadata notes.
-- JSON outputs must remain machine-readable; write valid UTF-8 JSON without relying on a BOM-sensitive parser path.
-- Discoverability through `index.json`.
+## Single-Writer Rule
+
+- Discovery may fan out by lane.
+- Final documentation must be synthesized by one writer.
+- Discovery workers collect evidence, confidence, and candidate doc proposals.
+- The final writer decides which patterns are dominant enough to become docs.
+
+This avoids duplicated, contradictory, or uneven output.
+
+## Canonical README Requirements
+
+`README.md` should be the entrypoint, not a file list. It should contain:
+
+- dominant patterns
+- start here by task
+- high-risk boundaries
+- critical flows
+- source-of-truth and freshness reminder
+- generated docs available for this repo
+
+## Doc Schema
+
+Each generated markdown doc should aim to include:
+
+- `What this is`
+- `Why it exists here`
+- `How to follow it`
+- `Common variants in this repo`
+- `Do not do`
+- `Key files`
+- `Risk when changing`
+- `Confidence`
+
+Not every repo will support every section equally, but the writer should prefer
+this schema over ad hoc summaries.
+
+## Metadata and Index Expectations
+
+- `00-metadata.json` must record `generated_from_commit`, `source_authority`, `commit_policy`, and whether discovery was `manual` or `gitnexus-assisted`.
+- `00-metadata.json` should record that the strategy is `pattern-first` and identify the discovery lanes used.
+- `index.json` should support both keyword lookup and task-oriented lookup.
+- Prefer task buckets such as:
+  - `add backend endpoint`
+  - `add command`
+  - `change auth`
+  - `change session`
+  - `change proxy`
+  - `touch middleware`
+  - `touch outbox`
+  - `add frontend api call`
 
 ## Update Triggers
 
 Update the knowledge base after:
 
-- Architecture or layer boundaries change.
-- Naming, file organization, testing, or error-handling conventions change.
-- Business-rule or validation frameworks change.
-- Critical auth/payment/security/data-integrity flows change.
-- Compounding identifies a reusable pattern shift worth preserving.
-
-Only `user request` and `compounding-approved refresh` are valid automatic
-invocation reasons. In the `compounding-approved refresh` case, approval comes
-from compounding's knowledge-base refresh ask, not from a second question
-inside this skill. Planning, validating, reviewing, and debugging may read the
-cache, but they must not trigger a scan just because they need context.
-
-On first use, create a baseline cache only when the current request actually wants a knowledge-base scan or refresh.
+- architecture or boundary changes
+- request lifecycle changes
+- naming or implementation rules drift
+- auth/session boundary changes
+- critical flow changes
+- compounding identifies a reusable pattern shift worth preserving
 
 Usually skip updates for:
 
-- New endpoint/component/service that follows existing conventions.
-- Bug fix that does not alter a stable pattern.
-- Small localized refactor with no convention or architecture change.
+- a new endpoint/component/service that follows existing conventions
+- a bug fix that does not alter a stable pattern
+- a small localized refactor with no convention or architecture change
 
 ## Completion Note
 
 ```text
 Knowledge base updated at `.beer/knowledge-base/`.
-[N] patterns documented, [M] rules extracted, [K] critical sections flagged.
+[N] docs generated, [M] dominant patterns captured, [K] critical flows documented.
 Current source remains authoritative; stale/conflicting entries are marked.
-Invocation reason: <user-request | compounding-approved-refresh>.
+Strategy: pattern-first. Discovery lanes: repo-scout, backend, frontend, boundaries.
+Invocation reason: <user-request | compounding-approved-refresh | explicit-partial-scan>.
 ```
 
 If invoked inside another Beer workflow, return this note plus the updated cache path. If invoked directly by the user, this note is the final result summary.

@@ -31,7 +31,7 @@ Public reference for the **17 skills** in the Beer ecosystem.
 | `beer:prompt-leverage` | A raw prompt needs context, structure, or normalization | Execution-ready prompt with preserved intent and language policy |
 | `beer:graph-explore` | GitNexus-backed structure, flow, or impact lookup | Graph-derived findings or degraded status |
 | `beer:test-driven-development` | Behavior work needs fail-first proof | RED -> GREEN -> REFACTOR loop |
-| `beer:codebase-knowledge` | Project-local knowledge cache should be created or refreshed | `.beer/knowledge-base/` cache |
+| `beer:codebase-knowledge` | Project-local pattern-first implementation map should be created or refreshed | `.beer/knowledge-base/` implementation map |
 | `beer:agent-docs-sync` | Update CLAUDE.md or AGENTS.md with behavioral guidelines | Surgically merged context file |
 
 ## Meta (2)

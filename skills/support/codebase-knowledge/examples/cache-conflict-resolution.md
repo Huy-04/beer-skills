@@ -11,8 +11,8 @@ version: "1.0"
 Existing knowledge-base entry:
 
 ```text
-`code-patterns/service-layer.md`
-Summary: Services use repositories only. No direct persistence access.
+`backend/data-access-and-unit-of-work.md`
+Summary: Backend write paths go through repositories and unit-of-work boundaries. No direct ORM access from application services.
 ```
 
 Current source evidence:
@@ -26,7 +26,7 @@ Both call Prisma directly.
 ## Correct Response Shape
 
 ```markdown
-Conflict detected between current source and `.beer/knowledge-base/code-patterns/service-layer.md`.
+Conflict detected between current source and `.beer/knowledge-base/backend/data-access-and-unit-of-work.md`.
 
 Current source remains authoritative for this analysis.
 
@@ -35,12 +35,12 @@ Observed source evidence:
 - `src/auth/user-admin.service.ts`
 
 Action taken:
-- Mark the cached service-layer entry stale.
+- Mark the cached data-access entry stale.
 - Do not silently rewrite code or rationalize the mismatch.
 
 Decision needed:
 1. Update knowledge/docs to reflect the current direct-Prisma pattern.
-2. Change code to restore the documented repository-only pattern.
+2. Change code to restore the documented repository and unit-of-work pattern.
 ```
 
 ## Why This Matters

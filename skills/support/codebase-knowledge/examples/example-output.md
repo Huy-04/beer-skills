@@ -1,7 +1,7 @@
 ---
 skill: codebase-knowledge
 purpose: Example `.beer/knowledge-base/` output shape
-version: "1.0"
+version: "1.1"
 ---
 
 # Example Output
@@ -15,14 +15,19 @@ This is an illustrative output shape. Real entries must be generated from curren
   00-metadata.json
   index.json
   README.md
-  code-patterns/
-    service-layer.md
   architecture/
-    layer-structure.md
+    system-overview.md
+  backend/
+    request-lifecycle.md
+    module-template.md
+  frontend/
+    app-structure-and-api-access.md
+  boundaries/
+    frontend-backend-proxy.md
+  critical-flows/
+    auth-session.md
   conventions/
-    naming.md
-  critical-sections/
-    auth-flows.md
+    implementation-rules.md
 ```
 
 ## 00-metadata.json
@@ -30,20 +35,31 @@ This is an illustrative output shape. Real entries must be generated from curren
 ```json
 {
   "version": "1.0",
-  "generated_at": "2026-04-23T10:30:00Z",
+  "generated_at": "2026-04-25T10:30:00Z",
   "generated_from_commit": "abc123",
   "source_authority": "current repository source",
   "commit_policy": "local-cache-by-default",
+  "invocation_reason": "user-request",
+  "scan_scope": "full",
   "mode": "gitnexus-assisted",
+  "strategy": "pattern-first",
+  "gitnexus_status": "available",
+  "source_path": ".",
+  "discovery": {
+    "model": "single-writer synthesis",
+    "lanes": ["repo-scout", "backend", "frontend", "boundaries"],
+    "optional_lanes": ["critical-flows", "async-patterns", "integration-patterns"]
+  },
   "stats": {
     "files_scanned": 128,
     "patterns_detected": 6,
-    "analysis_lanes": 7
+    "docs_generated": 6,
+    "discovery_lanes": 4
   },
   "confidence_summary": {
     "high": 4,
     "medium": 2,
-    "low": 1
+    "low": 0
   }
 }
 ```
@@ -53,71 +69,100 @@ This is an illustrative output shape. Real entries must be generated from curren
 ```json
 {
   "version": "1.0",
-  "generated_at": "2026-04-23T10:30:00Z",
+  "generated_at": "2026-04-25T10:30:00Z",
+  "strategy": "pattern-first",
   "stats": {
     "total_files": 128,
-    "code_patterns": 2,
-    "business_rules": 1,
-    "critical_sections": 1
+    "generated_docs": 6,
+    "backend_docs": 2,
+    "frontend_docs": 1,
+    "boundary_docs": 1,
+    "critical_flows": 1
   },
   "entries": [
     {
-      "title": "Service Layer",
-      "area": "code-patterns",
-      "file": "code-patterns/service-layer.md",
+      "title": "Request Lifecycle",
+      "area": "backend",
+      "kind": "pattern",
+      "file": "backend/request-lifecycle.md",
       "confidence": "high",
-      "tags": ["services", "business-logic"],
-      "summary": "Application services coordinate validation and repository calls."
+      "tags": ["backend", "request", "lifecycle"],
+      "summary": "Shows the standard backend path from request entrypoint to persistence and side effects."
     }
   ],
-  "conventions": {
-    "files": "kebab-case",
-    "classes": "PascalCase",
-    "functions": "camelCase"
+  "dominant_patterns": [
+    {
+      "name": "Layered backend with handler-mediated request flow",
+      "confidence": "high",
+      "areas": ["architecture", "backend"],
+      "summary": "Controllers stay thin while handlers, domain rules, and unit-of-work boundaries coordinate the real work."
+    }
+  ],
+  "task_index": {
+    "add backend endpoint": [
+      "backend/request-lifecycle.md",
+      "backend/module-template.md",
+      "conventions/implementation-rules.md"
+    ]
   },
   "critical_files": [
-    "src/auth/auth.service.ts"
+    "src/auth/session.ts"
   ],
+  "conventions": {
+    "files": "kebab-case markdown docs",
+    "source_authority": "current repository source"
+  },
   "search_index": {
-    "auth": ["critical-sections/auth-flows.md"],
-    "services": ["code-patterns/service-layer.md"]
+    "auth": ["critical-flows/auth-session.md"],
+    "request lifecycle": ["backend/request-lifecycle.md"]
   }
 }
 ```
 
-## code-patterns/service-layer.md
+## backend/request-lifecycle.md
 
 ```markdown
 ---
-area: code-patterns
-pattern: Service Layer
-detected_at: 2026-04-23T10:30:00Z
+area: backend
+kind: pattern
+pattern: request lifecycle
+detected_at: 2026-04-25T10:30:00Z
 confidence: high
 file_count: 8
 source_authority: current repository source
 status: current
 ---
 
-# Service Layer
+# Request Lifecycle
 
-## Summary
-Application services coordinate validation and repository calls. Controllers do not usually access persistence directly.
+## What This Is
+The standard backend path from entrypoint to persistence and side effects.
 
-## Source Evidence
-- `src/users/user.service.ts`
-- `src/orders/order.service.ts`
-- `src/products/product.service.ts`
+## Why It Exists Here
+This codebase keeps entrypoints thin and pushes coordination into deeper layers.
 
-## Applicability
-Use this pattern when adding business logic that coordinates more than one repository or domain rule.
+## How To Follow It
+- Start from the request entrypoint.
+- Route into the application handler.
+- Preserve domain-rule enforcement and transaction boundaries.
+- Leave async side effects at the documented boundary.
 
-## Variations
-- Some read-only services call query helpers directly.
-- Auth service has extra token/session handling.
+## Common Variants In This Repo
+- Read-heavy paths may skip mutation concerns.
+- Auth paths may add session or token handling.
+
+## Do Not Do
+- Bypass the normal transaction boundary with ad hoc side effects.
+- Add controller-heavy business logic when the repo expects handler coordination.
+
+## Key Files
+- `src/api/users.controller.ts`
+- `src/application/create-user.handler.ts`
+- `src/infrastructure/user-repository.ts`
+
+## Risk When Changing
+Medium to high. Request flow changes can affect auth, persistence, and async side effects.
 
 ## Confidence
-High: seen consistently across eight service files.
-
-## Staleness
-Current as of commit `abc123`. If current code diverges, trust source and ask whether to update knowledge/docs or change code.
+High: repeated across multiple backend features.
 ```

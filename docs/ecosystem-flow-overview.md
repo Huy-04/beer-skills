@@ -87,7 +87,7 @@ flowchart LR
 | `prompt-leverage` | build a context-aware execution prompt from a raw request and apply Beer language policy |
 | `graph-explore` | query GitNexus for structure, flow, and impact context |
 | `test-driven-development` | supply RED -> GREEN -> REFACTOR evidence for behavior changes |
-| `codebase-knowledge` | maintain `.beer/knowledge-base/` as a project-local cache |
+| `codebase-knowledge` | maintain `.beer/knowledge-base/` as a project-local pattern-first implementation map |
 | `agent-docs-sync` | synchronize agent-facing guidance into `CLAUDE.md` or `AGENTS.md` |
 
 ### Meta

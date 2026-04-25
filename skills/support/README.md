@@ -9,7 +9,7 @@ rather than another workflow family.
 |---|---|---|
 | `graph-explore` | GitNexus-backed structural lookup and process tracing | return graph context to another Beer skill |
 | `prompt-leverage` | Context-aware prompt upgrading with built-in language policy | return an execution-ready prompt |
-| `codebase-knowledge` | Project-local stable-pattern cache | return knowledge-base context without replacing repo truth |
+| `codebase-knowledge` | Project-local pattern-first implementation map | return reusable repo patterns and boundaries without replacing repo truth |
 | `test-driven-development` | Fail-first proof for behavior changes | return RED/GREEN/REFACTOR evidence |
 | `agent-docs-sync` | Agent guidance synchronization for `CLAUDE.md` and `AGENTS.md` | return a surgically merged context file |
 

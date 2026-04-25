@@ -1,27 +1,33 @@
 ---
 skill: codebase-knowledge
-purpose: Detailed workflow for codebase analysis and knowledge base creation
-version: "1.0"
+purpose: Detailed workflow for pattern-first knowledge base creation
+version: "1.1"
 ---
 
 # codebase-knowledge - Workflow Details
 
----
-
 ## Authority Rule
 
-`.beer/knowledge-base/` is a project-local cache of source-linked observations. If it conflicts with the current repository source, source wins for immediate analysis. Mark the affected entry stale, then ask the user whether to update the knowledge base/docs or change code to match the documented pattern.
+`.beer/knowledge-base/` is a project-local cache of source-linked observations.
+If it conflicts with the current repository source, source wins for immediate
+analysis. Mark the affected entry stale, then ask the user whether to update the
+knowledge base/docs or change code to match the documented pattern.
 
-Default commit policy is `local-cache-by-default`: do not commit generated knowledge-base files unless the user or team explicitly wants shared repo knowledge.
+Default commit policy is `local-cache-by-default`: do not commit generated
+knowledge-base files unless the user or team explicitly wants shared repo
+knowledge.
 
-If Git commit lookup is unavailable or blocked, degrade cleanly: set `generated_from_commit` to an explicit fallback such as `unknown-safe-directory-blocked` or `unknown-git-unavailable`, record the reason in metadata notes, and avoid pretending freshness checks are authoritative.
+If Git commit lookup is unavailable or blocked, degrade cleanly: set
+`generated_from_commit` to an explicit fallback such as
+`unknown-safe-directory-blocked` or `unknown-git-unavailable`, record the reason
+in metadata notes, and avoid pretending freshness checks are authoritative.
 
 ## Invocation Gate
 
 Run `codebase-knowledge` only when at least one is true:
 
 - the user explicitly asks to scan, analyze, build, or refresh the knowledge base
-- `beer:compounding` identified a reusable pattern/convention/architecture shift and the user approved the knowledge-base refresh
+- `beer:compounding` identified a reusable pattern/convention/architecture shift and the user approved the refresh
 - the user explicitly requests a subfolder or partial scan
 
 Do not run this skill during normal feature work just because planning or
@@ -31,13 +37,6 @@ context, or existing knowledge-base entries instead of generating a new cache.
 Think of this skill as a knowledge compiler: it consolidates stable project
 knowledge into `.beer/knowledge-base/` after the workflow has already learned
 something worth preserving.
-If `.beer/knowledge-base/` does not exist yet, that only changes the initialization path. It does not widen the invocation gate.
-
-When this skill is invoked from compounding's knowledge-base refresh handoff, do
-not ask for another approval inside this skill. That handoff already covered
-the refresh decision.
-
----
 
 ## Phase 0: Initialization
 
@@ -47,12 +46,11 @@ the refresh decision.
 node scripts/commands/beer-preflight.mjs --json
 ```
 
-If preflight is unavailable or reports degraded mode:
-- Continue with local source scanning
-- Use GitNexus only when available
-- Mark metadata with `"mode": "manual"` when graph/tooling support is unavailable
+If preflight is unavailable or degraded:
 
----
+- continue with local source scanning
+- use GitNexus only when available
+- mark metadata with `"mode": "manual"` when graph/tooling support is unavailable
 
 ### Step 0.1: Check Existing Knowledge Base
 
@@ -61,18 +59,20 @@ if (Test-Path .beer/knowledge-base) { Get-ChildItem .beer/knowledge-base } else 
 if (Test-Path .beer/knowledge-base/00-metadata.json) { Get-Content .beer/knowledge-base/00-metadata.json } else { "No metadata" }
 ```
 
-**If exists:**
-- Read version, timestamp, stats
-- Decide: Full refresh or incremental update?
-- Archive old version if major changes detected
+If the knowledge base exists:
 
-**If missing:**
-- Create `.beer/knowledge-base/` directory structure
-- Initialize with empty templates
-- Record `"source_authority": "current repository source"` and `"commit_policy": "local-cache-by-default"` in metadata
-- Treat missing KB as permission to create a baseline cache during this run, not as a reason to auto-scan unrelated requests.
+- read version, timestamp, generation strategy, and scan scope
+- decide whether this run is full refresh or partial update
+- avoid overwriting a full-repo map with subfolder-only conclusions unless the user explicitly wants that scope change
 
-You can bootstrap the folder structure and parseable JSON files with:
+If it is missing:
+
+- create `.beer/knowledge-base/` with the baseline directory layout
+- record `source_authority = current repository source`
+- record `commit_policy = local-cache-by-default`
+- record `strategy = pattern-first`
+
+Bootstrap with:
 
 ```bash
 node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
@@ -83,322 +83,225 @@ node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
   --invocation-reason user-request
 ```
 
-### Step 0.1b: If Scanning Only A Subfolder
+### Step 0.2: Establish Repo Shape First
 
-If the requested scope is a subfolder instead of the whole repo:
+Before documenting patterns, answer:
 
-- Record the exact subfolder in metadata `source_path`.
-- Treat architecture and dependency claims as sub-scope claims unless supported by wider evidence.
-- Do not overwrite a full-repo knowledge base with subfolder-only conclusions unless the user explicitly wants that scope change.
-- Lower confidence when patterns appear only inside the scanned subfolder.
-- Add a note that freshness and conventions may be incomplete outside the scanned path.
-- Set metadata `scan_scope` to `partial` unless the source path is the repo root.
+- does the repo have backend, frontend, shared packages, infra, jobs, workers, or plugins?
+- how many apps exist?
+- where are the entrypoints?
+- which boundaries matter enough to deserve their own docs?
 
-### Step 0.2: Create Directory Structure
+This repo-shape pass is mandatory. Do not jump straight into area summaries.
+
+## Phase 1: Discovery Lanes
+
+Run lanes sequentially by default using local source scans and GitNexus when
+available. Use subagents only when the user explicitly asked for parallel agent
+work. If subagents are used:
+
+- discovery may fan out by lane
+- synthesis must still happen in one writer
+
+### Lane A: Repo Scout
+
+Purpose:
+
+- classify repo archetype
+- identify major top-level surfaces
+- identify candidate dominant patterns
+
+Typical outputs:
+
+- README dominant patterns
+- architecture/system-overview.md
+- initial task routing buckets
+
+Typical searches:
 
 ```bash
-# Unix/macOS
-mkdir -p .beer/knowledge-base/{code-patterns,folder-structure,business-rules,architecture,dependencies,conventions,critical-sections}
-
-# Windows (PowerShell)
-New-Item -ItemType Directory -Force -Path .beer/knowledge-base/code-patterns, .beer/knowledge-base/folder-structure, .beer/knowledge-base/business-rules, .beer/knowledge-base/architecture, .beer/knowledge-base/dependencies, .beer/knowledge-base/conventions, .beer/knowledge-base/critical-sections
+rg --files -g "package.json" -g "*.sln" -g "Program.cs" -g "app.*" -g "main.*"
+rg --files .
 ```
 
----
+### Lane B: Backend Discovery
 
-## Phase 1: Analysis Lanes
+Purpose:
 
-Run analysis lanes sequentially by default using local source scans and GitNexus when available. Lanes are conceptual units, not tracked tasks or beads. Use subagents only when the user explicitly asks for parallel agent work.
+- document request lifecycle
+- document module template
+- document data access and write/read boundaries
+- detect domain rules, events, outbox, jobs, or workflow machinery if present
 
-### Command Style
+Focus questions:
 
-Prefer `rg` because it works well across Windows, macOS, and Linux. Use `grep`, `find`, `head`, `tree`, or `jq` only as optional fallbacks when they are available in the target shell. On Windows, use the PowerShell forms already listed in this workflow or the Node.js fallback snippets in quick-ref.
+- what is the usual path from request to persistence?
+- what files appear every time a backend feature is added?
+- where are domain rules enforced?
+- where do async side effects leave the transaction boundary?
 
-### Lane 1: Code Patterns Analysis
+Typical outputs:
 
-**Approach:**
-1. Search for common patterns (adapt globs for your language):
-   ```bash
-   rg -l "class .*Repository|Repository" src
-   rg -l "Factory|create.*factory|builder|Builder" src
-   rg -l "emit|on\\(|addListener|EventEmitter" src
-   rg -l "Strategy|interface .*Strategy|trait .*Strategy" src
-   ```
+- `backend/request-lifecycle.md`
+- `backend/module-template.md`
+- `backend/data-access-and-unit-of-work.md`
+- `backend/domain-rules-and-lifecycle.md`
+- optional async docs only if supported by evidence
 
-2. Use GitNexus (if available):
-   ```yaml
-   query:
-     query: "Find repository pattern implementations"
-     repo: "<repo-name>"
-   ```
+### Lane C: Frontend Discovery
 
-   ```yaml
-   query:
-     query: "Find factory or builder patterns"
-     repo: "<repo-name>"
-   ```
+Purpose:
 
-3. Document in `code-patterns/*.md`
+- document app structure
+- document API access pattern
+- document state/session/auth patterns
+- document UI or composable conventions when they are stable enough to reuse
 
-**Output:**
-- `code-patterns/repository-pattern.md`
-- `code-patterns/service-layer.md`
-- etc.
+Focus questions:
 
-### Lane 2: Folder Structure Mapping
+- how do pages/features reach APIs?
+- where is session continuity handled?
+- how are shared frontend concerns organized?
 
-**Approach:**
-1. Map directory tree:
-   ```bash
-   rg --files src
+Typical outputs:
 
-   # Windows (PowerShell)
-   Get-ChildItem -Recurse -Directory src/ | Select-Object -First 50 FullName
-   ```
+- `frontend/app-structure-and-api-access.md`
+- `frontend/session-and-refresh-patterns.md`
+- optional `frontend/ui-and-state-conventions.md`
 
-2. Identify conventions:
-   - `src/components/` -> React/Vue components?
-   - `src/services/` -> Business logic?
-   - `src/utils/` -> Helpers?
-   - `__tests__/`, `*.test.ts` -> Testing patterns?
+### Lane D: Boundary Discovery
 
-3. Check configuration files:
-   ```bash
-   rg --files -g "package.json" -g "tsconfig.json" -g ".eslintrc*" -g "vite.config.*" -g "pyproject.toml" -g "go.mod" -g "Cargo.toml"
+Purpose:
 
-   # Windows (PowerShell)
-   Get-Item package.json, tsconfig.json, .eslintrc*, vite.config.*, pyproject.toml, go.mod, Cargo.toml -ErrorAction SilentlyContinue
-   ```
+- identify seams between backend and frontend
+- identify DTO/contract coupling
+- identify proxy, auth, middleware, caching, and error-shape boundaries
 
-**Output:**
-- `folder-structure/conventions.md`
-- `folder-structure/module-map.md`
+Focus questions:
 
-### Lane 3: Business Rules Extraction
+- what happens at the frontend/backend seam?
+- what makes this seam fragile?
+- what must a developer preserve when changing it?
 
-**Approach:**
-1. Find validation logic (adapt for your language):
-   ```bash
-   rg -l "validate|Validation|schema|zod|joi|pydantic" src
-   ```
+Typical outputs:
 
-2. Find domain constraints:
-   ```bash
-   rg -n "must|should|required|forbidden|only|throw|error|raise|if" src
-   ```
+- `boundaries/frontend-backend-proxy.md`
+- `boundaries/contracts-and-error-shape.md`
+- boundary-heavy critical flows
 
-3. Check types for domain rules:
-   ```bash
-   rg -n "type |interface |struct |class " src
-   ```
+### Optional Lanes
 
-**Output:**
-- `business-rules/validation-rules.md`
-- `business-rules/domain-constraints.md`
+Only create docs for patterns supported by real evidence:
 
-### Lane 4: Architecture Documentation
+- `domain-events-and-outbox`
+- `messaging-and-consumers`
+- `scheduler-and-jobs`
+- `plugin-extension-model`
+- `workflow-engine`
+- `critical-flows/*`
 
-**Approach:**
-1. Identify architecture pattern:
-   - MVC? Layered? Microservices? Clean Architecture?
-   
-2. Map data flow:
-   ```bash
-   rg -n "import .*from|require\\(|from .* import|use " src
-   ```
+Do not create placeholder docs for absent patterns.
 
-3. Find entry points:
-   ```bash
-   rg --files -g "index.ts" -g "app.ts" -g "main.ts" -g "__init__.py" -g "main.go"
+## Phase 2: Pattern Selection
 
-   # Windows (PowerShell)
-   Get-Item src/index.ts, src/app.ts, src/main.ts, src/__init__.py, main.go -ErrorAction SilentlyContinue
-   ```
+Each lane should return evidence, not polished final prose.
 
-4. Use GitNexus for graph (if available):
-   ```yaml
-   query:
-     query: "Find application entry points"
-     repo: "<repo-name>"
-   ```
+For every candidate pattern or doc:
 
-   ```yaml
-   query:
-     query: "Find data flow patterns"
-     repo: "<repo-name>"
-   ```
+- summary
+- why it matters
+- key files
+- confidence
+- whether it deserves a canonical doc or only a note
 
-**Output:**
-- `architecture/layer-structure.md`
-- `architecture/data-flow.md`
-- `architecture/component-diagram.md`
+Promote only patterns that are:
 
-### Lane 5: Dependency Analysis
+- stable
+- repeated
+- important for implementation decisions
+- likely to be rediscovered expensively if left undocumented
 
-**Approach:**
-1. Analyze imports:
-   ```bash
-   rg -n "^import .*from|^from .* import|^import |^use " src
-   ```
+## Phase 3: Single-Writer Synthesis
 
-2. Find cross-module dependencies:
-   ```bash
-   rg -l "from .*components|components/" src/services
-   rg -l "from .*services|services/" src/components
-   ```
+One writer merges all lane findings and produces the final docs.
 
-3. Check package manifest:
-   ```bash
-   node -e "const pkg=require('./package.json'); console.log(JSON.stringify({deps:pkg.dependencies,devDeps:pkg.devDependencies},null,2))"
-   ```
+Writer responsibilities:
 
-**Output:**
-- `dependencies/import-patterns.md`
-- `dependencies/cross-module-graph.md`
+- define dominant patterns
+- decide which docs should exist
+- normalize language and schema across docs
+- prefer implementation guidance over inventory
+- remove weak, speculative, or duplicative findings
 
-### Lane 6: Conventions Identification
+The writer should favor a small number of strong docs over a broad but shallow
+folder dump.
 
-**Approach:**
-1. Naming conventions:
-   ```bash
-   # Check file naming (adapt extensions)
-   rg --files src/components
-   rg --files src/services
-   
-   # Check function/class naming
-   rg -n "^export class|^export function|^def |^func |^class " src
-   ```
+## Phase 4: Write Files
 
-2. Error handling:
-   ```bash
-   rg -n "try|catch|throw|Error|except|raise|Result<|Either" src
-   ```
+Update:
 
-3. Async patterns:
-   ```bash
-   rg -n "async|await|Promise|goroutine|chan |Task<" src
-   ```
-
-**Output:**
-- `conventions/naming.md`
-- `conventions/error-handling.md`
-- `conventions/file-organization.md`
-
----
-
-## Phase 2: Critical Sections (Depends on Phase 1)
-
-### Lane 7: Critical Sections Identification
-
-**Approach:**
-1. Search for security-sensitive code (adapt extensions):
-   ```bash
-   rg -l "auth|Auth|password|token|jwt|session" src
-   rg -l "payment|Payment|stripe|billing" src
-   rg -l "permission|role|admin" src
-   ```
-
-2. Database/ORM critical files:
-   ```bash
-   rg -l "database|query|migration|schema|ORM|prisma|sqlalchemy" src
-   ```
-
-3. External API integrations:
-   ```bash
-   rg -l "axios|fetch|api|http|requests|httpx|net/http" src
-   ```
-
-**Output:**
-- `critical-sections/auth-flows.md`
-- `critical-sections/payment-processing.md`
-- `critical-sections/database-operations.md`
-
----
-
-## Phase 3: Synthesis
-
-### Step 3.1: Merge Findings
-
-Combine outputs from all lanes:
-- Check for contradictions (e.g., mixed naming conventions)
-- Identify dominant patterns
-- Flag inconsistencies
-
-### Step 3.2: Confidence Scoring
-
-For each finding, assign confidence:
-- **High**: Saw 5+ examples, consistent across codebase
-- **Medium**: Saw 3-4 examples, some variation
-- **Low**: Saw 1-2 examples, might be edge case
-
----
-
-## Phase 4: Write Knowledge Base Files
-
-Write only what the evidence supports.
-
-- Create or update lane files under the correct subfolders.
-- Add source evidence, confidence, applicability, and contradictions to each entry.
-- Keep README lightweight; it is navigation, not a second schema definition.
-- Use the existing examples instead of inventing a new output shape during the run:
-  - `examples/example-output.md`
-  - `examples/cache-conflict-resolution.md`
-
-Do not dump speculative templates into the knowledge base just because a lane ran.
-Prefer durable patterns and clarified conventions over transient implementation noise.
-
----
-
-## Phase 5: Finalize Index and Metadata
-
-Update these files before handoff:
-
+- `.beer/knowledge-base/README.md`
 - `.beer/knowledge-base/index.json`
 - `.beer/knowledge-base/00-metadata.json`
+- only the markdown docs justified by the evidence
 
 Rules:
 
-- Follow `references/index-schema.md` exactly for machine-readable fields.
-- Write valid UTF-8 JSON that parses cleanly in Node.
-- Record `generated_from_commit`, or an explicit `unknown-*` fallback plus the reason.
-- Keep `source_authority = current repository source`.
-- Set `scan_scope = partial` for subfolder scans.
-- Record whether the run was `manual` or `gitnexus-assisted`.
+- README is an entrypoint, not a directory listing
+- docs should be pattern-first and task-useful
+- docs should favor `how to follow this here` over generic theory
+- record gaps or contradictions instead of inventing certainty
 
----
+Suggested doc schema:
 
-## Phase 6: Post-Execution Freshness Policy
+- What this is
+- Why it exists here
+- How to follow it
+- Common variants in this repo
+- Do not do
+- Key files
+- Risk when changing
+- Confidence
 
-This skill does not run freshness checks on every normal feature request. Freshness review is a lazy follow-up owned by `beer:compounding` or by an explicit user refresh request.
+## Phase 5: Finalize Metadata and Index
 
-Use this decision rule:
+Metadata requirements:
 
-| Condition | Action |
-|---|---|
-| No previous metadata | No freshness claim; user can invoke scan later |
-| `generated_from_commit` starts with `unknown-` | Freshness is non-authoritative; rescan only on explicit request or visible pattern drift |
-| Commit unchanged | Knowledge base remains fresh |
-| Commit changed but only local feature files shifted | Usually skip refresh |
-| Commit changed and conventions/architecture/rules drifted | Trigger incremental or full refresh |
+- `generated_from_commit` or explicit `unknown-*`
+- `source_authority`
+- `commit_policy`
+- `strategy = pattern-first`
+- discovery lanes used
+- `mode = manual | gitnexus-assisted`
+- `scan_scope = full | partial`
 
-When `beer:compounding` owns freshness review, it may trigger this refresh after
-task closeout while GitNexus repo re-index follows its own automatic path. This
-skill still only owns the knowledge-base refresh work.
+Index requirements:
 
-The exact staleness command stays in `references/quick-ref.md`.
+- keyword lookup
+- task-oriented lookup
+- dominant pattern summary
+- critical files
+- entries pointing only to files that actually exist
 
----
+## Phase 6: Report Back
 
-## Handoff
-
-Use the report shape from `references/communication.md` and include:
+Use the communication shape from `references/communication.md` and include:
 
 - output path
 - invocation reason
 - scan scope
-- mode (`manual` or `gitnexus-assisted`)
-- counts for key findings
+- mode
+- strategy
+- docs generated
+- dominant patterns captured
+- critical flows documented
 - stale/conflicting entries, if any
-- reminder that current source remains authoritative
+- reminder that source remains authoritative
 
-Then return control to the calling workflow skill or end the direct user request with the cache refresh summary.
+## Guardrails
+
+- Do not generate repo-wide conclusions from one subfolder without marking the scope.
+- Do not dump every lane into its own markdown file by default.
+- Do not force backend/frontend/boundary docs if the repo shape does not justify them.
+- Do not let discovery workers write final docs independently.
+- Do not treat a missing knowledge base as a reason to scan unrelated requests.

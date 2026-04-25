@@ -45,7 +45,7 @@ Scan this repo and build the knowledge base.
 
 **Expected Behavior**
 
-- Run the seven analysis lanes sequentially by default.
+- Run repo-scout, backend, frontend, and boundary lanes sequentially by default.
 - Use GitNexus/local source scans as evidence.
 - Only use parallel agents if the user explicitly asks for parallel agent work.
 - Record mode and evidence in metadata/output.

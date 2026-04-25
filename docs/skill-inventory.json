@@ -28,7 +28,7 @@
     },
     {
       "name": "codebase-knowledge",
-      "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build knowledge base\"], [\"scan project patterns\"], [\"refresh knowledge base\"], or otherwise needs a refreshed project-local knowledge cache. It is strongest when used to consolidate stable knowledge after work has been completed or a reusable pattern has clearly emerged.",
+      "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build knowledge base\"], [\"scan project patterns\"], [\"refresh knowledge base\"], or otherwise needs a refreshed project-local implementation map. It is strongest when used to consolidate stable repository patterns, backend/frontend seams, and critical flows after work has already clarified how the codebase really operates.",
       "category": "support",
       "family": "",
       "directory": "codebase-knowledge",
