@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { readBeerStatus, renderBeerStatus, resolveRepoRoot } from "../beer-state/core.mjs";
+
+const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
 function parseCliArgs(argv) {
   const args = {
@@ -50,6 +55,6 @@ export function main(argv = process.argv.slice(2)) {
   return 0;
 }
 
-if (process.argv[1]) {
+if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
   process.exitCode = main();
 }
