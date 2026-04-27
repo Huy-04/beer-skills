@@ -50,7 +50,7 @@ export function assessApproval(options = {}) {
         code: "onboarding_missing",
         summary: "Approval cannot be recorded before Beer onboarding exists.",
         next_steps: [
-        "Run beer init first.",
+        "Run Beer project bootstrap first.",
         ],
         state,
       };
@@ -302,7 +302,7 @@ export function recordApproval(options = {}) {
   }
 
   if (assessment.approval === "review") {
-    nextSteps.push("Before leaving compounding, run beer closeout-guard with an explicit generated Docs decision.");
+    nextSteps.push("Before leaving compounding, run the repo-local closeout guard with an explicit generated Docs decision.");
   }
 
   return {

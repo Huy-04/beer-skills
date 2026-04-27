@@ -22,7 +22,7 @@ agent through feature work, repair/investigation, validation, review, and learni
 | Item | Value |
 |---|---|
 | Entry skill | `beer:using-beer` |
-| Public CLI | `beer` / `beer-skills` |
+| Public CLI | bootstrap with `beer-skills`, then use project-local `.beer/bin/beer.mjs` |
 | Skills shipped | `17` |
 | Main feature flow | `context-intake -> exploring -> planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
 | Investigation / repair lens | `using-beer -> context-intake/exploring/planning` with `debugging` as needed |
@@ -37,25 +37,30 @@ support, and meta layers.
 ### Fast Path
 
 ```bash
-npm install -g github:Huy-04/beer-skills
-beer init
-beer status
+npx --yes --package github:Huy-04/beer-skills beer-skills init
+node .beer/bin/beer.mjs status
 ```
 
-`beer init` automatically reinstalls Beer skills into `./.claude/skills/` and `./.agents/skills/`, syncs the managed `AGENTS.md` / `CLAUDE.md` guideline blocks, and configures repo-local hooks for Claude and Codex.
+`beer-skills init` creates project-local Beer assets only. It installs the
+repo-local CLI under `.beer/bin/`, reinstalls Beer skills into
+`./.claude/skills/` and `./.agents/skills/`, syncs the managed `AGENTS.md` /
+`CLAUDE.md` guideline blocks, and configures repo-local hooks for Claude and
+Codex.
+
+On Windows, use `.\.beer\bin\beer.cmd status` if you want a direct project-local
+command shim instead of `node .beer/bin/beer.mjs status`.
 
 ### Common Actions
 
 | Goal | Command |
 |---|---|
-| Install Beer globally from GitHub | `npm install -g github:Huy-04/beer-skills` |
-| Update the global Beer package and resync the current repo | `beer update` |
-| Onboard the current repo | `beer init` |
-| Refresh Beer files in the current repo | `beer refresh` |
-| Remove Beer from the current repo | `beer uninstall --yes` |
-| Check installed tools | `beer check-tools` |
-| Install a tool such as GitNexus | `beer install gitnexus` |
-| Check repo status | `beer status` |
+| Bootstrap Beer into the current repo | `npx --yes --package github:Huy-04/beer-skills beer-skills init` |
+| Update project-local Beer files from the current package | `node .beer/bin/beer.mjs update` |
+| Refresh Beer files in the current repo | `node .beer/bin/beer.mjs refresh` |
+| Remove Beer from the current repo, including the local CLI | `node .beer/bin/beer.mjs uninstall --yes` |
+| Check installed tools | `node .beer/bin/beer.mjs check-tools` |
+| Install an external tool such as GitNexus | `node .beer/bin/beer.mjs install gitnexus` |
+| Check repo status | `node .beer/bin/beer.mjs status` |
 | Start routing inside an agent session | `beer:using-beer` |
 
 `beer:using-beer` is the entry skill. It chooses the smallest viable route from
@@ -64,12 +69,14 @@ the task shape, current Beer state, and available local dependencies.
 Beer also keeps repo-local model-role defaults in `.beer/config.json`, so an
 orchestrator can resolve different profiles for orchestration, coding, and
 search/synthesis-heavy work instead of treating every worker the same.
-For swarm-approved slices, `beer orchestrate` can resolve and materialize worker
-assignments from the current Beer state, while `beer worker-bootstrap` emits the
-spawn-ready payloads a host runtime can map into actual subagent launches.
+For swarm-approved slices, `node .beer/bin/beer.mjs orchestrate` can resolve and
+materialize worker assignments from the current Beer state, while
+`node .beer/bin/beer.mjs worker-bootstrap` emits the spawn-ready payloads a host
+runtime can map into actual subagent launches.
 
 Use `--repo-root /path/to/project` only when you want to target a different repo
-than the current working directory.
+than the current working directory. The default path is always project-local;
+Beer does not need a global install for normal use.
 
 Detailed setup: [docs/setup.md](docs/setup.md)  
 Full command reference: [COMMANDS.md](COMMANDS.md)
@@ -136,7 +143,7 @@ is a bug, a failing build/test, or a repair that needs root-cause proof.
 | `orchestration_strategy` | `single-worker`, `multi-worker` | execution topology after validation |
 | `run_style` | `guided`, `go` | how aggressively Beer crosses gates |
 
-Use `beer-skills auto-accept` from an installed package, or
+Use `node .beer/bin/beer.mjs auto-accept` or
 `node .beer/scripts/commands/beer-auto-accept.mjs` before any automatic gate
 crossing. It returns `ALLOW` only when `run_style = go` or `auto_accept` policy
 permits the gate and no blocker, high-risk condition, missing evidence, or

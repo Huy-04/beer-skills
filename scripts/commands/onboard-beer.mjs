@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { checkCommand, hasMcpServer } from "../onboard-beer/checks.mjs";
 import { buildDefaultConfig, buildDefaultState, buildDefaultStateMd, utcNow } from "../onboard-beer/defaults.mjs";
-import { MANAGED_SCRIPT_FILES, MANAGED_SKILL_SENTINEL, MIN_NODE_MAJOR } from "../onboard-beer/manifest.mjs";
+import { MANAGED_CLI_FILES, MANAGED_SCRIPT_FILES, MANAGED_SKILL_SENTINEL, MIN_NODE_MAJOR } from "../onboard-beer/manifest.mjs";
 import {
   removeInstalledBeerSkills,
   removeManagedAgentGuidelines,
@@ -72,8 +72,83 @@ function hasManagedScripts(scriptsDir) {
   );
 }
 
+function hasManagedCli(binDir) {
+  return MANAGED_CLI_FILES.every((fileName) =>
+    fs.existsSync(path.join(binDir, fileName)),
+  );
+}
+
 function hasManagedSkills(skillsDir) {
   return fs.existsSync(path.join(skillsDir, MANAGED_SKILL_SENTINEL));
+}
+
+function writeExecutableFile(filePath, content) {
+  fs.writeFileSync(filePath, content, "utf8");
+  try {
+    fs.chmodSync(filePath, 0o755);
+  } catch {
+    // Best effort only. Windows relies on .cmd/.ps1 wrappers.
+  }
+}
+
+function syncProjectCli(repoRoot) {
+  const binDir = path.join(repoRoot, ".beer", "bin");
+  ensureDir(binDir);
+
+  writeExecutableFile(
+    path.join(binDir, "beer.mjs"),
+    [
+      "#!/usr/bin/env node",
+      "",
+      'import { main } from "../scripts/commands/beer-cli.mjs";',
+      "",
+      "main().then(",
+      "  (code) => {",
+      "    process.exitCode = code;",
+      "  },",
+      "  (error) => {",
+      "    console.error(error instanceof Error ? error.message : String(error));",
+      "    process.exitCode = 1;",
+      "  },",
+      ");",
+      "",
+    ].join("\n"),
+  );
+
+  writeExecutableFile(
+    path.join(binDir, "beer"),
+    [
+      "#!/usr/bin/env sh",
+      'DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"',
+      'exec node "$DIR/beer.mjs" "$@"',
+      "",
+    ].join("\n"),
+  );
+
+  fs.writeFileSync(
+    path.join(binDir, "beer.cmd"),
+    [
+      "@echo off",
+      'node "%~dp0beer.mjs" %*',
+      "",
+    ].join("\r\n"),
+    "utf8",
+  );
+
+  fs.writeFileSync(
+    path.join(binDir, "beer.ps1"),
+    [
+      '& node "$PSScriptRoot/beer.mjs" @args',
+      "exit $LASTEXITCODE",
+      "",
+    ].join("\r\n"),
+    "utf8",
+  );
+
+  return {
+    path: binDir,
+    files: [...MANAGED_CLI_FILES],
+  };
 }
 
 export function checkRepo(repoRoot) {
@@ -93,14 +168,17 @@ export function checkRepo(repoRoot) {
   const configPath = path.join(beerDir, "config.json");
   const skillsDir = path.join(beerDir, "skills");
   const scriptsDir = path.join(beerDir, "scripts");
+  const binDir = path.join(beerDir, "bin");
 
   const stateExists = fs.existsSync(statePath);
   const stateMdExists = fs.existsSync(stateMdPath);
   const configExists = fs.existsSync(configPath);
   const skillsExists = fs.existsSync(skillsDir);
   const scriptsExists = fs.existsSync(scriptsDir);
+  const cliExists = fs.existsSync(binDir);
   const skillsReady = skillsExists && hasManagedSkills(skillsDir);
   const scriptsReady = scriptsExists && hasManagedScripts(scriptsDir);
+  const cliReady = cliExists && hasManagedCli(binDir);
 
   const bdOk = checkCommand("bd");
   const gitnexusOk = hasMcpServer(repoRoot, "gitnexus");
@@ -114,6 +192,8 @@ export function checkRepo(repoRoot) {
   if (!skillsReady) actions.push("sync-skills-snapshot");
   if (!scriptsExists) actions.push("create-scripts-dir");
   if (!scriptsReady) actions.push("sync-scripts-snapshot");
+  if (!cliExists) actions.push("create-cli-bin");
+  if (!cliReady) actions.push("sync-project-cli");
 
   return {
     repo_root: repoRoot,
@@ -129,6 +209,8 @@ export function checkRepo(repoRoot) {
       skills_ready: skillsReady,
       scripts_exist: scriptsExists,
       scripts_ready: scriptsReady,
+      cli_exists: cliExists,
+      cli_ready: cliReady,
       bd_available: bdOk,
       gitnexus_available: gitnexusOk,
     },
@@ -152,6 +234,7 @@ export function applyRepo(repoRoot) {
   const configPath = path.join(beerDir, "config.json");
   const skillsDir = path.join(beerDir, "skills");
   const scriptsDir = path.join(beerDir, "scripts");
+  const binDir = path.join(beerDir, "bin");
   const onboardingPath = path.join(beerDir, "onboarding.json");
   const sourceSkillsDir = path.join(INSTALL_ROOT, "skills");
   const sourceScriptsDir = SCRIPTS_ROOT;
@@ -159,6 +242,7 @@ export function applyRepo(repoRoot) {
   ensureDir(beerDir);
   ensureDir(skillsDir);
   ensureDir(scriptsDir);
+  ensureDir(binDir);
 
   if (!fs.existsSync(statePath)) {
     fs.writeFileSync(statePath, `${JSON.stringify(buildDefaultState(), null, 2)}\n`, "utf8");
@@ -174,6 +258,7 @@ export function applyRepo(repoRoot) {
 
   syncTree(sourceSkillsDir, skillsDir);
   syncTree(sourceScriptsDir, scriptsDir, { clean: true });
+  syncProjectCli(repoRoot);
 
   const onboardingPayload = {
     schema_version: "1.0",
@@ -187,6 +272,8 @@ export function applyRepo(repoRoot) {
       config_file: ".beer/config.json",
       skills_dir: ".beer/skills",
       scripts_dir: ".beer/scripts",
+      cli_dir: ".beer/bin",
+      cli_entrypoint: ".beer/bin/beer.mjs",
     },
   };
   fs.writeFileSync(onboardingPath, `${JSON.stringify(onboardingPayload, null, 2)}\n`, "utf8");
@@ -200,7 +287,9 @@ export function applyRepo(repoRoot) {
 
 export function removeRepo(repoRoot) {
   const beerDir = path.join(repoRoot, ".beer");
+  const cliDir = path.join(beerDir, "bin");
   const existed = fs.existsSync(beerDir);
+  const cliExisted = fs.existsSync(cliDir);
 
   if (existed) {
     fs.rmSync(beerDir, { recursive: true, force: true });
@@ -227,6 +316,10 @@ export function removeRepo(repoRoot) {
     managed_root: ".beer",
     removed_skills: removedSkills,
     removed_skill_targets: removedSkillCleanup.targets,
+    removed_cli: {
+      path: ".beer/bin",
+      status: cliExisted ? "removed" : "missing",
+    },
     removed_guidelines: removedGuidelines,
     removed_hooks: removedHooks,
     removed_codex_hooks: removedCodexHooks,

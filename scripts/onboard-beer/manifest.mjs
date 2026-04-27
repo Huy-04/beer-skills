@@ -46,4 +46,11 @@ export const MANAGED_SCRIPT_FILES = [
   path.join("onboard-beer", "manifest.mjs"),
 ];
 
+export const MANAGED_CLI_FILES = [
+  "beer.mjs",
+  "beer.cmd",
+  "beer.ps1",
+  "beer",
+];
+
 export const MANAGED_SKILL_SENTINEL = path.join("workflow", "feature", "using-beer", "SKILL.md");

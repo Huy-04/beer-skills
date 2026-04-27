@@ -3,7 +3,6 @@ import path from "node:path";
 import test from "node:test";
 
 import {
-  buildBeerSelfUpdateCommand,
   installGitNexus,
   isWindowsShellCommand,
   quoteWindowsShellArg,
@@ -50,10 +49,6 @@ test("isWindowsShellCommand detects cmd and bat only on Windows", () => {
 
 test("quoteWindowsShellArg escapes double quotes", () => {
   assert.equal(quoteWindowsShellArg('say "hi"'), '"say \\"hi\\""');
-});
-
-test("buildBeerSelfUpdateCommand uses the GitHub package source", () => {
-  assert.equal(buildBeerSelfUpdateCommand(), "npm install -g github:Huy-04/beer-skills");
 });
 
 test("installGitNexus skips setup when GitNexus is already available", () => {

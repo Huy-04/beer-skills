@@ -52,10 +52,6 @@ export function buildBeadsInstallCommand() {
   return "npm install -g @beads/bd";
 }
 
-export function buildBeerSelfUpdateCommand() {
-  return "npm install -g github:Huy-04/beer-skills";
-}
-
 export function isWindowsShellCommand(commandPath, platform = process.platform) {
   return platform === "win32" && [".cmd", ".bat"].includes(path.extname(commandPath).toLowerCase());
 }

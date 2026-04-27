@@ -5,30 +5,30 @@ This page is the detailed setup and onboarding reference for Beer. The root
 
 ## Standard Setup
 
-Install Beer globally from GitHub:
+Bootstrap Beer into the current repo without installing a global Beer CLI:
 
 ```bash
-npm install -g github:Huy-04/beer-skills
-beer --help
+npx --yes --package github:Huy-04/beer-skills beer-skills init
+node .beer/bin/beer.mjs --help
 ```
 
-On Windows PowerShell, `beer` resolves through `beer.ps1`. Set this once for
-the current user so the CLI can run:
+On Windows, the project-local `.cmd` shim avoids PowerShell execution-policy
+friction:
 
 ```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+.\.beer\bin\beer.cmd status
 ```
 
-Onboard the current repo:
+Refresh the current repo after bootstrap:
 
 ```bash
-beer init
+node .beer/bin/beer.mjs refresh
 ```
 
 Onboard a different repo:
 
 ```bash
-beer init --repo-root /path/to/project
+npx --yes --package github:Huy-04/beer-skills beer-skills init --repo-root /path/to/project
 ```
 
 Beer automatically uses the current repo by default. Use `--repo-root` only when
@@ -38,7 +38,7 @@ For guided workflows, Beer expects each task to carry a `history/<feature>/CONTE
 Keep the file compact for `small-fix`, repair, and investigation work. Reserve
 `.beer/seed/` for feature or debug discovery before the context is locked.
 
-## What `beer init` Creates
+## What Init Creates
 
 | Path | Purpose |
 |---|---|
@@ -48,6 +48,7 @@ Keep the file compact for `small-fix`, repair, and investigation work. Reserve
 | `.beer/config.json` | repo-local Beer configuration |
 | `.beer/scripts/` | managed script snapshot |
 | `.beer/skills/` | synced skills for the target repo |
+| `.beer/bin/` | project-local Beer CLI shims; removed by `uninstall` |
 | `.claude/skills/` | Beer skills for Claude Code discovery; Beer removes old Beer skills first, then reinstalls the current set |
 | `.agents/skills/` | Beer skills for Codex discovery; Beer removes old Beer skills first, then reinstalls the current set |
 | `.claude/settings.json` | managed Beer Claude Code hooks for pre-edit flow lock and closeout guard |
@@ -56,7 +57,7 @@ Keep the file compact for `small-fix`, repair, and investigation work. Reserve
 | `AGENTS.md` | managed `beer-agent-guidelines` block for agent-facing repo rules |
 | `CLAUDE.md` | managed `beer-agent-guidelines` block for Claude-facing repo rules |
 
-`beer init`, `beer refresh`, `beer install`, and `beer update` all resync Beer skills into `.claude/skills` and `.agents/skills`, sync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`, refresh the managed Beer hook entries in `.claude/settings.json`, and refresh the managed Codex hook/config entries in `.codex/`.
+`init`, `refresh`, `install`, and `update` all resync Beer skills into `.claude/skills` and `.agents/skills`, sync the Beer-managed block inside `AGENTS.md` and `CLAUDE.md`, refresh `.beer/bin`, refresh the managed Beer hook entries in `.claude/settings.json`, and refresh the managed Codex hook/config entries in `.codex/`.
 
 ## Custom Model Roles
 
@@ -79,29 +80,23 @@ Beer treats them as the default runtime contract for:
 - coding and implementation workers
 - search, reading, and synthesis-heavy tasks
 
-`beer status` prints the active role mapping so you can confirm the repo-local configuration quickly.
-Use `beer model-profile --role coding --json` or `beer model-profile --task-kind search --json`
+`node .beer/bin/beer.mjs status` prints the active role mapping so you can confirm the repo-local configuration quickly.
+Use `node .beer/bin/beer.mjs model-profile --role coding --json` or `node .beer/bin/beer.mjs model-profile --task-kind search --json`
 when the coordinator needs the effective worker profile for a concrete task shape.
-Use `beer orchestrate --json` to see the current coordinator decision, or
-`beer orchestrate --apply --json` to materialize worker assignments for a swarm-approved slice.
-Use `beer worker-bootstrap --json` to emit spawn-ready worker payloads, then
+Use `node .beer/bin/beer.mjs orchestrate --json` to see the current coordinator decision, or
+`node .beer/bin/beer.mjs orchestrate --apply --json` to materialize worker assignments for a swarm-approved slice.
+Use `node .beer/bin/beer.mjs worker-bootstrap --json` to emit spawn-ready worker payloads, then
 follow the [Host Runtime Contract](host-runtime-contract.md) when a host runtime
 is responsible for the actual subagent launch.
 
 ## Tooling Options
 
-During `beer init`, Beer asks whether to install the full toolchain.
-
-| Choice | Result |
-|---|---|
-| `y` | run full tool install |
-| `n` | keep minimal setup and install tools later |
-
-Install tools later with:
+`init` does not install external tools. Install tools only when explicitly
+requested:
 
 ```bash
-beer install gitnexus
-beer install beads
+node .beer/bin/beer.mjs install gitnexus
+node .beer/bin/beer.mjs install beads
 ```
 
 After GitNexus is installed, index the repo:

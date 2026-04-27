@@ -1,5 +1,5 @@
 import { buildBeerPreflightReport } from "../commands/beer-preflight.mjs";
-import { resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
+import { applyRepo, resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
 import { syncProjectSkills } from "./skill-sync.mjs";
 import { installBeads, installGitNexus } from "./toolchain.mjs";
 
@@ -38,10 +38,12 @@ export async function runInstall(args) {
 
   if (!tool) {
     const repoRoot = resolveOnboardRepoRoot(args.repoRoot);
+    applyRepo(repoRoot);
     const result = syncProjectSkills(repoRoot);
 
-    const lines = ["Beer Skill Install"];
+    const lines = ["Beer Project Install"];
     lines.push(`Target: ${repoRoot}`);
+    lines.push("Project CLI: .beer/bin/beer.mjs");
     if (result.removed_skills.length) {
       lines.push(`Removed Beer skills before sync: ${result.removed_skills.length}`);
     }
@@ -66,7 +68,7 @@ export async function runInstall(args) {
   if (!installer) {
     process.stdout.write(`Unknown tool: ${tool}\n`);
     process.stdout.write("Available tools: beads, gitnexus\n");
-    process.stdout.write("Or run 'beer install' to install skills into the current project.\n");
+    process.stdout.write("Or run 'node .beer/bin/beer.mjs install' to install Beer into the current project.\n");
     return 1;
   }
 

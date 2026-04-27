@@ -4,44 +4,52 @@ This page is the command reference for Beer. The root
 [README](README.md) stays focused on installation, onboarding, workflow
 overview, and where to go next.
 
-## Global Package
+## Bootstrap Package
 
-Install or update Beer globally:
+Bootstrap Beer into the current repo without installing a global Beer CLI:
 
 ```bash
-npm install -g github:Huy-04/beer-skills
-beer update
+npx --yes --package github:Huy-04/beer-skills beer-skills init
+node .beer/bin/beer.mjs status
 ```
 
-## Main CLI
+On Windows, the project-local shim is also available as
+`.\.beer\bin\beer.cmd status`.
+
+## Project-Local CLI
+
+After bootstrap, run Beer from the current repo with
+`node .beer/bin/beer.mjs <command>` or the Windows `.beer\bin\beer.cmd` shim.
+The CLI lives under `.beer/`, so `uninstall` removes it with the rest of Beer.
 
 | Command | Use it for |
 |---|---|
-| `beer init` | onboard the current repo, create `.beer/`, reinstall Beer skills into `.claude/skills/` and `.agents/skills/`, and sync `AGENTS.md` / `CLAUDE.md` |
-| `beer refresh` | refresh Beer-managed files in the current repo |
-| `beer uninstall --yes` | remove `.beer/` from the current repo |
-| `beer approve <context|phase-plan|execution|review>` | record a manual gate approval in guided workflow runs |
-| `beer index` | refresh the current repo's GitNexus index |
-| `beer check-tools` | check whether `bd`, GitNexus MCP, and the GitNexus index are available |
-| `beer install gitnexus` | install GitNexus setup |
-| `beer install beads` | install `bd` |
-| `beer status` | read current Beer state for a repo |
-| `beer flow-guard --tool Edit --path src/foo.ts --json` | inspect the pre-edit Beer gate manually |
-| `beer review-guard --json` | inspect review-time code quantity and pattern spread manually |
-| `beer closeout-guard --knowledge-base not-needed --json` | inspect closeout readiness manually |
-| `beer auto-accept --gate <gate> --json` | check whether a gate may auto-advance |
-| `beer dependencies` | print dependency status for the current bundle |
-| `beer planning-gate --route <route> --json` | check whether planning may proceed |
-| `beer model-profile --role <role> --json` | resolve the configured model profile for a Beer role |
-| `beer orchestrate --json` | build the current orchestration plan from Beer state |
-| `beer worker-bootstrap --json` | build spawn-ready worker payloads from current swarm state |
+| `node .beer/bin/beer.mjs update` | refresh project-local Beer files from the current package |
+| `node .beer/bin/beer.mjs refresh` | refresh Beer-managed files in the current repo |
+| `node .beer/bin/beer.mjs uninstall --yes` | remove project-local Beer assets, including `.beer/`, the local CLI, Beer skills, managed instruction blocks, and managed hooks |
+| `node .beer/bin/beer.mjs approve <context|phase-plan|execution|review>` | record a manual gate approval in guided workflow runs |
+| `node .beer/bin/beer.mjs index` | refresh the current repo's GitNexus index |
+| `node .beer/bin/beer.mjs check-tools` | check whether `bd`, GitNexus MCP, and the GitNexus index are available |
+| `node .beer/bin/beer.mjs install` | reinstall project-local Beer assets and skills |
+| `node .beer/bin/beer.mjs install gitnexus` | install external GitNexus setup when explicitly requested |
+| `node .beer/bin/beer.mjs install beads` | install external `bd` when explicitly requested |
+| `node .beer/bin/beer.mjs status` | read current Beer state for a repo |
+| `node .beer/bin/beer.mjs flow-guard --tool Edit --path src/foo.ts --json` | inspect the pre-edit Beer gate manually |
+| `node .beer/bin/beer.mjs review-guard --json` | inspect review-time code quantity and pattern spread manually |
+| `node .beer/bin/beer.mjs closeout-guard --knowledge-base not-needed --json` | inspect closeout readiness manually |
+| `node .beer/bin/beer.mjs auto-accept --gate <gate> --json` | check whether a gate may auto-advance |
+| `node .beer/bin/beer.mjs dependencies` | print dependency status for the current bundle |
+| `node .beer/bin/beer.mjs planning-gate --route <route> --json` | check whether planning may proceed |
+| `node .beer/bin/beer.mjs model-profile --role <role> --json` | resolve the configured model profile for a Beer role |
+| `node .beer/bin/beer.mjs orchestrate --json` | build the current orchestration plan from Beer state |
+| `node .beer/bin/beer.mjs worker-bootstrap --json` | build spawn-ready worker payloads from current swarm state |
 
 Use `--repo-root /path/to/project` only when you want to target a different repo
 than the current working directory.
 
 ## Package Commands
 
-Use these when Beer is not installed globally:
+Use these before a repo has been bootstrapped or when `.beer/` was removed:
 
 | Goal | Command |
 |---|---|
@@ -63,11 +71,11 @@ Use these when Beer is not installed globally:
 
 | Goal | Command |
 |---|---|
-| Refresh Beer files | `node .beer/scripts/commands/beer-cli.mjs refresh` |
+| Refresh Beer files | `node .beer/bin/beer.mjs refresh` |
 | Read status JSON | `node .beer/scripts/commands/beer-status.mjs --json` |
 | Check auto-accept gate | `node .beer/scripts/commands/beer-auto-accept.mjs --gate validating --json` |
 | Record guided approval | `node .beer/scripts/commands/beer-approve.mjs phase-plan --json` |
-| Refresh the current repo's GitNexus index | `node .beer/scripts/commands/beer-cli.mjs index --json` |
+| Refresh the current repo's GitNexus index | `node .beer/bin/beer.mjs index --json` |
 | Show dependency status | `node .beer/scripts/commands/beer-dependencies.mjs` |
 | Check planning gate | `node .beer/scripts/commands/beer-planning-gate.mjs --route feature` |
 | Resolve a configured model profile | `node .beer/scripts/commands/beer-model-profile.mjs --task-kind implement --json` |
@@ -90,22 +98,24 @@ Use these when Beer is not installed globally:
 
 ## Notes
 
-- `beer update` updates the global Beer package from GitHub, then resyncs Beer skills and managed guideline files in the current repo across Claude and Codex.
-- `beer init` removes old Beer skills in `./.claude/skills/` and `./.agents/skills/`, reinstalls the current set, and syncs `AGENTS.md` / `CLAUDE.md`.
-- `beer refresh` updates repo-local managed files in `.beer/` and resyncs Beer skills plus managed guideline files.
-- `beer status` includes the repo-local model-role mapping from `.beer/config.json` so you can confirm orchestrator / coding / research defaults.
-- `beer model-profile` resolves the effective profile for an explicit role or a task kind, so coordinators can choose worker models from repo-local Beer config instead of hardcoding them.
-- `beer orchestrate` reads `.beer/state.json` and `.beer/config.json`, resolves coordinator/worker profiles, and can materialize swarm worker assignments with `--apply`.
-- `beer worker-bootstrap` turns active swarm worker assignments into spawn-ready payloads/prompts for the host runtime.
+- `update` refreshes project-local Beer files from the current package source. It does not update or install a global Beer CLI.
+- `init`, `install`, `refresh`, and `update` remove old Beer skills in `./.claude/skills/` and `./.agents/skills/`, reinstall the current set, sync `AGENTS.md` / `CLAUDE.md`, and keep `.beer/bin` current.
+- `refresh` updates repo-local managed files in `.beer/` and resyncs Beer skills plus managed guideline files.
+- `status` includes the repo-local model-role mapping from `.beer/config.json` so you can confirm orchestrator / coding / research defaults.
+- `model-profile` resolves the effective profile for an explicit role or a task kind, so coordinators can choose worker models from repo-local Beer config instead of hardcoding them.
+- `orchestrate` reads `.beer/state.json` and `.beer/config.json`, resolves coordinator/worker profiles, and can materialize swarm worker assignments with `--apply`.
+- `worker-bootstrap` turns active swarm worker assignments into spawn-ready payloads/prompts for the host runtime.
 - The host runtime mapping from those payloads into real worker launches is documented in [docs/host-runtime-contract.md](docs/host-runtime-contract.md).
-- Beer installs Claude Code hooks into `.claude/settings.json` so `beer flow-guard` runs automatically on `PreToolUse` for `Edit|MultiEdit|Write`.
-- Beer installs Codex hooks into `.codex/hooks.json` and enables them from `.codex/config.toml`.
-- Both Claude and Codex get a closeout hook so `beer closeout-guard` blocks closeout when GitNexus refresh or the knowledge-base decision is still missing.
-- `beer approve review` now requires the review-quality guard to pass first, then runs the automatic post-task GitNexus refresh path for the current repo.
-- `beer index` reruns the current repo's GitNexus refresh path manually when needed.
-- `beer uninstall` removes `.beer/` only. It does not remove global tools such
-  as GitNexus or `bd`.
-- In guided workflow runs, use `beer approve <context|phase-plan|execution|review>` to
+- Beer installs Claude Code hooks into `.claude/settings.json` so the repo-local flow guard runs automatically on `PreToolUse` for `Edit|MultiEdit|Write`.
+- Beer installs Codex hooks into `.codex/hooks.json` and enables repo-local Beer hooks from `.codex/config.toml`.
+- Both Claude and Codex get a closeout hook so the repo-local closeout guard blocks closeout when GitNexus refresh or the knowledge-base decision is still missing.
+- `approve review` now requires the review-quality guard to pass first, then runs the automatic post-task GitNexus refresh path for the current repo.
+- `index` reruns the current repo's GitNexus refresh path manually when needed.
+- `uninstall` removes project-local Beer assets, including `.beer/`, the local
+  CLI under `.beer/bin`, Beer skills in `.claude/skills` and `.agents/skills`,
+  managed instruction blocks, and managed hooks. It does not remove external
+  tools such as GitNexus or `bd`.
+- In guided workflow runs, use `node .beer/bin/beer.mjs approve <context|phase-plan|execution|review>` to
   record a real manual gate decision instead of editing `.beer/state.json` by
   hand.
 - Route, risk, run style, and orchestration strategy now belong to
@@ -113,5 +123,4 @@ Use these when Beer is not installed globally:
 - Every task should carry a `history/<feature>/CONTEXT.md`. Keep it compact for
   `small-fix`, repair, and investigation work; reserve `.beer/seed/` for
   feature discovery before the context is locked.
-- On Windows PowerShell, `beer` resolves through `beer.ps1`. Set
-  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` so the CLI can run.
+- On Windows, prefer `.\.beer\bin\beer.cmd` to avoid PowerShell execution-policy friction.

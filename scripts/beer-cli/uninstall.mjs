@@ -8,7 +8,7 @@ async function confirmRemoval(repoRoot, args) {
   }
 
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    throw new Error("beer uninstall requires --yes in non-interactive mode.");
+    throw new Error("Beer uninstall requires --yes in non-interactive mode.");
   }
 
   const rl = readline.createInterface({
@@ -17,7 +17,7 @@ async function confirmRemoval(repoRoot, args) {
   });
 
   try {
-    const answer = (await rl.question(`Remove Beer from ${repoRoot}? This deletes .beer/. [y/n]: `))
+    const answer = (await rl.question(`Remove Beer from ${repoRoot}? This deletes project-local Beer assets. [y/n]: `))
       .trim()
       .toLowerCase();
     return answer === "y" || answer === "yes";
@@ -35,6 +35,9 @@ function renderUninstallResult(result) {
     if (result.status === "removed") {
     lines.push("Status: removed");
     lines.push("Removed: .beer");
+    if (result.removed_cli?.status === "removed") {
+      lines.push("Project CLI: removed");
+    }
     if (result.removed_skills?.length) {
       lines.push(`Removed skills: ${result.removed_skills.length}`);
       for (const name of result.removed_skills) {

@@ -21,6 +21,8 @@ test("applyRepo creates managed Beer files", () => {
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "state.json")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "skills")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "scripts")), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "bin", "beer.mjs")), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".beer", "bin", "beer.cmd")), true);
   assert.equal(config.models.orchestrator.model, "gpt-5.4");
   assert.equal(config.models.orchestrator.reasoning_effort, "high");
   assert.equal(config.models.coding.model, "gpt-5.3-codex");
@@ -37,6 +39,7 @@ test("removeRepo deletes the managed .beer directory", () => {
 
   assert.equal(result.status, "removed");
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer")), false);
+  assert.equal(result.removed_cli.status, "removed");
 });
 
 test("checkRepo reports onboarding missing after removal", () => {
@@ -74,4 +77,5 @@ test("removeRepo removes installed Beer Claude skills and managed guideline file
   assert.equal(fs.existsSync(path.join(repoRoot, ".codex", "hooks.json")), false);
   assert.equal(fs.existsSync(path.join(repoRoot, ".codex", "config.toml")), false);
   assert.ok(result.removed_skills.includes("beer-agent-guidelines"));
+  assert.equal(result.removed_cli.status, "removed");
 });
