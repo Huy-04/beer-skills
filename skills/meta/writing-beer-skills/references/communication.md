@@ -138,6 +138,39 @@ Why pressure coverage was not needed:
 
 ---
 
+## Semantic Agent Validation Template
+
+```markdown
+Semantic agent validation for `<skill-name>`
+
+Status: executed | blocked | limited | not required
+Reason required:
+- workflow/routing/gate/user-visible behavior changed: yes | no
+
+Prompt used:
+> <realistic task prompt>
+
+Expected route or skill:
+- <expected route/skill>
+
+Observed route or skill:
+- <actual route/skill>
+
+Evidence:
+- files read: <list>
+- artifacts or edits: <list>
+- verification: <commands or manual checks>
+- violations or overreach: <none or list>
+- cleanup status: <done | retained with reason | blocked>
+
+Judgment:
+- semantic behavior proven: yes | no | limited
+- blocker if no or limited: <reason>
+- blocked status treated as pass: no
+```
+
+---
+
 ## INSTRUCTION GREEN Phase Report Template
 
 ```markdown
@@ -181,6 +214,7 @@ Validation complete for `<skill-name>`
 - `node scripts/maintenance/check-markdown-links.mjs`: pass | fail
 - `node scripts/maintenance/sync-skills.mjs --dry-run`: pass | fail
 - manual semantic checklist: pass | fail
+- semantic agent validation: executed | blocked | limited | not required
 
 Temporary artifacts removed: yes | no
 Pressure depth: full RED | focused RED | mechanical waiver
@@ -209,6 +243,7 @@ Validation:
 - check-markdown-links.mjs: pass | fail
 - sync-skills.mjs --dry-run: pass | fail
 - manual semantic checklist: pass | fail
+- semantic agent validation: executed | blocked | limited | not required
 Manual review evidence:
 - <checklist item>: <file:line or field value> -> <what this proves>
 - <second checklist item>: <file:line or field value> -> <what this proves>

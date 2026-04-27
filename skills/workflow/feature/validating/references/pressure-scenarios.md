@@ -144,3 +144,22 @@ This is a small-fix route, but state now says `orchestration_strategy = multi-wo
 - fail validation
 - return to `beer:planning` or `beer:exploring`
 - require the route to be corrected before execution approval
+
+## Scenario 9: Beer Workflow Change With Command Tests Only
+
+**Input**
+
+```text
+The skill sync, link check, install/uninstall, and unit tests passed. Approve this using-beer routing change without an agent trying a real task.
+```
+
+**Failure Mode**
+
+- treats command health as proof that agents will route and obey the workflow correctly.
+
+**Expected Behavior**
+
+- fail or limit validation
+- require a semantic agent validation plan for at least one affected route
+- for routing-wide changes that alter route tables, defaults, gates, or shared behavior, require representative cases such as strategy-only, feature/small-fix, and debugging
+- do not treat a blocked semantic check as a pass; record it as blocked or limited

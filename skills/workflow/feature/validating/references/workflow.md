@@ -135,6 +135,51 @@ themselves. If a Docs hint matters for execution readiness, confirm it against
 current source, GitNexus, or the approved planning artifact before passing the
 gate.
 
+### Semantic Agent Validation For Beer Changes
+
+If the current slice changes Beer skills, workflow routing, route selection,
+gate behavior, or skill-authoring rules, the execution-ready verification path
+must include semantic agent validation after the edit lands.
+
+Semantic agent validation is not a command smoke test. It checks whether a real
+agent or authorized evaluator can read the current skill package and behave
+correctly on a realistic task.
+
+The validation gate approves a concrete post-edit semantic validation plan, not
+a claim that semantic behavior is already proven. Final handoff or review must
+include executed semantic evidence, or explicitly mark the semantic check as
+blocked or limited.
+
+Require the plan to name:
+
+1. the prompt or task shape that will be given to the agent
+2. the affected route or skill expected to activate
+3. the expected allowed behavior and forbidden overreach
+4. the artifact or command evidence that will prove the outcome
+5. cleanup expectations for any target repo or temporary checkout
+
+Minimum depth:
+
+- one affected route for a narrow trigger or wording change
+- representative route cases when the edit changes route tables, default
+  selection, gate transitions, or behavior shared by multiple workflow paths,
+  such as strategy-only, feature/small-fix, and debugging
+
+Command tests remain necessary when relevant, including skill sync, markdown
+link checks, install/uninstall, and unit tests. They do not replace semantic
+agent validation because they cannot prove route choice, gate discipline, or
+whether the agent overreaches.
+
+If no real agent or authorized evaluator can be used in the current environment,
+record the blocker in the validation report or handoff as blocked or limited
+instead of claiming the behavior was proven by command tests alone.
+`validation_status` in `.beer/state.json` remains `pass` or `fail`; do not
+invent a `limited` state value. If semantic validation is required before this
+gate and no concrete plan exists, set `validation_status = fail`. If the gate
+only requires a post-edit semantic validation plan, validation may pass only
+when that plan is concrete, and the final handoff must later show executed
+evidence or a blocked/limited behavior claim.
+
 If the route uses beads, also check dependency correctness and collision risk.
 If `orchestration_strategy = multi-worker`, also require:
 
@@ -204,6 +249,9 @@ Before approval, answer:
 4. For feature repair: does the repair still target the proven root cause?
 5. For feature routes with stories: does each story unlock, de-risk, or directly advance the current phase exit state?
 6. Is the implementation pattern explicit enough that `executing` can verify exact source facts before coding?
+7. For Beer skill or workflow changes: will semantic agent validation prove the
+   changed behavior after implementation, or is the claim still only a command
+   smoke test?
 
 Any unclear answer means FAIL until repaired.
 

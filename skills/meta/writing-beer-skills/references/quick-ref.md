@@ -28,6 +28,7 @@ version: "1.0.0"
 - [ ] Added at least one change-specific scenario targeting the exact rule or behavior changed
 - [ ] Used at least two pressures in the change-specific scenario
 - [ ] Captured real-run evidence for `full RED`, or labeled the evidence as `focused/manual`
+- [ ] For workflow, routing, gate, or user-visible behavior changes, ran semantic agent validation or recorded the blocker as blocked/limited
 - [ ] Tightened wording after pressure-testing
 
 ## Final Package Checklist
@@ -46,6 +47,19 @@ version: "1.0.0"
 | `node scripts/maintenance/check-markdown-links.mjs skills/<category>/<skill-name>` | Link validation |
 | `node scripts/maintenance/sync-skills.mjs --dry-run` | Skill inventory and sync validation |
 
+## Semantic Agent Validation
+
+- [ ] Required for workflow, routing, gate, or user-visible skill behavior changes
+- [ ] One affected route is enough only for a narrow trigger or wording change
+- [ ] Representative route cases are required when route tables, defaults, gates, or shared workflow behavior changed
+- [ ] Prompt or task shape is recorded
+- [ ] Selected route or skill is recorded
+- [ ] Files read, artifacts created, edits made, or skipped edits are recorded
+- [ ] Verification commands or manual checks are recorded
+- [ ] Violations, overreach, skipped gates, and cleanup status are recorded
+- [ ] Command tests are not reported as a substitute
+- [ ] Blocked semantic validation is labeled blocked/limited, not pass
+
 ## Manual Semantic Check
 
 - [ ] `description` is routing-only, third person, and includes trigger phrases
@@ -60,6 +74,7 @@ version: "1.0.0"
 - [ ] Include pressure depth: `full RED`, `focused RED`, or `mechanical waiver`
 - [ ] If pressure coverage ran, include a minimal pressure report
 - [ ] If pressure coverage was waived, include the mechanical-only justification
+- [ ] If semantic agent validation was required, include executed evidence or blocked/limited status
 - [ ] Include manual review evidence with line refs, field values, or file-level observations
 
 ## Fast Smell Test
@@ -72,3 +87,4 @@ version: "1.0.0"
 - pressure coverage ran but no report was included
 - `full RED` outcomes are hypothetical instead of coming from a real run
 - `focused RED` evidence is not labeled as focused/manual
+- workflow or routing behavior changed but only command tests were reported

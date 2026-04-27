@@ -46,7 +46,7 @@ Author or edit a Beer skill so the final result is a clean skill package that ma
 2. **Choose pressure depth**: Use `full RED` for new skills and major rewrites, `focused RED` for narrow behavior edits, and `mechanical waiver` only for meaning-free fixes.
 3. **Build the final package**: Produce `SKILL.md` plus the required `references/` files defined by the Beer skill pattern.
 4. **Clean before handoff**: Remove temporary scenario/instruction/refactor notes unless the user explicitly asks to keep them.
-5. **VALIDATE**: Run `check-markdown-links.mjs`, run `sync-skills.mjs --dry-run`, and manually review the Beer pattern checklist items those commands cannot prove.
+5. **VALIDATE**: Run `check-markdown-links.mjs`, run `sync-skills.mjs --dry-run`, run semantic agent validation when behavior requires it, and manually review the Beer pattern checklist items those commands cannot prove.
 
 ---
 
@@ -75,6 +75,7 @@ This is skill-authoring pressure testing, not a replacement for code-level TDD. 
 - For `focused RED`, run at least one change-specific pressure scenario or manual semantic pressure walkthrough that targets the exact changed rule and records the loophole it closes.
 - If pressure execution is blocked, record the blocker explicitly instead of fabricating outcomes.
 - Use subagents or external evaluators when the user explicitly asks for parallel agent work or a separate evaluator; otherwise run scenarios locally.
+- For Beer workflow, routing, gate, or user-visible skill behavior changes, include semantic agent validation when an agent or authorized evaluator is available. If it is blocked, record that blocker as blocked or limited, and do not claim command tests proved agent behavior.
 - If a behavior-changing edit was made before pressure coverage ran, treat that lapse as a real failure mode, run the missing coverage against the actual change, and include that lapse in the handoff.
 - `SCENARIO RED`: identify likely failure modes, shortcuts, or rationalizations in agent behavior.
 - `INSTRUCTION GREEN`: write the minimum wording needed to make the skill follow the Beer pattern and block the observed shortcut.
@@ -111,7 +112,8 @@ Before completion:
 1. Remove temporary scenario/instruction/refactor artifacts from the skill directory unless the user asked to keep them.
 2. Ensure every referenced file exists.
 3. Manually review the Beer pattern checklist items not covered by the repo-native commands, including workflow route metadata when present, and record concrete evidence for each reviewed item in the handoff or validation report using line references or field values, and use file-specific observations only when those stronger forms are not possible.
-4. Confirm the final output is a clean skill package that matches the Beer pattern.
+4. For Beer workflow, routing, gate, or user-visible skill behavior changes, run at least one semantic agent validation or record why it was blocked. Minimum evidence is prompt, selected route or skill, files read, artifacts or edits, verification, violations, and cleanup. A blocked semantic check is not a pass; label the final behavior claim limited until it runs.
+5. Confirm the final output is a clean skill package that matches the Beer pattern.
 
 ---
 

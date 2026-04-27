@@ -12,6 +12,8 @@ For `full RED`, run each scenario against a real agent or authorized evaluation 
 
 For `focused RED`, a manual semantic pressure walkthrough is acceptable. Label it as `focused/manual`, and record the loophole or rationalization the current wording would allow.
 
+For workflow, routing, gate, or user-visible skill behavior changes, add semantic agent validation when a real agent or authorized evaluator is available. If it is blocked, record the blocker as blocked or limited and do not count command tests as behavior proof.
+
 ## Scenario Card
 
 ```markdown
@@ -94,8 +96,47 @@ that affect multiple skill families.
 Use only when behavior, routing, required artifacts, validation rules, examples,
 templates, emphasis, interpretation, and normative wording are unchanged.
 
+## Semantic Agent Validation Card
+
+Use this card when the change affects workflow behavior, route choice, gates, or
+how future agents should use a skill.
+
+```markdown
+### Semantic Agent Validation: <short name>
+
+**Prompt used**
+> <realistic task given to the agent or evaluator>
+
+**Expected route or skill**
+- <expected route/skill>
+
+**Observed route or skill**
+- <actual route/skill>
+
+**Files read**
+- <file 1>
+- <file 2>
+
+**Artifacts or edits**
+- <created/edited/skipped>
+
+**Verification**
+- <commands or manual checks>
+
+**Violations or overreach**
+- <none or concrete issue>
+
+**Cleanup status**
+- <temporary repos/artifacts removed or intentionally retained>
+
+**Final behavior status**
+- <proven | limited | blocked>
+```
+
 ## Pass / Fail Rule
 
 - `full RED` passes when the agent fails in a realistic, useful way and the rationalization is captured clearly, or when no meaningful loophole survives after a real run.
 - `focused RED` passes when the changed rule has been pressured directly and the manual or real-run evidence explains the closed loophole.
 - Pressure coverage fails when the scenario is too weak, too academic, blocked without documentation, or does not produce actionable evidence.
+- Semantic agent validation passes only when the observed route, allowed behavior, evidence, and cleanup match the changed skill contract.
+- Blocked semantic agent validation must be reported as `blocked` or `limited`, not as pass.

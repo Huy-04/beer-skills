@@ -43,8 +43,8 @@ Use one of three depths:
 
 | Depth | Use when | Minimum evidence |
 |---|---|---|
-| `full RED` | New skill, route/ownership rewrite, dependency change, pattern/template/checklist change, or broad behavior change | Baseline scenarios plus one change-specific pressure scenario |
-| `focused RED` | Narrow behavior edit to an existing skill where the baseline shape is already known | One change-specific pressure scenario or manual semantic pressure walkthrough |
+| `full RED` | New skill, route/ownership rewrite, dependency change, pattern/template/checklist change, or broad behavior change | Baseline scenarios plus one change-specific pressure scenario; add semantic agent validation when workflow, routing, gate, or user-visible skill behavior changes |
+| `focused RED` | Narrow behavior edit to an existing skill where the baseline shape is already known | One change-specific pressure scenario or manual semantic pressure walkthrough; add semantic agent validation when the changed behavior affects real route choice or agent behavior |
 | `mechanical waiver` | Spelling, formatting, broken-link repair, or other meaning-free cleanup | Explicit statement that behavior, routing, artifacts, validation, examples, templates, and normative wording are unchanged |
 
 ### Step 2.2: SCENARIO RED
@@ -68,6 +68,46 @@ Use `references/pressure-test-template.md` to run the baseline scenarios for `fu
 For every `full RED`, add at least one scenario that targets the exact rule, template, checklist item, or behavior changed in the current edit. That change-specific scenario must combine at least two pressures and must produce an observable violation or verbatim rationalization. Baseline scenarios alone are not sufficient.
 
 For `full RED`, `Prompt used`, `Observed violation`, and `Exact rationalization` must come from an actual run, not a hypothetical example. If execution is blocked by tooling, permissions, or environment limits, record the blocker explicitly and do not count that blocked scenario as successful `full RED` coverage.
+
+### Semantic Agent Validation
+
+Pressure scenarios test whether the wording closes loopholes. Semantic agent
+validation tests whether an agent actually uses the changed skill correctly on
+a realistic task.
+
+Require semantic agent validation for changes to:
+
+- `using-beer` route selection
+- workflow sequencing or gates
+- skill handoff behavior
+- install-visible skill docs that change how agents should act
+- authoring rules that affect future skill validation
+
+Minimum evidence:
+
+1. prompt given to the agent or authorized evaluator
+2. route or skill the agent selected
+3. files read, artifacts created, code edited, or skipped edits
+4. verification commands or manual checks run
+5. violations, overreach, skipped gates, or cleanup status
+
+Minimum depth is one affected route for a narrow trigger or wording change. If
+the edit changes route tables, default selection, gate transitions, or behavior
+shared by multiple workflow paths, run representative cases such as
+strategy-only, feature/small-fix, and debugging.
+
+Command tests such as `sync-skills`, markdown link checks, install/uninstall,
+quality checks, and unit tests are still required when relevant. They do not
+prove agent behavior and must not be reported as a substitute for semantic
+agent validation.
+
+If no real agent or authorized evaluator can be used, record the blocker and
+mark semantic agent validation as blocked or limited. Do not claim the skill is
+behaviorally proven from command tests alone.
+
+Blocked semantic validation is not a pass. The handoff may say the command
+stack is healthy, but the behavior claim remains limited until semantic
+validation runs.
 
 Capture:
 
@@ -124,6 +164,10 @@ node scripts/maintenance/sync-skills.mjs --dry-run
 
 Those commands verify links and skill-registry sync only. They do not prove semantic requirements from `docs/skill-authoring/skill-pattern.md`.
 
+For workflow, routing, gate, or user-visible behavior changes, also run or
+record semantic agent validation. Treat it as a separate evidence category from
+repo-native command checks and manual frontmatter review.
+
 After the repo-native commands pass, manually review at least:
 
 - `description` is routing-only, third person, and includes trigger phrases
@@ -146,7 +190,8 @@ Before marking the work complete:
 3. confirm the remaining files form a clean Beer skill package
 4. note pressure depth: `full RED`, `focused RED`, or `mechanical waiver`
 5. include evidence for the manual semantic review in the validation report or handoff
-6. include a minimal pressure report in the handoff or validation package when pressure coverage was run
+6. include semantic agent validation evidence or a blocker when the change affects workflow, routing, gates, or user-visible skill behavior
+7. include a minimal pressure report in the handoff or validation package when pressure coverage was run
 
 Optional:
 
@@ -160,6 +205,7 @@ This workflow is done when:
 - temporary authoring artifacts are removed unless requested
 - the repo-native validation commands pass
 - the manual semantic checklist passes
+- semantic agent validation evidence exists when behavior requires it; if it is blocked, the handoff explicitly says the behavior is not proven and the skill is not fully validated
 - a minimal pressure report exists when `full RED` or `focused RED` was required
 - the remaining files are the intended final deliverable
 
@@ -173,6 +219,7 @@ When `full RED` or `focused RED` runs, the handoff or validation package must in
 - the pressures used in the change-specific scenario
 - one observable failure or one verbatim rationalization from a real run for `full RED`, or the manual loophole/rationalization for `focused RED`
 - the strongest loophole found or a statement that no meaningful loophole survived
+- semantic agent validation status when applicable: executed, blocked, limited, or not required
 
 ---
 
@@ -195,6 +242,7 @@ When `full RED` or `focused RED` runs, the handoff or validation package must in
 | "I know this technique, testing is unnecessary" | Testing the skill, not the agent's knowledge. Agents differ. |
 | "It's so simple it can't have bugs" | Every untested skill has issues. Test takes 30 minutes. |
 | "Academic questions passed - that's sufficient" | Reading a skill != using it under pressure. Test application scenarios. |
+| "All command tests passed, so routing behavior is proven" | Command tests prove tooling health. Semantic agent validation proves an agent reads the skill and behaves correctly. |
 | "My description summarizes the workflow so agents know what to do" | Workflow-summary descriptions cause agents to skip the body. Remove it. |
 | "This edit is minor - testing isn't needed" | The Iron Law applies to edits. No exceptions. |
 | "I'll test it after a few real uses" | Problems = agents misuse in production. Test BEFORE deploying. |

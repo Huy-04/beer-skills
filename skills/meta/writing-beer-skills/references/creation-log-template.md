@@ -61,6 +61,13 @@ status: draft | validated | needs-more-testing
 
 - `node scripts/maintenance/check-markdown-links.mjs`:
 - `node scripts/maintenance/sync-skills.mjs --dry-run`:
+- Semantic agent validation: executed | blocked | limited | not required
+  - Prompt:
+  - Expected route or skill:
+  - Observed route or skill:
+  - Evidence:
+  - Cleanup:
+  - Final behavior status: proven | limited | blocked
 - Additional repo-local checks:
 
 ## Final Judgment

@@ -52,10 +52,11 @@ Verify that the current execution slice is ready to execute. Scale the gate to t
 6. Confirm `orchestration_strategy` still matches the planned slices.
 7. Confirm the chosen implementation pattern, evidence files, and exact source facts that `executing` must re-check before coding.
 8. Use generated `Docs/` verification targets only as hints; require source-backed evidence before approving execution.
-9. If `orchestration_strategy = multi-worker`, confirm worker-sized task boundaries, dependency edges, and verification ownership are explicit.
-10. Choose the proposed execution target for this slice.
-11. Run the auto-accept policy check before crossing the execution gate.
-12. Handoff only to the approved execution route.
+9. For Beer skill, workflow, or routing changes, require a concrete post-edit semantic agent validation plan; command tests alone are insufficient.
+10. If `orchestration_strategy = multi-worker`, confirm worker-sized task boundaries, dependency edges, and verification ownership are explicit.
+11. Choose the proposed execution target for this slice.
+12. Run the auto-accept policy check before crossing the execution gate.
+13. Handoff only to the approved execution route.
 
 ## Validation Routes
 
@@ -148,6 +149,22 @@ For all planned routes, validating must confirm:
 4. pattern-looking assumptions are not treated as verified source facts
 5. generated `Docs/` entries, when used, are treated as hints and confirmed against current source or approved artifacts
 
+### Semantic Agent Validation For Beer Changes
+
+When the current slice changes Beer skills, workflow routing, route selection, gates, or skill-authoring rules, validating must confirm that the verification path includes at least one semantic agent validation after the edit lands. At the validation gate, this means a concrete planned check. At final handoff or review, this means executed evidence or an explicit blocked/limited status.
+
+A semantic agent validation means a real agent or authorized evaluator receives a realistic task, reads the current skill package, chooses its route or skill, performs the allowed behavior, and reports:
+
+1. the prompt used
+2. the route or skill selected
+3. files read, artifacts created, or code edited
+4. verification commands or manual checks run
+5. violations, overreach, skipped gates, or cleanup status
+
+Minimum depth is one affected route for a narrow trigger or wording change. If the edit changes route tables, default selection, gate transitions, or behavior shared by multiple workflow paths, require representative cases such as strategy-only, feature/small-fix, and debugging.
+
+Command tests such as sync, link checks, install/uninstall, and unit tests remain required when relevant, but they do not prove agent behavior by themselves.
+
 ### Multi-Worker Readiness Check
 
 If `orchestration_strategy = multi-worker`, validating must also confirm:
@@ -170,6 +187,7 @@ If `orchestration_strategy = multi-worker`, validating must also confirm:
 - Never approve execution without a believable verification path.
 - Never approve a planned slice whose implementation pattern is still implicit or whose evidence files are missing.
 - Never approve execution from generated `Docs/` hints alone.
+- Never approve Beer workflow, routing, or skill-authoring changes for execution when the verification path lists only command tests and no concrete semantic agent validation plan.
 - Never approve `small-fix` when `orchestration_strategy` is not `single-worker`.
 - Never skip spikes when a true high-risk unknown remains.
 - Never route to `beer:swarming` just because it exists; use the route approved by planning and validating.

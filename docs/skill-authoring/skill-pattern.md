@@ -273,6 +273,7 @@ Rule of thumb: if a section exceeds 300 words, consider moving it to `references
 - [ ] Support/meta skills include `Capability First` unless there is a clear reason not to
 - [ ] Helper skills called by workflow skills define an `Ownership Boundary`
 - [ ] Workflow skills define gates, state mutation authority, and validation handoff
+- [ ] Behavior-changing workflow, routing, gate, or user-visible skill edits have semantic agent validation evidence, or the blocker is recorded explicitly as blocked/limited
 - [ ] `license` is declared
 
 ---

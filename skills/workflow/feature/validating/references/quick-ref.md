@@ -59,6 +59,14 @@ version: "1.0"
 - unverified pattern assumptions are called out
 - generated `Docs/` verification targets are confirmed against source before approval
 
+### Beer Skill / Workflow Changes
+
+- validation gate names a concrete post-edit semantic agent validation plan
+- final handoff or review includes executed semantic evidence or blocked/limited status
+- prompt/task shape, expected route, allowed behavior, forbidden overreach, evidence, and cleanup are named
+- routing or workflow-wide changes use representative route cases when route tables, defaults, gates, or shared behavior changed
+- command tests remain required but do not prove agent behavior by themselves
+
 ## Useful Commands
 
 ```powershell
@@ -86,3 +94,4 @@ Run a spike only when a high-risk unknown still blocks safe execution.
 - `small-fix` is valid only when it arrived as a compact plan from upstream; validating does not invent the compact route locally
 - `contract_verified = true` means the plan has enough contract, pattern, and verification detail for execution to proceed without guessing
 - generated `Docs/` is read-only context; it cannot replace source-backed evidence
+- Beer skill, workflow, or routing changes cannot pass with command tests only; semantic agent validation must be planned before execution and evidenced or marked blocked/limited before handoff
