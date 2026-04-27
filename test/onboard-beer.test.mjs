@@ -40,6 +40,22 @@ test("removeRepo deletes the managed .beer directory", () => {
   assert.equal(result.status, "removed");
   assert.equal(fs.existsSync(path.join(repoRoot, ".beer")), false);
   assert.equal(result.removed_cli.status, "removed");
+  assert.deepEqual(result.removed_empty_dirs, []);
+});
+
+test("removeRepo removes empty project skill directories after skill sync", () => {
+  const repoRoot = makeTempRepo();
+  applyRepo(repoRoot);
+  syncProjectSkills(repoRoot);
+
+  const result = removeRepo(repoRoot);
+
+  assert.equal(fs.existsSync(path.join(repoRoot, ".claude")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".agents")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".codex")), false);
+  assert.ok(result.removed_empty_dirs.includes(".claude"));
+  assert.ok(result.removed_empty_dirs.includes(".agents"));
+  assert.ok(result.removed_empty_dirs.includes(".codex"));
 });
 
 test("checkRepo reports onboarding missing after removal", () => {
@@ -78,4 +94,7 @@ test("removeRepo removes installed Beer Claude skills and managed guideline file
   assert.equal(fs.existsSync(path.join(repoRoot, ".codex", "config.toml")), false);
   assert.ok(result.removed_skills.includes("beer-agent-guidelines"));
   assert.equal(result.removed_cli.status, "removed");
+  assert.equal(result.removed_empty_dirs.includes(".claude"), false);
+  assert.equal(result.removed_empty_dirs.includes(".agents"), false);
+  assert.ok(result.removed_empty_dirs.includes(".codex"));
 });

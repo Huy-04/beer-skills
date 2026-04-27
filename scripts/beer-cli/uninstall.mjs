@@ -67,6 +67,9 @@ function renderUninstallResult(result) {
     if (["removed", "updated"].includes(result.removed_codex_config?.status)) {
       lines.push(`Codex config: ${result.removed_codex_config.status}`);
     }
+    if (result.removed_empty_dirs?.length) {
+      lines.push(`Removed empty dirs: ${result.removed_empty_dirs.join(", ")}`);
+    }
   } else if (result.status === "not_installed") {
     lines.push("Status: not installed");
     lines.push("Nothing to remove.");

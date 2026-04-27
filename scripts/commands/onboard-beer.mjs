@@ -151,6 +151,44 @@ function syncProjectCli(repoRoot) {
   };
 }
 
+function removeEmptyDir(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return false;
+  }
+
+  const stat = fs.statSync(dirPath);
+  if (!stat.isDirectory()) {
+    return false;
+  }
+
+  if (fs.readdirSync(dirPath).length > 0) {
+    return false;
+  }
+
+  fs.rmSync(dirPath, { recursive: true, force: true });
+  return true;
+}
+
+function removeEmptyProjectDirs(repoRoot) {
+  const removed = [];
+  const candidates = [
+    path.join(".claude", "skills"),
+    ".claude",
+    path.join(".agents", "skills"),
+    ".agents",
+    ".codex",
+  ];
+
+  for (const relativeDir of candidates) {
+    const absoluteDir = path.join(repoRoot, relativeDir);
+    if (removeEmptyDir(absoluteDir)) {
+      removed.push(relativeDir);
+    }
+  }
+
+  return removed;
+}
+
 export function checkRepo(repoRoot) {
   const runtime = getNodeRuntimeStatus();
   if (!runtime.supported) {
@@ -301,13 +339,15 @@ export function removeRepo(repoRoot) {
   const removedHooks = removeManagedClaudeHookSettings(repoRoot);
   const removedCodexHooks = removeManagedCodexHookSettings(repoRoot);
   const removedCodexConfig = removeManagedCodexConfig(repoRoot);
+  const removedEmptyDirs = removeEmptyProjectDirs(repoRoot);
   const removedAnything =
     existed ||
     removedSkills.length > 0 ||
     removedGuidelines.some((file) => file.status === "removed" || file.status === "updated") ||
     ["removed", "updated"].includes(removedHooks.status) ||
     ["removed", "updated"].includes(removedCodexHooks.status) ||
-    ["removed", "updated"].includes(removedCodexConfig.status);
+    ["removed", "updated"].includes(removedCodexConfig.status) ||
+    removedEmptyDirs.length > 0;
 
   return {
     repo_root: repoRoot,
@@ -324,6 +364,7 @@ export function removeRepo(repoRoot) {
     removed_hooks: removedHooks,
     removed_codex_hooks: removedCodexHooks,
     removed_codex_config: removedCodexConfig,
+    removed_empty_dirs: removedEmptyDirs,
   };
 }
 
