@@ -16,9 +16,9 @@ metadata:
     - beer/workflow
     - workflow
   inputs: "User request, repo onboarding state, Beer config/state, optional handoff, and optional prompt/context helper packet"
-  outputs: "Route decision, gate position, state bootstrap or handoff, and next Beer owner"
+  outputs: "Route decision, strategy-shaping handoff when needed, gate position, state bootstrap or handoff, and next Beer owner"
   upstream: "User, host runtime, resume handoff, or direct Beer command"
-  downstream: "context-intake, explicit direct support/meta skill, or user handoff"
+  downstream: "strategy-shaping, context-intake, explicit direct support/meta skill, or user handoff"
   dependencies:
     - id: nodejs-runtime
       kind: command
@@ -45,7 +45,7 @@ disable-model-invocation: false
 
 # using-beer
 
-Load this first. `using-beer` checks onboarding, invokes workflow intake through `context-intake`, enforces the human gates around execution, and locks non-trivial work to the Beer route before coding starts.
+Load this first. `using-beer` checks onboarding, routes unclear feature direction through `strategy-shaping`, invokes workflow intake through `context-intake`, enforces the human gates around execution, and locks non-trivial work to the Beer route before coding starts.
 
 ---
 
@@ -65,8 +65,9 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 1. **Preflight**: Run `node scripts/commands/beer-preflight.mjs --json` to probe dependencies and determine workflow readiness.
 2. **Onboard or check state**: Run `node scripts/commands/onboard-beer.mjs --repo-root <path>` if needed.
 3. **Normalize only when needed**: Use `prompt-leverage` only when the raw request needs repo, language, file, skill, or Beer-artifact context before routing.
-4. **Run intake first for normal work**: Hand raw request plus any contextual prompt packet to `context-intake` so it can recover or seed context for `exploring`.
-5. **Use the exploring result**: `context-intake` always hands normal work to `exploring`; `exploring` decides whether to lock context or take the small-fix exemption into `planning`.
+4. **Shape strategy first when the task is not ready**: If the user is discussing direction, approach, tradeoffs, optimization, or overkill before choosing a task, route to `strategy-shaping`.
+5. **Run intake first once the direction is chosen**: Hand raw request, optional strategy brief, and any contextual prompt packet to `context-intake` so it can recover or seed context for `exploring`.
+6. **Use the exploring result**: `context-intake` always hands normal work to `exploring`; `exploring` decides whether to lock context or take the small-fix exemption into `planning`.
 6. **Scout**: Read `node .beer/scripts/commands/beer-status.mjs --json`.
 7. **Classify inside the session**: Use the current model to decide `route`, `work_intent`, `risk`, `run_style`, and `orchestration_strategy`.
 8. **Lock the route**: State the chosen Beer skill and why coding is or is not allowed yet.
@@ -76,13 +77,13 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 
 ## Routing Catalog
 
-Beer ships 17 skills in total. Workflow skills own the route and gates. Support
+Beer ships 18 skills in total. Workflow skills own the route and gates. Support
 skills either run as bounded direct overlays or as helper lenses. Meta skills
 manage Beer skill research and authoring work.
 
 | Group | Skills |
 |---|---|
-| **Feature workflow** | `using-beer`, `context-intake`, `exploring`, `planning`, `validating`, `swarming`, `executing`, `reviewing`, `compounding` |
+| **Feature workflow** | `using-beer`, `strategy-shaping`, `context-intake`, `exploring`, `planning`, `validating`, `swarming`, `executing`, `reviewing`, `compounding` |
 | **Investigation / repair lens** | `debugging` |
 | **Support overlays** | `test-driven-development`, `codebase-knowledge`, `beer-agent-guidelines` |
 | **Support helpers** | `prompt-leverage` (transformer), `graph-explore` |
@@ -106,6 +107,7 @@ manage Beer skill research and authoring work.
 
 | Request shape | First skill | Notes |
 |---|---|---|
+| Discuss strategy, compare approaches, optimize scope, or decide whether a feature idea is overkill before the task is clear | `beer:strategy-shaping` | Pre-workflow consult layer. It produces a strategy brief and handoff seed, then returns to `context-intake` only after a direction is chosen |
 | Build, change, investigate, or resume normal repo work | `beer:context-intake` | Intake gate. Recover or seed context first, then hand off to `exploring` |
 | Small-fix work | `beer:context-intake` | Intake still hands off to `exploring`; `exploring` may take the small-fix exemption into compact planning |
 | Locked-context implementation task | `beer:context-intake` | Intake reopens the current state, then hands off to `exploring` |
@@ -123,7 +125,7 @@ active skill needs prompt transformation, graph depth, or read-only generated
 Docs context. Helper output informs the owner; it does not approve gates,
 mutate state, or replace `context-intake`.
 
-**When in doubt:** start with `beer:context-intake` for normal task work. Let intake hand the task to `exploring`.
+**When in doubt:** if the user is still choosing a direction, use `beer:strategy-shaping`; if the task direction is already chosen, start with `beer:context-intake` and let intake hand the task to `exploring`.
 
 ### Helper Overlay
 
@@ -151,7 +153,7 @@ Use helpers as lenses, not routes:
 Beer is not optional once the repo is onboarded and the task is not trivial.
 
 - Do not ask a few task-shaping questions and then code outside the route.
-- Do not skip from `using-beer` or `context-intake` straight into implementation unless the route is explicitly a trivial bypass or an approved execution path.
+- Do not skip from `using-beer`, `strategy-shaping`, or `context-intake` straight into implementation unless the route is explicitly a trivial bypass or an approved execution path.
 - Before any code edit on non-trivial work, announce:
   - current Beer skill
   - why that skill is the right route
@@ -183,6 +185,7 @@ Trigger: `/go [feature]` or "run full pipeline"
 
 ```mermaid
 flowchart TD
+    ST[strategy-shaping<br/>optional pre-workflow] --> CC
     CC[context-intake] --> EX[exploring]
     EX -->|small-fix exemption| PL[planning]
     EX -->|lock CONTEXT.md| G1{Gate 1<br/>Approve CONTEXT.md?}
@@ -268,6 +271,7 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Combination | Use when | Typical path |
 |---|---|---|
+| Strategy-first feature discussion | Direction, approach, tradeoff, or overkill is not settled yet | `using-beer -> strategy-shaping -> context-intake` once the user chooses the direction |
 | `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with a compact plan/check note and validator gate |
 | `route = feature`, `work_intent = delivery`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
 | `route = feature`, `work_intent = repair`, `risk = normal|high`, `orchestration_strategy = single-worker`, `run_style = guided` | Broader repair work after a bug or failing build/test is understood | Same main workflow, but planning and validation stay anchored to the proven failure path |

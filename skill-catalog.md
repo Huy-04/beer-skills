@@ -1,14 +1,15 @@
 # Beer Skill Catalog
 
-Public reference for the **17 skills** in the Beer ecosystem.
+Public reference for the **18 skills** in the Beer ecosystem.
 
 ## Workflow
 
-### Feature Workflow (9)
+### Feature Workflow (10)
 
 | Skill | When to invoke | Key output |
 |---|---|---|
 | `beer:using-beer` | Start of session, resume, route selection | Routing decision and state bootstrap |
+| `beer:strategy-shaping` | Strategy, approach, tradeoff, optimization, or overkill discussion before the task is clear | Strategy brief and handoff seed for context intake |
 | `beer:context-intake` | Feature work without usable context, resume, or zero-context startup | Recovered context or seeded inferred context |
 | `beer:exploring` | Decisions are still ambiguous and must be locked | `history/<feature>/CONTEXT.md` |
 | `beer:planning` | Context is locked and the next execution slice must be planned | `discovery.md`, `approach.md`, `phase-plan.md` |
@@ -45,7 +46,9 @@ Public reference for the **17 skills** in the Beer ecosystem.
 
 ```mermaid
 flowchart TD
-    U[using-beer] --> C[context-intake]
+    U[using-beer] --> ST[strategy-shaping]
+    ST --> C[context-intake]
+    U --> C
     C --> X[exploring]
     X --> P[planning]
     P --> V[validating]
@@ -88,6 +91,7 @@ flowchart TD
 
 | Common combination | Typical route |
 |---|---|
+| strategy-first feature discussion | `using-beer -> strategy-shaping -> context-intake` after the direction is chosen |
 | `small-fix + repair + normal + single-worker + guided` | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with compact scope |
 | `feature + delivery + normal + single-worker + guided` | full feature workflow with one bounded execution stream |
 | `feature + delivery + normal/high + multi-worker + guided` | full workflow with validated worker slices and coordinated execution |

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-04-27T15:02:44.033Z",
-  "skills_total": 17,
+  "generated_at": "2026-04-27T15:42:44.976Z",
+  "skills_total": 18,
   "entries": [
     {
       "name": "writing-beer-skills",
@@ -113,6 +113,14 @@
       "family": "feature",
       "directory": "reviewing",
       "file": "skills\\workflow\\feature\\reviewing\\SKILL.md"
+    },
+    {
+      "name": "strategy-shaping",
+      "description": "This skill should be used when the user wants to discuss strategy, compare approaches, optimize a feature direction, evaluate tradeoffs, or shape an unclear feature before entering implementation workflow.",
+      "category": "workflow",
+      "family": "feature",
+      "directory": "strategy-shaping",
+      "file": "skills\\workflow\\feature\\strategy-shaping\\SKILL.md"
     },
     {
       "name": "swarming",

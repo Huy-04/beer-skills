@@ -68,6 +68,22 @@ If the small-fix signal applies:
 
 If the signal does not apply, intake still hands work to `beer:exploring`.
 
+## Strategy-Shaping Signal
+
+Use `beer:strategy-shaping` before `beer:context-intake` when the user is not
+asking for an implementation task yet. Typical signals:
+
+- "Which direction should we take?"
+- "Is this overkill?"
+- "Compare these approaches."
+- "How should we optimize this feature?"
+- "Let's discuss strategy first."
+
+`strategy-shaping` returns a strategy brief and handoff seed. It does not lock
+context, approve gates, mutate `.beer/state.json`, write a plan, or start code
+edits. Once the user chooses a direction, pass the raw request plus the strategy
+brief into `beer:context-intake`.
+
 ## Prompt Normalization Overlay
 
 Use `prompt-leverage` before routing only when the raw request needs help to
@@ -170,12 +186,13 @@ Run these checks on every session start:
 
 1. **Preflight probe**: Run `node scripts/commands/beer-preflight.mjs --json` (or `node .beer/scripts/commands/beer-preflight.mjs` from an onboarded repo).
 2. Verify `.beer/onboarding.json`.
-3. Run context intake first for normal task intake.
-4. Read `node .beer/scripts/commands/beer-status.mjs --json`.
-5. Check GitNexus readiness.
-6. If a feature is already active and `context_stage = locked`, reopen its `history/<feature>/CONTEXT.md` and hand off to `beer:exploring`.
-7. If a feature is already active and `context_stage = seeded`, reopen `.beer/seed/` and route to `beer:exploring`.
-8. Read `history/learnings/critical-patterns.md` when it exists.
+3. Route strategy-first requests through `beer:strategy-shaping`; do not force them into implementation workflow while the direction is still open.
+4. Run context intake first once normal task direction is chosen.
+5. Read `node .beer/scripts/commands/beer-status.mjs --json`.
+6. Check GitNexus readiness.
+7. If a feature is already active and `context_stage = locked`, reopen its `history/<feature>/CONTEXT.md` and hand off to `beer:exploring`.
+8. If a feature is already active and `context_stage = seeded`, reopen `.beer/seed/` and route to `beer:exploring`.
+9. Read `history/learnings/critical-patterns.md` when it exists.
 
 ### Preflight Degradation Routing
 

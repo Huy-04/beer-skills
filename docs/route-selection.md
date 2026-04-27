@@ -18,8 +18,13 @@ Beer should decide in this order:
 1. explicit user preference
 2. current repo and Beer state
 3. live request understanding inside `beer:using-beer`
-4. if confidence is low, ask whether to keep the proposed route or increase rigor
-5. dependency reality
+4. if the user is still choosing direction, route through `beer:strategy-shaping`
+5. if confidence is low, ask whether to keep the proposed route or increase rigor
+6. dependency reality
+
+`beer:strategy-shaping` is not a third route value. It is the optional
+pre-workflow consult layer used before `context-intake` when the task direction,
+approach, or scope boundary is still being decided.
 
 Before any automatic gate crossing, use:
 
@@ -93,6 +98,7 @@ belongs to `run_style`.
 
 | If the request looks like... | Recommended classification |
 |---|---|
+| strategy, approach, tradeoff, or overkill discussion before the task is clear | invoke `beer:strategy-shaping`, then enter `beer:context-intake` after the direction is chosen |
 | typo, tiny bug fix, bounded refactor | `small-fix + repair + normal + single-worker + guided` |
 | normal feature work with clear scope | `feature + delivery + normal + single-worker + guided` |
 | decomposable feature across multiple boundaries | `feature + delivery + normal/high + multi-worker + guided` |

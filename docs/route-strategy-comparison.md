@@ -12,6 +12,11 @@ Beer now uses five explicit axes:
 Run `node .beer/scripts/commands/beer-auto-accept.mjs --gate <gate> --json`
 before any automatic gate crossing.
 
+When the user is still discussing direction, approach, optimization, or
+overkill, route through `beer:strategy-shaping` first. That skill produces a
+strategy brief, not a route value or implementation plan. Once the direction is
+chosen, `beer:context-intake` starts the normal Beer workflow.
+
 ## The Four Axes
 
 | Axis | Values | What it controls |
@@ -26,6 +31,7 @@ before any automatic gate crossing.
 
 | Combination | Typical use case | Typical route |
 |---|---|---|
+| strategy-first feature discussion | approach, tradeoff, or scope is still undecided | `using-beer -> strategy-shaping -> context-intake` once the direction is chosen |
 | `small-fix + normal + single-worker + guided` | bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with a compact gate |
 | `feature + normal + single-worker + guided` | normal feature work with one bounded stream | `using-beer -> context-intake -> exploring -> planning -> validating -> executing -> reviewing -> compounding -> idle` |
 | `feature + normal/high + multi-worker + guided` | decomposable feature with disjoint slices | same feature route, but validation dispatches multiple workers after Gate 3 |
@@ -33,7 +39,10 @@ before any automatic gate crossing.
 
 ```mermaid
 flowchart TD
-    S[Choose route + intent + risk + strategy] --> A[small-fix + single-worker]
+    Q[Is direction still unclear?] -->|yes| ST[strategy-shaping]
+    ST --> S[Choose route + intent + risk + strategy]
+    Q -->|no| S
+    S --> A[small-fix + single-worker]
     S --> B[feature + delivery + single-worker]
     S --> C[feature + multi-worker]
     S --> D[feature + repair + single-worker]

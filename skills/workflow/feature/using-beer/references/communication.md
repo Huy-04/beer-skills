@@ -88,6 +88,7 @@ as a deferred idea. Back to [current area]: [return to current question]
 | Anti-Pattern | Fix |
 |--------------|-----|
 | "Skip context check to save time" | Run `context-intake` for normal task work |
+| "Let's code after a strategy chat" | Route the chosen direction through `strategy-shaping` output into `context-intake` first |
 | "Auto-resume from HANDOFF" | Present resume prompt, wait for "yes" |
 | "Jargon-first explanation" | Start with what happens, then name it |
 | "Abstract without concrete" | Always pair with realistic example |

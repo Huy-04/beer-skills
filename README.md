@@ -1,7 +1,7 @@
 # Beer Skills
 
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-43853d?logo=node.js&logoColor=white)](package.json)
-[![Skills](https://img.shields.io/badge/skills-17-1f6feb)](docs/skill-inventory.json)
+[![Skills](https://img.shields.io/badge/skills-18-1f6feb)](docs/skill-inventory.json)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE.md)
 
 Beer Skills is a reusable workflow bundle for agentic software delivery. It
@@ -23,13 +23,13 @@ agent through feature work, repair/investigation, validation, review, and learni
 |---|---|
 | Entry skill | `beer:using-beer` |
 | Public CLI | bootstrap with `beer-skills`, then use project-local `.beer/bin/beer.mjs` |
-| Skills shipped | `17` |
-| Main feature flow | `context-intake -> exploring -> planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
+| Skills shipped | `18` |
+| Main feature flow | optional `strategy-shaping` -> `context-intake -> exploring -> planning -> validating -> executing/swarming -> reviewing -> compounding -> idle` |
 | Investigation / repair lens | `using-beer -> context-intake/exploring/planning` with `debugging` as needed |
 | Required runtime | `node >= 18` |
 | Optional accelerators | `bd`, GitNexus MCP + local index |
 
-Beer currently ships **17 skills** across feature workflow, investigation
+Beer currently ships **18 skills** across feature workflow, investigation
 support, and meta layers.
 
 ## Quick Start
@@ -85,6 +85,7 @@ Full command reference: [COMMANDS.md](COMMANDS.md)
 
 | Capability | What it means |
 |---|---|
+| Strategy shaping before workflow | unclear feature ideas can be compared, simplified, and bounded before they enter context intake |
 | Route-aware execution | small fixes can use a compact route; larger work gets the full context, planning, validation, execution, and review flow |
 | Explicit context contracts | `.beer/seed/` stores inferred context; `history/<feature>/CONTEXT.md` stores locked decisions |
 | Validation before coding | feature work passes through a go/no-go step before implementation begins |
@@ -111,6 +112,8 @@ Beer command reference lives in [COMMANDS.md](COMMANDS.md).
 ```mermaid
 flowchart TD
     U[beer:using-beer] --> C[context-intake]
+    U --> ST[strategy-shaping]
+    ST --> C
     C --> X[exploring]
     X -->|small-fix exemption or locked context| P[planning]
     X -->|new context locked| P2[planning]
@@ -129,9 +132,11 @@ flowchart TD
     D -. proven repair input .-> P2
 ```
 
-Beer keeps one main workflow. `context-intake` is the entry gate for repo work,
-while `debugging` is an evidence-first lens used inside that flow when the task
-is a bug, a failing build/test, or a repair that needs root-cause proof.
+Beer keeps one main implementation workflow. `strategy-shaping` is the optional
+pre-workflow consult layer for unclear feature direction. `context-intake` is
+the entry gate once the task direction is chosen, while `debugging` is an
+evidence-first lens used inside that flow when the task is a bug, a failing
+build/test, or a repair that needs root-cause proof.
 
 ## Session Model
 

@@ -115,6 +115,20 @@ Use `prompt-leverage` only when the request needs normalization before routing:
 Return raw request plus contextual prompt. Then `using-beer` routes using both.
 Normal task work still enters through `context-intake`.
 
+### Strategy Shaping
+
+Use `strategy-shaping` when the user is still choosing:
+
+- feature direction;
+- implementation approach;
+- optimization strategy;
+- whether the idea is overkill;
+- what to build now versus later.
+
+`strategy-shaping` returns a strategy brief. It does not mutate state or approve
+workflow gates. After the user chooses the direction, pass the strategy brief to
+`context-intake` as seed context.
+
 ### Small-Fix Signal
 
 Keep `beer:context-intake` as intake. If the task is:
@@ -129,6 +143,7 @@ Typical examples: wrong type, wrong format, tiny rename, obvious single-path fix
 | Skill | Reads | Writes |
 |---|---|---|
 | `prompt-leverage` | Raw request, repo docs, mentioned files/skills, optional `.beer/state.json` | No state or code writes; returns contextual prompt packet |
+| `strategy-shaping` | User goal, repo evidence, optional existing docs or configured MCP sources | No state or code writes; returns strategy brief and handoff seed |
 | `context-intake` | User request, `.beer/state.json`, optional `HANDOFF.json`, optional `.beer/seed/` | Seed context, context-stage updates, next-phase routing decision |
 | `exploring` | User conversation, prior context, optional `.beer/seed/` | `history/<feature>/CONTEXT.md` |
 | `planning` | `CONTEXT.md`, `critical-patterns.md` | `discovery.md`, `approach.md`, `phase-plan.md`, beads |
@@ -151,6 +166,7 @@ Typical examples: wrong type, wrong format, tiny rename, obvious single-path fix
 Examples:
 
 - `Decisions locked. Invoke beer:planning.`
+- `Strategy shaped. Invoke beer:context-intake with the strategy brief as seed context.`
 - `Phase validated for parallel execution. Invoke beer:swarming.`
 - `Phase validated for direct execution. Invoke beer:executing.`
 - `Behavior change needs fail-first proof. Invoke beer:test-driven-development.`

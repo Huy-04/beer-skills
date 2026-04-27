@@ -6,13 +6,15 @@
 
 | Family | Path | Purpose |
 |---|---|---|
-| `feature` | `skills/workflow/feature/` | feature routing, context recovery, planning, validation, execution, review, learnings, and repair/investigation support |
+| `feature` | `skills/workflow/feature/` | feature strategy shaping, routing, context recovery, planning, validation, execution, review, learnings, and repair/investigation support |
 
 ## Feature Flow
 
 ```mermaid
 flowchart TD
-    UB[using-beer] --> CC[context-intake]
+    UB[using-beer] --> SS[strategy-shaping]
+    SS --> CC[context-intake]
+    UB --> CC
     CC --> EX[exploring]
     EX --> PL[planning]
     PL --> VA[validating]

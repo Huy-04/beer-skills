@@ -1,10 +1,10 @@
 # Beer Ecosystem Flow Overview
 
-Beer currently ships **17 skills** across four categories:
+Beer currently ships **18 skills** across four categories:
 
 | Category | Count | Purpose |
 |---|---|---|
-| Workflow - feature | 9 | End-to-end feature delivery |
+| Workflow - feature | 10 | Strategy shaping and end-to-end feature delivery |
 | Investigation / repair lens | 1 | Root-cause and repair support inside the main workflow |
 | Support | 5 | Utilities and focused helper passes |
 | Meta | 2 | Skills for evolving Beer itself |
@@ -17,7 +17,9 @@ the next skill or session to continue without guessing.
 
 ```mermaid
 flowchart TD
-    UB[using-beer] --> CI[context-intake]
+    UB[using-beer] --> ST[strategy-shaping<br/>optional pre-workflow]
+    ST --> CI[context-intake]
+    UB --> CI
     CI --> EX[exploring<br/>intake always hands off here]
     EX -->|small-fix exemption| SP[planning]
     EX -->|locked context| PL[planning]
@@ -65,6 +67,7 @@ flowchart LR
 | Skill | Purpose |
 |---|---|
 | `using-beer` | entry point, routing, gates, and resume logic |
+| `strategy-shaping` | compare approaches, reduce overkill, and choose direction before task intake |
 | `context-intake` | recover context, load or seed it, and hand off to exploring |
 | `exploring` | lock product or implementation decisions into `CONTEXT.md` |
 | `planning` | turn the active route into an execution plan and lock worker strategy |
