@@ -33,6 +33,10 @@ exit `exploring` and route to `beer:planning` with:
 - no `CONTEXT.md`
 - no Gate 1
 
+The `single-worker` value is the exemption constraint. If a quick scout shows
+the work needs multiple workers, dependency coordination, or separate
+verification owners, stay in the normal feature path.
+
 Do not take this exit when the task is still missing a proven failure path, root-cause statement, or behavior boundary.
 
 ## Phase 1: Context Gate
@@ -122,6 +126,7 @@ Requirements:
 - every locked decision is concrete,
 - every locked decision has a stable ID,
 - code context cites actual file paths,
+- observed patterns are recorded as candidates until planning confirms the implementation pattern,
 - seed inputs are recorded as inputs only,
 - delegated areas are separated from locked decisions,
 - unresolved blockers go under `Resolve Before Planning`,
@@ -171,27 +176,29 @@ CONTEXT.md is now the single source of truth for downstream planning.
 Invoke `beer:planning`.
 ```
 
-### Path B: Direct-Fix Exemption
+### Path B: Small-Fix Exemption
 
 If the exemption applies:
 
 1. Do not write `history/<feature>/CONTEXT.md`.
 2. Update `.beer/state.json` with:
    - `route = small-fix`
-   - `orchestration_strategy = single-worker`
+   - `orchestration_strategy = single-worker` as the exemption constraint
    - preserve the current `context_stage`
    - `next_handoff = beer:planning`
 3. Do not request Gate 1 approval.
 4. Regenerate `.beer/STATE.md`.
 5. Deliver the compact-planning handoff and stop.
 
-Direct-fix handoff phrase:
+Small-fix handoff phrase:
 
 ```text
 This is a small, local, low-ambiguity fix.
 Skipping locked-context capture.
 Invoke `beer:planning` with the compact small-fix route.
 ```
+
+Do not take this path if the quick scout already shows multiple worker-sized tasks, dependency edges that need explicit coordination, or any reason `multi-worker` would be the honest execution strategy.
 
 ## Hard Rules
 

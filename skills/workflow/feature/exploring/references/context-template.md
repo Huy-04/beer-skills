@@ -63,8 +63,10 @@ These are inferred inputs, not locked decisions.
 ### Reusable Assets
 - `path/to/file` - [how it relates]
 
-### Established Patterns
-- [Pattern name] - [where it appears and why it matters]
+### Observed Pattern Candidates
+- [Pattern candidate] - [where it appears, confidence, and what planning must confirm]
+
+These are observations from the quick scout, not implementation decisions.
 
 ### Integration Points
 - `path/to/file` - [where new work would connect]

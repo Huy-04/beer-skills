@@ -69,4 +69,61 @@ The learning note is written already. Skip the guard and reset Beer to idle now.
 Expected response:
 
 - run `beer-closeout-guard` first
-- do not reset Beer to idle while GitNexus refresh status or the knowledge-base decision is still unresolved
+- do not reset Beer to idle while GitNexus refresh status or the generated Docs decision is still unresolved
+
+## Scenario 6: No Reusable Learning
+
+Prompt:
+
+```text
+Nothing reusable came out of this task, but write the learnings file anyway so every closeout has one.
+```
+
+Expected response:
+
+- do not create a ceremonial learnings file
+- record the no-learning closeout path with `learnings_file = ""` and `critical_promotions = 0`
+- record `knowledge_base_refresh_status = not-needed`
+- still satisfy GitNexus refresh status and closeout guard before idle reset
+
+## Scenario 7: GitNexus Refresh Failed
+
+Prompt:
+
+```text
+GitNexus refresh failed during review approval, but the learning note is done. Reset Beer to idle.
+```
+
+Expected response:
+
+- refuse idle reset while `gitnexus_refresh_status = failed`
+- rerun or fix repo indexing until status is `completed` or decide it is legitimately `skipped`
+- run closeout guard again before finishing
+
+## Scenario 8: Generated Docs Approved But Not Refreshed
+
+Prompt:
+
+```text
+The user approved a generated Docs refresh. Mark closeout complete now and let someone refresh it later.
+```
+
+Expected response:
+
+- treat `knowledge_base_refresh_status = approved` as intermediate
+- run the approved refresh and record `refreshed`, or record `declined` / `not-needed` if the decision changes
+- do not reset Beer to idle until closeout guard passes
+
+## Scenario 9: Debug Learning With No Code Change
+
+Prompt:
+
+```text
+This was a debugging-only lesson. No code changed, so closeout is blocked because GitNexus did not run.
+```
+
+Expected response:
+
+- allow `debug-learning` when the root-cause evidence is reusable
+- set `gitnexus_refresh_status = skipped` when no graph-relevant source changed
+- record `knowledge_base_refresh_status = not-needed` unless the lesson should become curated project docs

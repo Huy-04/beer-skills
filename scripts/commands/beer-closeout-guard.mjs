@@ -44,6 +44,7 @@ function parseCliArgs(argv) {
           "Usage: beer-closeout-guard.mjs [--repo-root <path>] [--knowledge-base <not-needed|approved|declined|refreshed>] [--json]",
           "",
           "Checks whether Beer closeout obligations are recorded before compounding finishes.",
+          "The approved generated Docs status is intermediate; final closeout requires refreshed, declined, or not-needed.",
         ].join("\n"),
       );
       process.exit(0);
@@ -62,7 +63,7 @@ function renderDecision(decision) {
   }
 
   if (decision.state?.knowledge_base_refresh_status) {
-    lines.push(`Knowledge-base refresh: ${decision.state.knowledge_base_refresh_status}`);
+    lines.push(`Generated Docs refresh: ${decision.state.knowledge_base_refresh_status}`);
   }
 
   if (!decision.allow && decision.recommended_actions?.length) {

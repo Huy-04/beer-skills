@@ -105,7 +105,7 @@ Beer command reference lives in [COMMANDS.md](COMMANDS.md).
 flowchart TD
     U[beer:using-beer] --> C[context-intake]
     C --> X[exploring]
-    X -->|direct-fix exemption or locked context| P[planning]
+    X -->|small-fix exemption or locked context| P[planning]
     X -->|new context locked| P2[planning]
     P --> V[validating]
     V --> E[executing]

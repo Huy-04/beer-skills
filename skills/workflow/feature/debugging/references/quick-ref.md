@@ -12,6 +12,8 @@ version: "1.1"
 - keep `debug_reason` explicit
 - exit back to the parent workflow with a named target
 - do not treat debugging as a replacement top-level route
+- if the parent path is worker/coordinator-owned, prefer `beer:swarming` over self-advancing the global workflow
+- if debugging changed code, do not enter `reviewing` until execution evidence has the review-required fields
 
 ## Failure Types
 
@@ -40,6 +42,7 @@ version: "1.1"
 
 ```bash
 rg -i "<symptom|symbol>" history/learnings/critical-patterns.md
+rg -i "<symptom|symbol>" Docs
 rg -n "<symbol|error text|test name>" .
 git status --short
 git log --oneline -20
@@ -67,6 +70,8 @@ Do not claim TDD if the test did not fail first for the right reason.
 - Fix crosses multiple components without bead/scope approval.
 - Repair is broad enough that the current route should move into planned repair work.
 - Worker blocker needs coordination rather than code changes.
+- Code changed but execution evidence lacks route artifact, pattern, source facts, files, verification, TDD disposition, or deviations.
+- Generated `Docs/` is being treated as root-cause proof or refreshed inside debugging.
 
 ## Escalation Route
 
@@ -77,16 +82,30 @@ the repair is too broad for a direct patch.
 node .beer/scripts/commands/beer-planning-gate.mjs --route feature --json
 ```
 
-Preserve the root-cause sentence in `discovery.md` and `approach.md`.
+Preserve the root-cause sentence in `compact-plan.md` for bounded repair, or in
+`discovery.md` and `approach.md` when the repair needs the full planning path.
 
 ## Exit Targets
 
-- `beer:executing` for local in-slice fixes
+- `beer:swarming` for worker/coordinator debug outcomes that still need coordination
+- `beer:executing` for local in-slice fixes when execution remains approved and contract-verified
 - `beer:test-driven-development` for behavior repairs needing RED/GREEN
 - `beer:planning` for broad repair
 - `beer:validating` when the slice or execution target no longer fits
 - `beer:reviewing` when review opened the loop and now has enough evidence
-- `beer:compounding` only for standalone debug-learning closeout
+- `beer:compounding` only for standalone debug-learning closeout with debug note/root-cause artifact and closeout status plan
+
+## Execution Evidence Fields
+
+Before review after a debug repair, record:
+
+- route artifact used
+- implementation pattern followed
+- source facts re-checked
+- files changed
+- verification run, including the original failing command
+- TDD disposition: `complete`, `waived: <reason>`, or `not-required`
+- deviations from the approved artifact, or `none`
 
 ## Integration Reminder
 

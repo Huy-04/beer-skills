@@ -20,13 +20,15 @@ Run in order unless a known pattern fully explains the failure.
 ```text
 1. Enter - record the parent phase and reason
 2. Observe - classify the issue
-3. Known-pattern check - search critical learnings
+3. Known-pattern check - search critical learnings and optional generated Docs hints
 4. Reproduce - prove the failure
 5. Narrow - isolate the fault area
-6. Prove - identify the root cause
-7. Exit - choose the safest parent-flow return
-8. Verify - rerun original command plus nearby scope
-9. Learn - capture reusable patterns
+6. Hypothesize - keep ranked evidence-backed candidates if cause is not yet proven
+7. Prove - identify the root cause
+8. Exit - choose the safest parent-flow return
+9. Verify - rerun original command plus nearby scope
+10. Evidence - record review-ready execution evidence when code changed
+11. Learn - capture reusable patterns
 ```
 
 ## Step 1: Enter
@@ -40,6 +42,7 @@ Typical parent phases:
 
 - `exploring`
 - `planning`
+- `swarming`
 - `executing`
 - `reviewing`
 
@@ -86,6 +89,11 @@ rg -i "<error symbol|component|symptom>" history/learnings/critical-patterns.md
 If the pattern matches exactly, use the documented resolution but still verify
 with the original failing command. If the documented resolution is stale,
 record that in the debug note.
+
+Generated `Docs/` may help identify repo flows or expected patterns when present,
+especially `Docs/Flows/repo-flow.md` and `Docs/index.json`. Treat those entries
+as hints only; root-cause proof still comes from reproduction, source, and
+current execution evidence. Do not refresh generated Docs inside debugging.
 
 ## Step 4: Reproduce
 
@@ -145,6 +153,7 @@ When present, inspect:
 
 - `bd show <bead-id>` for intended scope
 - `history/<feature>/CONTEXT.md` for locked decisions
+- generated `Docs/` for optional flow or pattern hints
 - `history/learnings/critical-patterns.md` for prior patterns
 - bd (beads) for related swarm blockers
 - `graph-explore` for call flow or blast-radius context when available
@@ -152,7 +161,35 @@ When present, inspect:
 Decision violations are not normal bugs. Report them before changing behavior
 unless the conservative fix clearly honors the locked decision.
 
-## Step 6: Prove
+## Step 6: Hypothesize
+
+When narrowing is incomplete, keep a short ranked hypothesis list instead of
+jumping to a vague repair.
+
+Limit the list to at most 3 entries. For each hypothesis, record:
+
+- rank or probability
+- supporting evidence already observed
+- falsification criteria
+- next check that would disprove it fastest
+
+Good:
+
+```text
+H1 (highest): auth token is refreshed twice in concurrent requests.
+Evidence: two refresh calls in logs; failure only under parallel request flow.
+Falsify by: instrumenting token refresh count per request and reproducing with one request.
+```
+
+Bad:
+
+```text
+Maybe config, maybe cache, maybe race condition.
+```
+
+Drop losing hypotheses aggressively as soon as evidence rules them out.
+
+## Step 7: Prove
 
 Once the fault area is isolated, state root cause explicitly.
 
@@ -174,17 +211,33 @@ Good:
 Root cause: src/auth/session.ts:88 - refreshToken is consumed twice during concurrent requests, so the second request throws and clears the session.
 ```
 
-## Step 7: Exit
+## Step 8: Exit
 
 Choose the safest parent-flow return.
 
 ### Exit to `beer:executing`
 
-Use when the fix remains inside the current approved slice.
+Use when the fix remains inside the current approved slice and the execution
+contract is still valid. If `approved_gates.execution` is false or
+`contract_verified` is not true, debugging should preserve the root cause and
+route to `beer:planning` or `beer:validating` instead of editing directly.
+
+### Exit to `beer:swarming`
+
+Use when the loop was opened from a worker or coordinator path and the next
+safe step is coordination rather than direct self-advancement.
+
+Typical cases:
+
+- a worker blocker is now proven and needs reassignment or dependency resolution
+- a worker-local fix is complete, but the swarm still owns the global workflow
+- the coordinator needs an evidence-backed debug result before re-dispatching
 
 ### Exit to `beer:test-driven-development`
 
 Use when behavior must be proven RED -> GREEN before the fix is trusted.
+The TDD result must later be recorded in execution evidence as one of:
+`complete`, `waived: <reason>`, or `not-required`.
 
 ### Exit to `beer:planning`
 
@@ -207,12 +260,20 @@ or slice shape is no longer honest.
 ### Exit to `beer:reviewing`
 
 Use when review opened the debug loop and now has enough evidence to continue
-with a repair judgment.
+with a repair judgment, or when a local debug repair changed code and has
+review-ready execution evidence.
 
 ### Exit to `beer:compounding`
 
 Use only when no more implementation work is needed and the session produced a
 standalone reusable debug lesson.
+
+Before this handoff, prepare:
+
+- `compounding_route = debug-learning`
+- debug note path or root-cause artifact
+- `gitnexus_refresh_status = skipped` when no graph-relevant code changed
+- `knowledge_base_refresh_status = not-needed` unless the lesson should become curated generated Docs
 
 ### Exit to User Handoff
 
@@ -223,10 +284,15 @@ block safe progress.
 
 Use when the fix is obvious, local, and low risk.
 
+- proceed locally only when the current execution route already authorizes the edit, or when the task is an explicit one-off debug repair outside Beer closeout
 - make the smallest edit
 - preserve unrelated user changes
 - verify immediately
-- report evidence
+- record review-ready execution evidence before `beer:reviewing` when the fix belongs to Beer closeout
+
+If the fix is local but not authorized by the current Beer state, preserve the
+root-cause sentence and exit to `beer:planning`, `beer:validating`, or
+`beer:executing` as appropriate.
 
 ### Behavior Bug
 
@@ -272,7 +338,7 @@ This is especially important for DI failures such as:
 Unable to resolve service for type '<service>' while attempting to activate '<controller or service>'
 ```
 
-## Step 8: Verify
+## Step 9: Verify
 
 Verification must include:
 
@@ -289,6 +355,22 @@ review:
 - write or reference an execution evidence note
 - set `execution_evidence_path` before handing off to `beer:reviewing`
 
+## Step 10: Debug Repair Evidence Contract
+
+When debugging changes code and the Beer workflow will continue to review, the
+execution evidence must include:
+
+- route artifact used: approved route artifact, coordinator assignment, or debug root-cause note for a direct debug repair
+- implementation pattern followed
+- source facts re-checked before or during the fix
+- files changed
+- verification run, including the original failing command
+- TDD disposition: `complete`, `waived: <reason>`, or `not-required`
+- deviations from the approved artifact, or `none`
+
+If any field is missing, do not hand off to `beer:reviewing`; return to
+`beer:executing` or `beer:validating` to make the contract honest.
+
 Do not claim success if:
 
 - the original failure still reproduces
@@ -296,7 +378,7 @@ Do not claim success if:
 - the environment blocked verification and no limitation is reported
 - a baseline failure hides the result
 
-## Step 9: Learn
+## Step 11: Learn
 
 Capture reusable patterns with:
 
@@ -311,6 +393,16 @@ node skills/workflow/feature/debugging/scripts/write-debug-note.mjs \
 
 The script appends to `.beer/tmp/debug-notes.md` by default. `beer:compounding`
 can promote useful notes into `history/learnings/`.
+
+When the issue was production-facing, intermittent, or distributed, also record
+the smallest useful recurrence detector:
+
+- error fingerprint or log pattern
+- metric, alert, or trace signal
+- query/filter that would detect the issue early next time
+
+Do not add vague observability advice such as "monitor this better". Capture
+the concrete signal or query that would have helped.
 
 ## Blocker-Specific Protocol
 
@@ -340,6 +432,7 @@ Debugging is complete when:
 - reproduction or known-pattern match is documented
 - root cause is specific and evidence-backed
 - exit target is appropriate for risk and behavior impact
+- worker/coordinator debug loops return through `beer:swarming` when coordination still owns the next step
 - original failing command is rerun or limitation is stated
 - reusable pattern is captured when applicable
 - broad repairs are routed through planned repair work instead of being implemented ad hoc

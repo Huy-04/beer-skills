@@ -13,7 +13,7 @@ function makeTempRepo() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "beer-closeout-guard-"));
 }
 
-test("closeout guard blocks compounding until knowledge-base decision is recorded", () => {
+test("closeout guard blocks compounding until generated Docs decision is recorded", () => {
   const repoRoot = makeTempRepo();
   applyRepo(repoRoot);
 
@@ -95,6 +95,34 @@ test("closeout guard allows compounding once closeout obligations are recorded",
   assert.equal(decision.state.gitnexus_refresh_status, "completed");
   assert.equal(decision.state.knowledge_base_refresh_status, "not-needed");
   assert.equal(decision.state.closeout_ready, true);
+});
+
+test("closeout guard treats approved generated Docs refresh as incomplete closeout", () => {
+  const repoRoot = makeTempRepo();
+  applyRepo(repoRoot);
+
+  writeBeerState(repoRoot, {
+    ...readBeerState(repoRoot),
+    active_skill: "compounding",
+    phase: "compounding",
+    review_route: "feature-final",
+    review_status: "pass",
+    next_handoff: "beer:compounding",
+    approved_gates: {
+      context: true,
+      phase_plan: true,
+      execution: true,
+      review: true,
+    },
+    gitnexus_refresh_status: "completed",
+    knowledge_base_refresh_status: "approved",
+  });
+
+  const decision = assessCloseoutGuard({ repoRoot });
+
+  assert.equal(decision.allow, false);
+  assert.equal(decision.code, "knowledge_base_refresh_incomplete");
+  assert.equal(decision.state.knowledge_base_refresh_status, "approved");
 });
 
 test("closeout guard blocks when GitNexus closeout failed or needs manual work", () => {

@@ -1,7 +1,7 @@
 ---
 skill: using-beer
 purpose: Detailed workflow guides for onboarding, session scouting, state bootstrap, and go run style
-version: "1.0"
+version: "1.1"
 ---
 
 # using-beer - Workflow Details
@@ -49,7 +49,7 @@ node .beer/scripts/commands/onboard-beer.mjs
 - `.beer/scripts/` - managed copy of Beer utility scripts
 - `.beer/skills/` - managed snapshot of the Beer skill bundle
 
-## Direct-Fix Signal
+## Small-Fix Signal
 
 Intake should recognize when the request is a `small-fix`, but normal task work still enters through `beer:context-intake`.
 
@@ -67,6 +67,63 @@ If the small-fix signal applies:
 - let `beer:exploring` take the small-fix exemption into `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 
 If the signal does not apply, intake still hands work to `beer:exploring`.
+
+## Prompt Normalization Overlay
+
+Use `prompt-leverage` before routing only when the raw request needs help to
+stay executable:
+
+- mixed-language prompt where output language and preserved Beer terms matter
+- prompt references repo files, skills, commands, or Beer artifacts that need local context
+- prompt is vague but likely resolvable from repo/session context
+- user explicitly asks to improve, structure, or leverage a prompt
+
+Return from `prompt-leverage` with:
+
+- raw request unchanged
+- contextual prompt packet
+- context sources used or skipped
+- unresolved unknowns or assumptions
+- `return_to = beer:using-beer` or the calling owner
+
+Route using the raw request and contextual prompt together. Do not route solely
+from the rewritten prompt, and do not let prompt upgrade bypass
+`beer:context-intake` for normal task work. `prompt-leverage` does not mutate
+`.beer/state.json`, approve gates, write plans, edit code, or refresh generated
+`Docs/`.
+
+## Generated Docs Request
+
+Route directly to `beer:codebase-knowledge` only when the user explicitly asks
+to scan, build, or refresh generated project `Docs/`. Normal feature,
+debugging, planning, validation, execution, and review work reads `Docs/` as
+optional context only and does not refresh it mid-flow.
+
+## Support And Helper Handoff
+
+Support and helper skills are evidence producers or bounded overlays. They must
+return to the invoking owner instead of silently becoming the active workflow.
+
+Every support/helper handoff should include:
+
+- `status`: complete, blocked, degraded, or not-needed
+- `evidence`: files, commands, graph tools, docs, or tests actually used
+- `decision_or_guardrail`: what the workflow owner should do with the result
+- `state_changes_or_none`: exact state fields changed, or `none`
+- `return_to`: the invoking Beer skill
+- `next_owner`: the next Beer skill that should act
+
+If the support/helper run discovers implementation work, routing risk, stale
+generated `Docs/`, or a broader repair, return that signal to `using-beer` or
+the current workflow owner. Do not continue by expanding the support/helper
+scope.
+
+## Instruction Guardrails Request
+
+Route directly to `beer:beer-agent-guidelines` only when the user asks to
+install, update, or tighten repo instruction files. Instruction-only requests
+should edit only `AGENTS.md` and/or `CLAUDE.md`; do not run full `beer refresh`
+unless the user asks for managed Beer refresh/install/update.
 
 ## Context Intake (Step 0)
 
@@ -139,7 +196,11 @@ context-intake -> exploring -> [GATE 1] -> planning -> [GATE 2]
 
 ### TDD routing overlay
 
-`beer:test-driven-development` is not a full pipeline phase. Route to it directly when the user asks for TDD, fail-first tests, or a regression test before a fix.
+`beer:test-driven-development` is not a full pipeline phase. Route to it
+directly only when the user asks for bounded TDD work, fail-first tests, or a
+regression test before a local fix. If that request becomes feature-sized,
+approval-sensitive, or ownership-unclear, TDD returns the proposed RED target to
+the normal Beer route before production code changes.
 
 During normal Beer work, pull it in from:
 
@@ -148,15 +209,16 @@ During normal Beer work, pull it in from:
 - `beer:reviewing` when changed behavior has no fail-first proof or regression coverage
 
 Behavior-changing slices should record `tdd_required = true` in
-`.beer/state.json`. Automatic review handoff requires `tdd_status = complete`
-and `tdd_evidence_path` when TDD was required.
+`.beer/state.json` and set `tdd_status = required` before required TDD starts.
+Automatic review handoff requires `tdd_status = complete` and
+`tdd_evidence_path` when TDD was required.
 
 ### Gate behavior
 
 | Gate | Present to user | Hard rule |
 |---|---|---|
 | Gate 1 | `CONTEXT.md` | Do not start planning before approval |
-| Gate 2 | `phase-plan.md` and prepared current phase | Do not create current-phase work before approval unless `beer-auto-accept.mjs --gate planning` returns `ALLOW` |
+| Gate 2 | `phase-plan.md` or compact plan plus any prepared current-phase scope | Do not create current-phase work before approval unless `beer-auto-accept.mjs --gate planning` returns `ALLOW` |
 | Gate 3 | Risk summary, spike results, execution target | Do not execute before approval unless `beer-auto-accept.mjs --gate validating` returns `ALLOW` |
 | Gate 4 | Review counts and merge recommendation | P1 findings always block; compounding requires `beer-auto-accept.mjs --gate compounding` for automatic handoff |
 
@@ -201,7 +263,14 @@ node .beer/scripts/commands/beer-dependencies.mjs
 
 ## State Reconciliation
 
-At the end of every skill, update `.beer/state.json` first, then regenerate `.beer/STATE.md` from `state.json`. `STATE.md` is derived and human-readable; `state.json` is the authoritative source of truth.
+At the end of any state-owning workflow skill, update `.beer/state.json` first,
+then regenerate `.beer/STATE.md` from `state.json`. `STATE.md` is derived and
+human-readable; `state.json` is the authoritative source of truth.
+
+Support/helper skills do not mutate state unless their own contract explicitly
+says they own a state field. For example, `prompt-leverage` and `graph-explore`
+return packets only, while TDD state is recorded only when a Beer route requires
+fail-first proof.
 
 Required route fields in `.beer/state.json`:
 
@@ -221,6 +290,7 @@ Required route fields in `.beer/state.json`:
 - `tdd_evidence_path`: path to the TDD handoff note when required TDD is complete
 - `execution_evidence_path`: path to the execution evidence note when implementation completes
 - `review_status`: `pending`, `pass`, `repair-needed`, or `review-only`
+- `knowledge_base_refresh_status`: generated `Docs/` closeout state, using internal compatibility field name
 
 ### Minimal Transition Baseline
 

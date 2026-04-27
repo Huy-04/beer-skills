@@ -36,14 +36,14 @@ Author or edit a Beer skill so the final result is a clean skill package that ma
 | **Use when** | Creating or editing Beer skills; verifying skill behavior under pressure |
 | **Needs** | Target behavior, target category, and the Beer skill pattern |
 | **Produces** | Clean skill package matching `docs/skill-authoring/skill-pattern.md` |
-| **Next** | `beer:using-beer` or user handoff |
+| **Next** | `beer:reviewing` for changed skill packages, `beer:compounding` for closeout, or user handoff |
 
 ---
 
 ## 30-Second Version
 
 1. **Map the target**: Confirm the skill name, category, trigger conditions, and final pattern-compliant output.
-2. **Use SCENARIO RED / INSTRUCTION GREEN / PATTERN REFACTOR internally**: Run minimum scenario coverage for every new skill and every behavior-changing edit; include at least one pressure-tested scenario that targets the exact rule or behavior you changed and produces a concrete failure or rationalization from a real run, even if the edit was already drafted before the missing scenario was noticed.
+2. **Choose pressure depth**: Use `full RED` for new skills and major rewrites, `focused RED` for narrow behavior edits, and `mechanical waiver` only for meaning-free fixes.
 3. **Build the final package**: Produce `SKILL.md` plus the required `references/` files defined by the Beer skill pattern.
 4. **Clean before handoff**: Remove temporary scenario/instruction/refactor notes unless the user explicitly asks to keep them.
 5. **VALIDATE**: Run `check-markdown-links.mjs`, run `sync-skills.mjs --dry-run`, and manually review the Beer pattern checklist items those commands cannot prove.
@@ -64,14 +64,18 @@ Use `SCENARIO RED / INSTRUCTION GREEN / PATTERN REFACTOR` as the working method 
 
 This is skill-authoring pressure testing, not a replacement for code-level TDD. When a skill being written depends on fail-first production-code proof, reference `beer:test-driven-development` instead of stretching skill-authoring scenarios to cover code verification.
 
-- Run `SCENARIO RED` for every new skill and every edit that changes behavior, routing, required artifacts, validation rules, or pressure guidance.
+- Choose the smallest honest pressure depth:
+  - `full RED` for new skills, route/ownership rewrites, dependency changes, template/pattern changes, or broad behavior changes.
+  - `focused RED` for narrow behavior edits to an existing skill where the baseline shape is already known.
+  - `mechanical waiver` only for spelling, formatting, broken-link repair, or other edits that change no meaning.
 - Edits to patterns, templates, checklists, or examples that change authoring decisions count as behavior-changing edits for this skill.
 - Treat an edit as mechanical-only only when it changes no meaning, no trigger conditions, no required artifacts, no validation expectations, no examples, no templates, and no normative wording.
-- If an edit changes emphasis, interpretation, examples, or template content, it is not mechanical-only and `SCENARIO RED` must run.
-- Only purely mechanical fixes such as spelling, formatting, or broken-link repairs may skip `SCENARIO RED`, and that exception must be stated explicitly in the handoff.
-- Base `SCENARIO RED` findings on real scenario runs against the active agent instructions or an explicitly authorized evaluation harness. If execution is blocked, record the blocker explicitly instead of fabricating outcomes.
+- If an edit changes emphasis, interpretation, examples, or template content, it is not mechanical-only.
+- For `full RED`, run baseline scenario coverage plus at least one change-specific scenario against the active agent instructions or an explicitly authorized evaluation harness.
+- For `focused RED`, run at least one change-specific pressure scenario or manual semantic pressure walkthrough that targets the exact changed rule and records the loophole it closes.
+- If pressure execution is blocked, record the blocker explicitly instead of fabricating outcomes.
 - Use subagents or external evaluators when the user explicitly asks for parallel agent work or a separate evaluator; otherwise run scenarios locally.
-- If a behavior-changing edit was made before `SCENARIO RED` ran, treat that lapse as a real failure mode, run the missing scenario coverage against the actual change, and include that lapse in the handoff.
+- If a behavior-changing edit was made before pressure coverage ran, treat that lapse as a real failure mode, run the missing coverage against the actual change, and include that lapse in the handoff.
 - `SCENARIO RED`: identify likely failure modes, shortcuts, or rationalizations in agent behavior.
 - `INSTRUCTION GREEN`: write the minimum wording needed to make the skill follow the Beer pattern and block the observed shortcut.
 - `PATTERN REFACTOR`: tighten wording, move detail into `references/`, and remove unnecessary bulk.

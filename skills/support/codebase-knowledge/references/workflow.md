@@ -1,6 +1,6 @@
 ---
 skill: codebase-knowledge
-purpose: Detailed workflow for pattern-first knowledge base creation
+purpose: Detailed workflow for pattern-first generated Docs creation
 version: "1.1"
 ---
 
@@ -8,14 +8,14 @@ version: "1.1"
 
 ## Authority Rule
 
-`.beer/knowledge-base/` is a project-local cache of source-linked observations.
+`Docs/` is a project-local set of source-linked observations and generated
+implementation docs. It sits beside `.beer/` in the target repo.
 If it conflicts with the current repository source, source wins for immediate
 analysis. Mark the affected entry stale, then ask the user whether to update the
-knowledge base/docs or change code to match the documented pattern.
+generated Docs or change code to match the documented pattern.
 
 Default commit policy is `local-cache-by-default`: do not commit generated
-knowledge-base files unless the user or team explicitly wants shared repo
-knowledge.
+generated docs unless the user or team explicitly wants shared repo knowledge.
 
 If Git commit lookup is unavailable or blocked, degrade cleanly: set
 `generated_from_commit` to an explicit fallback such as
@@ -26,17 +26,17 @@ in metadata notes, and avoid pretending freshness checks are authoritative.
 
 Run `codebase-knowledge` only when at least one is true:
 
-- the user explicitly asks to scan, analyze, build, or refresh the knowledge base
+- the user explicitly asks to scan, analyze, build, or refresh generated project Docs
 - `beer:compounding` identified a reusable pattern/convention/architecture shift and the user approved the refresh
 - the user explicitly requests a subfolder or partial scan
 
 Do not run this skill during normal feature work just because planning or
 validation needs more context. Those skills should read source, GitNexus, locked
-context, or existing knowledge-base entries instead of generating a new cache.
+context, or existing Docs entries instead of generating new Docs output.
 
 Think of this skill as a knowledge compiler: it consolidates stable project
-knowledge into `.beer/knowledge-base/` after the workflow has already learned
-something worth preserving.
+knowledge into `Docs/` after the workflow has already learned something worth
+preserving.
 
 Before scanning, record:
 
@@ -49,13 +49,14 @@ Typical invoking owners:
 - direct user request
 - `beer:compounding`
 
-This skill refreshes the cache and returns a result. It does not approve gates,
+This skill refreshes generated Docs and returns a result. It does not approve gates,
 reset Beer to idle, or take over the parent workflow.
 
-The cache should separate:
+Generated Docs should separate:
 
-- backend layer/mission patterns
-- frontend layer/mission patterns
+- the default repo flow map when source code or command entrypoints exist
+- backend architecture style and implementation patterns
+- frontend app shape and implementation patterns
 - boundaries between them
 
 Do not force one full-stack end-to-end story when BE and FE flows are usually
@@ -75,14 +76,14 @@ If preflight is unavailable or degraded:
 - use GitNexus only when available
 - mark metadata with `"mode": "manual"` when graph/tooling support is unavailable
 
-### Step 0.1: Check Existing Knowledge Base
+### Step 0.1: Check Existing Docs Output
 
 ```powershell
-if (Test-Path .beer/knowledge-base) { Get-ChildItem .beer/knowledge-base } else { "No existing knowledge base" }
-if (Test-Path .beer/knowledge-base/00-metadata.json) { Get-Content .beer/knowledge-base/00-metadata.json } else { "No metadata" }
+if (Test-Path Docs) { Get-ChildItem Docs } else { "No existing Docs folder" }
+if (Test-Path Docs/00-metadata.json) { Get-Content Docs/00-metadata.json } else { "No metadata" }
 ```
 
-If the knowledge base exists:
+If generated Docs output exists:
 
 - read version, timestamp, generation strategy, and scan scope
 - decide whether this run is full refresh or partial update
@@ -90,7 +91,7 @@ If the knowledge base exists:
 
 If it is missing:
 
-- create `.beer/knowledge-base/` as the output root
+- create `Docs/` as the output root beside `.beer/`
 - record `source_authority = current repository source`
 - record `commit_policy = local-cache-by-default`
 - record `strategy = pattern-first`
@@ -106,7 +107,6 @@ Run the one-pass helper with:
 
 ```bash
 node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
-  --output-root .beer/knowledge-base \
   --source-path <repo-or-subpath> \
   --gitnexus-evidence <tmp-or-project-json> \
   --generated-from-commit unknown-git-unavailable \
@@ -116,6 +116,10 @@ node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
 
 If GitNexus is unavailable, omit `--gitnexus-evidence` and run the same helper in local fallback mode.
 
+`--output-root Docs` is optional. When omitted, or when provided as a relative
+path, it resolves under the target repo root that contains `.beer/` when
+present, so `Docs/` lands beside `.beer/` instead of inside it.
+
 ### Step 0.2: Run The Real Repo Pre-Scan
 
 Before lane fan-out, answer:
@@ -124,6 +128,7 @@ Before lane fan-out, answer:
 - how many apps exist?
 - where are the entrypoints?
 - which boundaries matter enough to deserve their own docs?
+- which architecture style is actually present: layered, vertical slice, route/service, CLI/tooling, worker, library, frontend-only, or another shape?
 - which BE patterns are stable enough to become canonical?
 - which FE patterns are stable enough to become canonical?
 - which seams deserve boundary-specific verification targets?
@@ -152,10 +157,11 @@ Purpose:
 - identify major top-level surfaces
 - identify candidate dominant patterns
 
-Typical outputs:
+Typical outputs when code exists:
 
+- Flows/repo-flow.md
 - README dominant patterns
-- architecture/system-overview.md
+- Architecture/system-overview.md
 - initial task routing buckets
 
 Typical searches:
@@ -172,9 +178,9 @@ architecture/conventions synthesis.
 
 Purpose:
 
-- document backend layer missions and request/handler flow
-- document module template
-- document data access and write/read boundaries
+- document the backend architecture style actually found in the repo
+- document request/handler flow when it repeats
+- document module, feature-slice, service, or data-access boundaries only when evidence supports them
 - detect domain rules, events, lifecycle, outbox, jobs, or workflow machinery if present
 - propose backend verification targets for later review
 
@@ -187,12 +193,12 @@ Focus questions:
 
 Typical outputs:
 
-- `backend/request-lifecycle.md`
-- `backend/module-template.md`
-- `backend/data-access-and-unit-of-work.md`
-- `backend/domain-rules-and-lifecycle.md`
+- layered backend: `Backend/patterns/request-lifecycle.md`
+- vertical-slice backend: `Backend/feature-slices/request-lifecycle.md`
+- route/service backend: `Backend/request-lifecycle.md`
+- optional data-access/domain docs only when supported by evidence
 - optional async docs only if supported by evidence
-- `index.json.backend.layer_patterns`
+- `index.json.backend.pattern_groups`
 - `index.json.backend.flow_patterns`
 
 ### Lane C: Frontend Discovery
@@ -213,10 +219,10 @@ Focus questions:
 
 Typical outputs:
 
-- `frontend/app-structure-and-api-access.md`
-- `frontend/session-and-refresh-patterns.md`
-- optional `frontend/ui-and-state-conventions.md`
-- `index.json.frontend.layer_patterns`
+- simple frontend: `Frontend/app-structure-and-api-access.md`
+- feature-structured frontend: `Frontend/patterns/app-structure-and-api-access.md`
+- optional `Frontend/patterns/session-and-refresh-patterns.md` only when supported by evidence
+- `index.json.frontend.pattern_groups`
 - `index.json.frontend.flow_patterns`
 
 ### Lane D: Boundary Discovery
@@ -236,8 +242,8 @@ Focus questions:
 
 Typical outputs:
 
-- `boundaries/frontend-backend-proxy.md`
-- `boundaries/contracts-and-error-shape.md`
+- `Boundaries/frontend-backend-proxy.md`
+- `Boundaries/contracts-and-error-shape.md`
 - `index.json.boundaries`
 - boundary-heavy critical flows
 
@@ -250,7 +256,7 @@ Only create docs for patterns supported by real evidence:
 - `scheduler-and-jobs`
 - `plugin-extension-model`
 - `workflow-engine`
-- `critical-flows/*`
+- `CriticalFlows/*`
 
 Do not create placeholder docs for absent patterns.
 
@@ -293,15 +299,17 @@ folder dump.
 
 Update:
 
-- `.beer/knowledge-base/README.md`
-- `.beer/knowledge-base/index.json`
-- `.beer/knowledge-base/00-metadata.json`
+- `Docs/README.md`
+- `Docs/index.json`
+- `Docs/00-metadata.json`
+- `Docs/Flows/repo-flow.md` when source code or command entrypoints exist
 - only the markdown docs justified by the evidence
 
 Rules:
 
 - README is an entrypoint, not a directory listing
 - docs should be pattern-first and task-useful
+- `Docs/Flows/repo-flow.md` must include a Mermaid `flowchart` when generated
 - docs should favor `how to follow this here` over generic theory
 - record gaps or contradictions instead of inventing certainty
 
@@ -338,13 +346,14 @@ Index requirements:
 
 - keyword lookup
 - task-oriented lookup
+- repo flow map when source code or command entrypoints exist
 - dominant pattern summary
 - critical files
 - entries pointing only to files that actually exist
-- backend patterns split by layer mission
-- frontend patterns split by layer mission
+- backend patterns grouped by detected architecture style, not by assumed layers
+- frontend patterns grouped by detected app shape, not by assumed layers
 - boundaries stored separately from BE and FE flow patterns
-- verification targets attached to task/layer/flow entries when graph-backed validation is possible
+- verification targets attached to task/pattern/flow entries when graph-backed validation is possible
 
 ## Phase 6: Report Back
 
@@ -369,4 +378,4 @@ Use the communication shape from `references/communication.md` and include:
 - Do not dump every lane into its own markdown file by default.
 - Do not force backend/frontend/boundary docs if the repo shape does not justify them.
 - Do not let discovery workers write final docs independently.
-- Do not treat a missing knowledge base as a reason to scan unrelated requests.
+- Do not treat missing Docs output as a reason to scan unrelated requests.

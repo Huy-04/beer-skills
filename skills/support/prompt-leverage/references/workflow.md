@@ -1,7 +1,7 @@
 ---
 skill: prompt-leverage
 purpose: Step-by-step workflow for contextual prompt building
-version: "2.0"
+version: "2.1"
 ---
 
 # Prompt Leverage - Workflow
@@ -16,6 +16,8 @@ version: "2.0"
 
 This helper builds a prompt packet and returns it. It does not take over Beer
 route ownership or state mutation.
+It also does not create, edit, or refresh generated `Docs/`; those docs may be
+read only when explicitly referenced and must be labeled as hints.
 
 ---
 
@@ -34,6 +36,7 @@ Also record:
 
 - `invoking_owner`
 - intended `return_to`
+- whether the request is direct user prompt work or a nested helper call
 
 ---
 
@@ -53,6 +56,7 @@ The script gathers:
 - mentioned files and directories
 - mentioned skills under `skills/*/*/SKILL.md`
 - preserved identifiers and unknowns
+- generated `Docs/` paths only when the prompt explicitly mentions them
 
 Use `--repo-root <path>` when building a prompt for another repository.
 In PowerShell, wrap prompts containing backticks in single quotes so preserved ids survive shell parsing.
@@ -72,6 +76,7 @@ Extract:
 - unknowns that block safe execution
 - output language and format expectations
 - language-policy defaults from `references/language-policy.md` when multilingual handling matters
+- whether generated `Docs/` were used, skipped, missing, or treated only as hints
 
 ---
 
@@ -99,6 +104,7 @@ Context:
 - Known facts from the repo/session
 - Relevant local files or skills
 - Preserved identifiers
+- Context sources used and skipped
 
 Objective:
 - Desired outcome
@@ -122,6 +128,8 @@ Stop / Ask Criteria:
 Routing Safety:
 - Downstream routing must inspect Original Request and Context together
 - Do not route solely from the rewritten prompt if it narrows the user's intent
+- Suggested routes are advisory until the invoking Beer owner confirms them
+- Do not mutate Beer state or skip context-intake from this helper
 ```
 
 ---
@@ -144,6 +152,7 @@ Return:
 - contextual prompt
 - context packet
 - unresolved unknowns
+- context sources used/skipped
 - `return_to`
 
 The caller decides whether to route, ask, or execute next.
@@ -172,6 +181,8 @@ The caller decides whether to route, ask, or execute next.
 | Translating `beer:planning`, `CONTEXT.md`, or commands | Revert and preserve exactly |
 | Missing critical info but prompt proceeds anyway | Ask up to 3 targeted questions |
 | Context packet has unresolved file mentions | Surface them as unknowns |
+| Prompt upgrade mutates `.beer/state.json` or writes plans | Stop; return packet to caller |
+| Generated `Docs/` are treated as current source truth | Mark as hint and require source/approved-artifact confirmation |
 
 ---
 

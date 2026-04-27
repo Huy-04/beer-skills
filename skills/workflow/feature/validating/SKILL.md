@@ -50,9 +50,12 @@ Verify that the current execution slice is ready to execute. Scale the gate to t
 4. Run spikes only when route and risk actually require them.
 5. Confirm the current slice has a believable demo and verification path.
 6. Confirm `orchestration_strategy` still matches the planned slices.
-7. Choose the proposed execution target for this slice.
-8. Run the auto-accept policy check before crossing the execution gate.
-9. Handoff only to the approved execution route.
+7. Confirm the chosen implementation pattern, evidence files, and exact source facts that `executing` must re-check before coding.
+8. Use generated `Docs/` verification targets only as hints; require source-backed evidence before approving execution.
+9. If `orchestration_strategy = multi-worker`, confirm worker-sized task boundaries, dependency edges, and verification ownership are explicit.
+10. Choose the proposed execution target for this slice.
+11. Run the auto-accept policy check before crossing the execution gate.
+12. Handoff only to the approved execution route.
 
 ## Validation Routes
 
@@ -78,9 +81,7 @@ Use when planning kept the work compact and local.
 
 Expected artifacts:
 
-- compact `discovery.md`
-- compact `approach.md`
-- single-phase `phase-plan.md`
+- `history/<feature>/compact-plan.md`, or compact `discovery.md` / `approach.md` / single-phase `phase-plan.md` from an older route artifact
 - optional compact phase contract
 
 This route uses a compact gate. It must still verify scope, verification path, and execution safety.
@@ -92,9 +93,8 @@ Use when debugging proved the root cause but the repair needed planning inside t
 
 Expected artifacts:
 
-- debug-anchored `discovery.md`
-- repair `approach.md`
-- bounded `phase-plan.md`
+- bounded repair: `history/<feature>/compact-plan.md`
+- broad repair: debug-anchored `discovery.md`, repair `approach.md`, and bounded `phase-plan.md`
 - optional compact phase contract
 
 This route must preserve the root cause and keep the repair bounded.
@@ -135,6 +135,27 @@ For `small-fix` and repair-intent validation, focus on:
 3. file scope and collision risk
 4. verification completeness
 5. believable execution route
+6. observable exit state for the slice, even when the artifact is only `compact-plan.md`
+7. `orchestration_strategy = single-worker`
+
+### Pattern Readiness Check
+
+For all planned routes, validating must confirm:
+
+1. the implementation pattern is named in `compact-plan.md` or the current phase contract
+2. evidence files for that pattern are listed
+3. the exact signatures, DTOs, commands, events, or source facts that `executing` must re-check before coding are explicit
+4. pattern-looking assumptions are not treated as verified source facts
+5. generated `Docs/` entries, when used, are treated as hints and confirmed against current source or approved artifacts
+
+### Multi-Worker Readiness Check
+
+If `orchestration_strategy = multi-worker`, validating must also confirm:
+
+1. worker-sized task boundaries are explicit
+2. dependency edges are explicit enough for dispatch
+3. verification ownership is explicit per worker boundary
+4. the slice is not being labeled `multi-worker` just to hide vague planning
 
 ## Spike Policy
 
@@ -147,6 +168,9 @@ For `small-fix` and repair-intent validation, focus on:
 - Never validate a feature route from seed-only context.
 - Never require beads when the active route does not need them.
 - Never approve execution without a believable verification path.
+- Never approve a planned slice whose implementation pattern is still implicit or whose evidence files are missing.
+- Never approve execution from generated `Docs/` hints alone.
+- Never approve `small-fix` when `orchestration_strategy` is not `single-worker`.
 - Never skip spikes when a true high-risk unknown remains.
 - Never route to `beer:swarming` just because it exists; use the route approved by planning and validating.
 - Never let auto-accept override high-risk pause conditions; use `beer-auto-accept.mjs --gate validating` as the executable policy.
@@ -156,7 +180,7 @@ For `small-fix` and repair-intent validation, focus on:
 - `state.json` is authoritative.
 - Update `.beer/state.json` first, then regenerate `.beer/STATE.md`.
 - Record the validated route, `orchestration_strategy`, approval status, and approved execution target.
-- Record whether critical contracts were verified before execution with `contract_verified = true|false`.
+- Record whether planning artifacts contain enough contract, pattern, and verification detail for execution to proceed without guessing with `contract_verified = true|false`.
 - Record validator outcome with `validator_status = pass|fail`.
 - Set `validation_status = pass | fail`.
 - Set the proposed `execution_target = executing | swarming` before the execution approval ask.

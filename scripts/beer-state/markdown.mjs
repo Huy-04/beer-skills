@@ -48,7 +48,7 @@ export function renderBeerStateMarkdown(state) {
     `Pattern: ${normalized.pattern_status || "(none)"}`,
     `Review quality: ${normalized.review_quality_status || "(none)"}`,
     `Review: ${normalized.review_status || "(none)"}`,
-    `Knowledge-base refresh: ${normalized.knowledge_base_refresh_status || "(none)"}`,
+    `Generated Docs refresh: ${normalized.knowledge_base_refresh_status || "(none)"}`,
     `Closeout ready: ${normalized.closeout_ready ? "yes" : "no"}`,
     `Next handoff: ${normalized.next_handoff || "(none)"}`,
     "",

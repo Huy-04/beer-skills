@@ -16,9 +16,10 @@ status: draft | validated | needs-more-testing
 - External references consulted:
 - Key extraction decisions:
 
-## SCENARIO RED: Baseline Failures
+## Pressure Coverage
 
-- Behavior-changing edit made before SCENARIO RED: yes | no
+- Pressure depth: full RED | focused RED | mechanical waiver
+- Behavior-changing edit made before pressure coverage: yes | no
 - If yes, retroactive coverage completed before handoff: yes | no
 
 ### Scenario 1: <name>

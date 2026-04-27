@@ -9,13 +9,13 @@ version: "1.0"
 ## Worker Start
 
 ```text
-Swarm start for <slice>. Your assigned work is <task or bead>. Assigned profile: <role> -> <model> (<reasoning_effort>). Stay inside the validated scope and report blockers immediately.
+Swarm start for <slice>. Your assigned work is <task or bead>. Route artifact: <path>. Pattern: <implementation pattern>. Evidence files: <paths>. Re-check before coding: <source facts>. TDD disposition expected: <complete|waived: reason|not-required>. Assigned profile: <role> -> <model> (<reasoning_effort>). Stay inside the validated scope and report blockers immediately.
 ```
 
 ## Status Check
 
 ```text
-Status check: report current work item, file scope, and blocker state.
+Status check: report current work item, file scope, source facts re-checked, TDD disposition, deviations, and blocker state.
 ```
 
 ## Collision Resolution

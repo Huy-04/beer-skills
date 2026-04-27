@@ -9,11 +9,15 @@ compatibility:
   - claude-code
   - beer-ecosystem
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   ecosystem: beer
   tags:
     - beer/support
     - graph
+  inputs: "Calling Beer skill + concrete graph question + target repo/path + optional Docs-derived assumption to verify"
+  outputs: "Read-only GitNexus evidence packet with status, confidence, tools used, starting points, risks, and return owner"
+  upstream: "context-intake, exploring, planning, validating, executing, swarming, reviewing, debugging, codebase-knowledge"
+  downstream: "calling Beer skill"
   dependencies:
     - id: gitnexus
       kind: mcp_server
@@ -47,9 +51,10 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 
 1. Confirm the target repo is indexed.
 2. Choose the smallest GitNexus query that answers the caller's question.
-3. Report findings with confidence and source tool.
-4. Return findings to the calling Beer phase without mutating Beer workflow state.
-5. Return `status: degraded` when GitNexus or indexing is unavailable.
+3. If the caller provides a generated `Docs/` assumption, verify or challenge it with graph evidence and clearly mark any mismatch.
+4. Report findings with confidence, source tool, starting points, risks, and source-check requirements.
+5. Return findings to the calling Beer phase without mutating Beer workflow state.
+6. Return `status: degraded` when GitNexus or indexing is unavailable.
 
 ---
 
@@ -66,6 +71,8 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 - Record the calling Beer phase or skill before deep graph work so the answer can return to the right owner cleanly.
 - If GitNexus is unavailable, stale, or not indexed, report the limitation with enough detail for the caller to continue locally or ask the user to index.
 - `graph-explore` does not become the active workflow route; it is a support lens that returns evidence to the caller.
+- `graph-explore` does not create or refresh generated `Docs/`. If graph evidence conflicts with generated Docs, mark the Docs assumption as stale or mismatched and return that signal to the caller.
+- GitNexus graph evidence is stronger than generated `Docs/`, but current source still wins when graph evidence may be stale.
 
 ---
 
@@ -84,7 +91,7 @@ Use this skill when another Beer skill needs graph-backed structure, caller/call
 
 ## Query by Beer Phase
 
-### Context Coordination
+### Context Intake
 
 ```yaml
 list_repos: {}
@@ -168,9 +175,12 @@ Cross-check changed symbols against the plan.
 
 Report findings using the template in `references/communication.md`. Key rules:
 
+- Include `return_to`, `question`, `status`, `source`, `tools_used`, and `confidence`.
 - Quantify: "12 files in auth community"
 - Rank by relevance score when available
 - Suggest starting points
+- Include source-check requirements the caller or worker must verify before coding
+- Include `docs_relation` when the caller asked to verify a generated Docs assumption: `not_used`, `confirmed`, `mismatch`, or `stale_possible`
 - State confidence: High / Medium / Low
 - Distinguish clearly whether the answer came from `query`, `context`, `impact`, `cypher`, or route analysis
 - If confidence is Low, GitNexus is unavailable, or the target repo is not indexed, return `status: degraded` to the caller
@@ -193,8 +203,8 @@ Report findings using the template in `references/communication.md`. Key rules:
 | `rename` | Refactoring | Safe rename |
 | `list_repos` | Bootstrap | Discover indexed repos |
 
-Full tool signatures and Cypher examples: `references/quick-ref.md`
-Detailed tool documentation: `references/gitnexus-tools.md`
+Common query examples: `references/quick-ref.md`
+GitNexus tool choice guide: `references/gitnexus-tools.md`
 
 ---
 
@@ -204,7 +214,7 @@ Detailed tool documentation: `references/gitnexus-tools.md`
 - `references/quick-ref.md` - Common queries, troubleshooting, integration notes
 - `references/workflow.md` - Step-by-step graph exploration workflow
 - `references/pressure-scenarios.md` - Edge cases for support-lens behavior
-- `references/gitnexus-tools.md` - Full GitNexus MCP tool documentation
+- `references/gitnexus-tools.md` - GitNexus tool choice guide; active MCP schema remains the source of truth
 
 ---
 

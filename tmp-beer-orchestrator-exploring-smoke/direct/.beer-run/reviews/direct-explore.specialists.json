@@ -1,0 +1,38 @@
+{
+  "feature": "direct-explore",
+  "current_slice": "direct-slice",
+  "scopes": [
+    "user-visible"
+  ],
+  "required_specialists": [
+    "beer-test-reviewer"
+  ],
+  "specialist_lanes": [
+    {
+      "name": "beer-test-reviewer",
+      "required": true,
+      "status": "PASS"
+    }
+  ],
+  "finding_summary": {
+    "P1": 0,
+    "P2": 0,
+    "P3": 1
+  },
+  "review_guard": {
+    "code_quantity_status": "pass",
+    "pattern_status": "pass",
+    "review_quality_status": "pass",
+    "metrics": {
+      "changed_files": 1,
+      "total_additions": 1,
+      "total_deletions": 0,
+      "total_lines": 1,
+      "implementation_areas": [
+        "src"
+      ]
+    }
+  },
+  "review_status": "approved",
+  "next_handoff": "compounding"
+}

@@ -1,7 +1,7 @@
 ---
 skill: graph-explore
 purpose: Reporting findings from graph exploration
-version: "1.1"
+version: "1.2"
 ---
 
 # graph-explore - Communication Standards
@@ -19,6 +19,8 @@ version: "1.1"
 - Source: GitNexus
 - Status: ok
 - Tooling: query + impact
+- Question: <exact caller question>
+- Docs relation: <not_used | confirmed | mismatch | stale_possible>
 - Query Time: <duration>
 
 ### Findings
@@ -43,6 +45,10 @@ version: "1.1"
 2. Use `context` on `ReserveInventory` to inspect direct callers.
 3. Use `impact` before changing cross-module contracts.
 
+### Source Checks
+- Open `BE/.../Order.cs` before coding and confirm the lifecycle method signature.
+- Confirm event payload shape in current source; do not rely on graph or Docs alone.
+
 ### Confidence
 High because the repo is indexed and `query` and `impact` point to the same area.
 ```
@@ -58,6 +64,8 @@ High because the repo is indexed and `query` and `impact` point to the same area
 - Suggest a concrete next step
 - Link to specific files or symbols when available
 - State which Beer skill should receive the result next
+- Include source checks the caller or worker must verify before code changes
+- Mark generated `Docs/` assumptions as confirmed, mismatched, stale_possible, or not_used
 
 ### Don't
 - Be vague: "auth stuff found"
@@ -88,8 +96,10 @@ Found:
 - 3 relevant processes
 - 6 symbols close to the requested change
 - 2 cross-module dependencies worth checking
+Docs relation: not_used
 
 Recommended starting point: `OrderAggregate`
+Source checks: confirm lifecycle method signature and event payload in current source.
 Confidence: High
 
 Proceed to planning with the graph findings above.
@@ -160,10 +170,18 @@ High because indexed process discovery and blast-radius analysis agree.
 - Source: GitNexus
 - Status: [ok/degraded]
 - Tooling: [query/context/impact/cypher/...]
+- Question: [concrete graph question]
+- Docs relation: [not_used/confirmed/mismatch/stale_possible]
 - Duration: [time]
 
 ### Results
 [Processes/communities/symbols/patterns/dependencies]
+
+### Source Checks
+[Current source facts the caller must verify before coding]
+
+### Risks
+[Blast-radius, stale index, route/API, or boundary risks]
 
 ### Confidence
 [High/Medium/Low] because [reason]

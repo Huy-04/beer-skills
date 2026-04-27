@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const VALID_DEPTHS = ["Light", "Standard", "Deep"];
 
@@ -99,6 +100,14 @@ function parseEscapeCommand(prompt) {
   };
 }
 
+function stripVietnameseDiacritics(value) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0111/g, "d")
+    .replace(/\u0110/g, "D");
+}
+
 function detectLanguage(prompt) {
   const hasVietnameseDiacritics = /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(prompt);
   const hasCjkIdeographs = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/u.test(prompt);
@@ -116,6 +125,51 @@ function detectLanguage(prompt) {
   }
 
   if (hasVietnameseDiacritics || hasRomanizedVietnamese) {
+    return {
+      inputLanguage: hasEnglishSignals ? "Mixed Vietnamese/English" : "Vietnamese",
+      workingLanguage: "English",
+      outputLanguage: "Vietnamese",
+    };
+  }
+
+  return {
+    inputLanguage: "English",
+    workingLanguage: "English",
+    outputLanguage: "English",
+  };
+}
+
+function detectLanguageStable(prompt) {
+  const hasVietnameseLetters = /[\u0103\u00e2\u0111\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u0110\u00ca\u00d4\u01a0\u01af]/u.test(prompt);
+  const hasVietnameseToneMarks = /[\u0300\u0301\u0303\u0309\u0323]/u.test(prompt.normalize("NFD"));
+  const hasCjkIdeographs = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/u.test(prompt);
+  const lowered = prompt.toLowerCase();
+  const asciiLowered = stripVietnameseDiacritics(lowered);
+  const romanizedSignals = [
+    "tieng viet",
+    "bang tieng viet",
+    "giai thich",
+    "kiem tra",
+    "giu ",
+    "sua ",
+    "loi ",
+    "toi ",
+    "ban ",
+    "tiep ",
+    "phan tich",
+  ];
+  const hasRomanizedVietnamese = romanizedSignals.some((signal) => asciiLowered.includes(signal));
+  const hasEnglishSignals = /\b(the|and|with|for|review|fix|implement|explain|return|output|prompt)\b/i.test(prompt);
+
+  if (hasCjkIdeographs) {
+    return {
+      inputLanguage: hasEnglishSignals ? "Mixed Chinese/English" : "Chinese",
+      workingLanguage: "English",
+      outputLanguage: "Chinese",
+    };
+  }
+
+  if (hasVietnameseLetters || hasVietnameseToneMarks || hasRomanizedVietnamese) {
     return {
       inputLanguage: hasEnglishSignals ? "Mixed Vietnamese/English" : "Vietnamese",
       workingLanguage: "English",
@@ -291,10 +345,28 @@ function collectBeerFacts(repoRoot) {
       try {
         const parsed = JSON.parse(result.text);
         facts.state = {
-          mode: parsed.mode ?? null,
-          phase: parsed.phase ?? parsed.current_phase ?? null,
+          feature_slug: parsed.feature_slug ?? null,
+          route: parsed.route ?? null,
+          work_intent: parsed.work_intent ?? null,
+          risk: parsed.risk ?? null,
+          run_style: parsed.run_style ?? null,
+          orchestration_strategy: parsed.orchestration_strategy ?? null,
+          phase: parsed.phase ?? null,
+          phase_number: parsed.phase_number ?? null,
+          current_phase_name: parsed.current_phase_name ?? null,
+          current_slice: parsed.current_slice ?? null,
           context_stage: parsed.context_stage ?? null,
-          active_feature: parsed.active_feature ?? null,
+          context_path: parsed.context_path ?? null,
+          execution_target: parsed.execution_target ?? null,
+          contract_verified: parsed.contract_verified ?? null,
+          validation_status: parsed.validation_status ?? null,
+          validator_status: parsed.validator_status ?? null,
+          tdd_required: parsed.tdd_required ?? null,
+          tdd_status: parsed.tdd_status ?? null,
+          execution_evidence_path: parsed.execution_evidence_path ?? null,
+          review_status: parsed.review_status ?? null,
+          knowledge_base_refresh_status: parsed.knowledge_base_refresh_status ?? null,
+          next_handoff: parsed.next_handoff ?? null,
         };
       } catch (error) {
         facts.state = { parseError: error.message };
@@ -402,9 +474,20 @@ function collectContext(repoRoot, prompt) {
   const skillMetadata = listSkillMetadata(absoluteRoot);
   const mentionedSkills = resolveMentionedSkills(absoluteRoot, prompt, skillMetadata);
   const { resolved, unresolved } = resolvePromptFiles(absoluteRoot, preservedIdentifiers);
+  const unresolvedAfterSkillResolution = unresolved.filter((candidate) => {
+    const normalized = candidate.replaceAll("\\", "/").replace(/^@/, "");
+    if (normalized === "SKILL.md" && mentionedSkills.length > 0) return false;
+    return !mentionedSkills.some((skill) =>
+      normalized === skill.path ||
+      normalized === `${skill.name}/SKILL.md` ||
+      normalized.endsWith(`/${skill.name}/SKILL.md`)
+    );
+  });
   const unknowns = [];
 
-  if (unresolved.length > 0) unknowns.push(`Mentioned file/path not found in repo: ${unresolved.join(", ")}`);
+  if (unresolvedAfterSkillResolution.length > 0) {
+    unknowns.push(`Mentioned file/path not found in repo: ${unresolvedAfterSkillResolution.join(", ")}`);
+  }
   if (resolved.length === 0 && mentionedSkills.length === 0) unknowns.push("No explicit local file or skill target was resolved from the prompt.");
   if (!packageFacts && repoDocs.length === 0) unknowns.push("No common project overview files were found.");
 
@@ -417,7 +500,12 @@ function collectContext(repoRoot, prompt) {
     resolvedFiles: resolved,
     mentionedSkills,
     unknowns,
-    note: "This script collects context only. Semantic intent and final prompt synthesis are handled by the downstream model/skill, not by keyword classification.",
+    contextPolicy: {
+      generatedDocs: "not scanned by default; use only when explicitly referenced and treat as hints",
+      sourceAuthority: "current source and approved Beer artifacts win over generated Docs",
+      mutation: "read-only context collection; no Beer state, plan, code, or Docs mutation",
+    },
+    note: "This script collects context only. Semantic intent, route confirmation, and final prompt synthesis are handled by the downstream model/skill, not by keyword classification.",
   };
 }
 
@@ -457,6 +545,7 @@ function formatContextualPrompt(originalPrompt, context, depth, language) {
     resolvedFiles: context.resolvedFiles,
     mentionedSkills: context.mentionedSkills,
     unknowns: context.unknowns,
+    contextPolicy: context.contextPolicy,
   };
 
   return `Contextual Prompt Builder Input
@@ -480,10 +569,17 @@ ${fenced("json", JSON.stringify(contextPayload, null, 2))}
 Unknowns and Assumptions:
 ${bulletList(unknownLines)}
 
+Context Source Authority:
+- Generated Docs policy: ${context.contextPolicy.generatedDocs}.
+- Source authority: ${context.contextPolicy.sourceAuthority}.
+- Mutation policy: ${context.contextPolicy.mutation}.
+
 Routing Safety:
 - Use the Original Request and Context Payload together for downstream routing.
 - Do not route solely on this upgraded prompt if it narrows or rephrases the user's intent.
 - Keep the raw request visible in any handoff to beer:using-beer or another skill.
+- Treat any suggested downstream route as advisory until the invoking owner confirms it.
+- Do not mutate Beer state, write planning artifacts, edit code, or refresh generated Docs from this helper.
 
 Synthesis Instructions:
 - Build the final prompt from the original request plus the known context above.
@@ -508,7 +604,7 @@ function build(rawPrompt, options = {}) {
   const trimmedPrompt = rawPrompt.trim();
   const escape = parseEscapeCommand(trimmedPrompt);
   const effectivePrompt = escape.prompt.trim();
-  const language = detectLanguage(effectivePrompt);
+  const language = detectLanguageStable(effectivePrompt);
 
   if (escape.raw) {
     return {
@@ -567,4 +663,14 @@ function main() {
   }
 }
 
-main();
+export {
+  build,
+  collectContext,
+  detectLanguageStable as detectLanguage,
+  extractPreservedIdentifiers,
+  parseArgs,
+};
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}

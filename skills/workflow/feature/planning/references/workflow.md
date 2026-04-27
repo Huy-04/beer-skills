@@ -60,11 +60,16 @@ Recommended commands:
 ```powershell
 Get-Content history\<feature>\CONTEXT.md
 if (Test-Path history\learnings\critical-patterns.md) { Get-Content history\learnings\critical-patterns.md }
+if (Test-Path Docs\index.json) { Get-Content Docs\index.json }
+if (Test-Path Docs\Flows\repo-flow.md) { Get-Content Docs\Flows\repo-flow.md }
 rg -n "<keyword>" .
 rg --files | Select-Object -First 80
 ```
 
-If GitNexus is indexed and available, use it to accelerate architecture and pattern lookup. Do not block on GitNexus.
+If generated `Docs/` exists, use it only to find likely patterns, flow docs, and
+verification targets; confirm any used fact against current source or locked
+workflow evidence. If GitNexus is indexed and available, use it to accelerate
+architecture and pattern lookup. Do not block on GitNexus.
 
 ### Outputs
 
@@ -118,18 +123,22 @@ Do not inflate a tiny fix into architecture research.
 
 ### Outputs
 
-Write short versions of:
+Write one compact plan/check note when the fix stays local and direct execution
+remains credible:
 
-- `history/<feature>/discovery.md`
-- `history/<feature>/approach.md`
-- `history/<feature>/phase-plan.md`
+- `history/<feature>/compact-plan.md`
 
 Rules:
 
 - one phase only
-- 1-2 stories at most
+- directly implicated files are named
+- scope, non-scope, and verification path are explicit
+- chosen implementation pattern and evidence files are explicit
+- direct `beer:executing` is still credible
 - no forced story map
-- no beads unless the work still decomposes into multiple worker-sized tasks
+- no beads; if the work decomposes into multiple worker-sized tasks, reject the
+  compact route and return to `beer:exploring` or feature planning
+- confirm the incoming `single-worker` exemption constraint still holds
 
 ## Route 3: Feature Repair Planning
 
@@ -166,11 +175,16 @@ Do not rerun broad feature discovery unless the repair genuinely crosses archite
 
 ### Outputs
 
-Write:
+Write the full trio only when the repair crosses feature or architecture
+boundaries:
 
 - `history/<feature>/discovery.md` with debug evidence up front
 - `history/<feature>/approach.md` describing the repair strategy
 - `history/<feature>/phase-plan.md` with one bounded repair phase unless multiple phases are truly required
+
+For bounded repair, prefer `history/<feature>/compact-plan.md` with the proven
+root cause, repair boundary, chosen implementation pattern, and verification
+path.
 
 After approval:
 
@@ -201,6 +215,11 @@ rg -n "<keyword>" history\learnings
 
 Document the applied learnings near the top of `discovery.md`.
 
+Generated `Docs/` is optional context, not a refresh target for planning. When
+present, it may contribute pattern names, repo-flow hints, and review targets,
+but planning must cite current source or approved workflow artifacts for facts
+that affect implementation.
+
 ## discovery.md
 
 Capture only the reality needed for this route:
@@ -226,6 +245,20 @@ Must include:
 - how learnings changed the plan
 
 For feature repair planning, preserve the root-cause sentence verbatim.
+For refactor or modernization work that touches public contracts, legacy entry
+points, or migration-sensitive behavior, also state one of these explicitly:
+
+- the compatibility shim or adapter path
+- the phased migration path
+- the explicit breaking boundary if no compatibility path will be preserved
+
+When the work adds or changes a backend boundary such as an API endpoint,
+webhook, queue consumer, or external integration surface, also state:
+
+- the contract shape that callers or producers must satisfy
+- idempotency expectations
+- retry behavior or ownership
+- timeout/deadline expectations when they matter
 
 ## phase-plan.md
 
@@ -233,20 +266,23 @@ For feature repair planning, preserve the root-cause sentence verbatim.
 
 - 2-4 meaningful phases
 - each phase describes a real observable outcome
+- each phase closes a small believable loop before the next one starts
 - select only the first phase for current prep
+- if a story map is prepared, every story must unlock, de-risk, or directly advance the phase exit state
 
 ### Small-Fix And Repair Routes
 
 - single phase by default
 - use a second phase only when there is a real before/after boundary
 - keep the summary concrete and short
+- use `compact-plan.md` instead of the full planning trio when a single note can honestly cover scope, files, verification, and direct execution
 
 ## Approval Gate
 
 Without auto-accept:
 
 ```text
-Phase plan written.
+Plan artifact written.
 Review the route, current phase, and risks.
 
 Approve before current-phase preparation? (yes / revise / no)
@@ -280,22 +316,32 @@ Prepare:
 - phase contract
 - story map
 - beads if decomposition is needed
+- if `orchestration_strategy = multi-worker`, make worker-sized tasks, dependency edges, and verification ownership explicit enough that `swarming` can dispatch without guessing
 
 ### Small-Fix Route
 
 Prepare:
 
+- no extra artifact when `compact-plan.md` already captures execution scope and verification
 - a compact phase contract when validating/executing needs explicit scope
+- confirmation that the incoming `single-worker` exemption constraint still holds
 
-Do not create a story map or beads unless the fix still needs them.
+Do not create a story map or beads for true `small-fix` work.
+If the fix now needs story maps, beads, or `orchestration_strategy = multi-worker`,
+it is no longer a `small-fix`; return to `beer:exploring` or feature planning
+instead of stretching the compact path.
 
 ### Feature Repair Route
 
 Prepare:
 
 - a compact phase contract that preserves the root cause, repair boundary, and verification path
+- the implementation pattern to follow and the evidence files that support it
+- if public contracts or legacy paths are changing, the contract must also name the compatibility shim, migration path, or explicit breaking boundary
+- if a backend boundary is changing, the contract must also name the contract shape plus any idempotency, retry, and timeout obligations
 
 Only create a story map or beads when the repair is truly multi-step or multi-owner.
+If `orchestration_strategy = multi-worker`, the compact contract still needs explicit worker-sized task boundaries and who verifies each boundary.
 
 ## Bead Policy
 
@@ -306,6 +352,8 @@ Create beads only when:
 - more than one worker-sized task remains,
 - dependencies need to be explicit,
 - or direct execution would force guessing.
+
+When beads are not used, the same worker boundaries and dependency notes still need to be recorded in the phase contract or equivalent planning artifact.
 
 Never create beads before approval.
 

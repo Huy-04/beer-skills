@@ -24,12 +24,16 @@ Route: feature.
 Locked context is present, so I am writing the full feature plan before current-phase prep.
 ```
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 ```text
 Route: small-fix.
 This does not need full feature planning, so I am keeping the plan compact and single-phase.
 ```
+
+If the work now needs `orchestration_strategy = multi-worker`, stop and reject
+the `small-fix` route instead of trying to explain worker slices inside compact
+planning.
 
 ### Feature Repair Route
 
@@ -42,7 +46,7 @@ I am planning the repair without expanding into unrelated feature work.
 ### Approval Ask
 
 ```text
-Phase plan written.
+Plan artifact written.
 Current route: [feature | small-fix | feature repair]
 Current slice: [name]
 Risk notes: [summary]
@@ -74,6 +78,7 @@ Stop immediately if:
 4. beads are being created before approval
 5. planning is drifting into execution details
 6. planning quietly changes the incoming route instead of bouncing back upstream
+7. generated `Docs/` is being treated as source of truth or refreshed during planning
 
 ## Anti-Patterns
 

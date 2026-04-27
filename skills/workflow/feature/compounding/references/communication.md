@@ -37,18 +37,24 @@ Keep promoted entries short:
 When <condition>, do <recommended action>. This prevents <repeated failure or wasted effort>. Full entry: history/learnings/<file>.md
 ```
 
-## Knowledge-Base Refresh Prompt Template
+## Generated Docs Refresh Prompt Template
 
 Use a prompt only when the finished work produced reusable curated knowledge:
 
 ```text
-Compounding is complete. This task produced reusable project patterns. Refresh `.beer/knowledge-base/` now?
+Compounding is complete. This task produced reusable project patterns. Refresh generated `Docs/` now?
+```
+
+## No-Learning Closeout Template
+
+```text
+Compounding found no reusable learning for <route>. No learnings file created. GitNexus reindex: <completed | skipped>. Generated Docs refresh: not-needed.
 ```
 
 ## Completion Template
 
 ```text
-Compounding complete for <route>. Learnings file: <path>. Critical promotions: <count>. GitNexus reindex: <completed | skipped | failed>. Knowledge-base refresh: <not-needed | approved | declined>.
+Compounding complete for <route>. Learnings file: <path | none>. Critical promotions: <count>. GitNexus reindex: <completed | skipped>. Generated Docs refresh: <not-needed | declined | refreshed>.
 ```
 
 Only use the completion line after `beer-closeout-guard` confirms closeout is complete.

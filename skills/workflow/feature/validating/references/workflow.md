@@ -35,6 +35,10 @@ Extract:
 - `approved_gates.phase_plan`
 - proposed execution route, if already present
 
+`contract_verified` means the planning artifacts contain enough contract,
+pattern, and verification detail for execution to proceed without guessing. It
+does not mean the implementation has already been tested.
+
 ### Feature Route Prerequisites
 
 Required:
@@ -50,13 +54,11 @@ Optional when truly needed:
 - story map
 - beads
 
-### Small Direct-Fix Route Prerequisites
+### Small-Fix Route Prerequisites
 
 Required:
 
-- compact `discovery.md`
-- compact `approach.md`
-- bounded `phase-plan.md`
+- `history/<feature>/compact-plan.md`
 
 Optional:
 
@@ -66,9 +68,8 @@ Optional:
 
 Required:
 
-- debug-anchored `discovery.md`
-- repair `approach.md`
-- bounded `phase-plan.md`
+- bounded repair: `history/<feature>/compact-plan.md`
+- broad repair: debug-anchored `discovery.md`, repair `approach.md`, and bounded `phase-plan.md`
 
 Optional:
 
@@ -92,7 +93,7 @@ Run the full check set:
 7. verification completeness
 8. exit-state completeness
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 Run the compact set:
 
@@ -101,6 +102,8 @@ Run the compact set:
 3. file-scope sanity
 4. verification completeness
 5. direct execution credibility
+6. observable exit state
+7. `orchestration_strategy = single-worker`
 
 ### Feature Repair Route
 
@@ -112,7 +115,34 @@ Run the compact set plus root-cause retention:
 4. verification completeness
 5. execution credibility
 
+Bounded repair may validate from `compact-plan.md`. Broad repair validates from
+the debug-anchored full trio.
+
+### Pattern Readiness
+
+For every route, confirm:
+
+1. a chosen implementation pattern is named in `compact-plan.md` or the current phase contract
+2. pattern evidence files exist and are relevant
+3. the exact source facts `executing` must re-check before coding are listed
+4. assumptions that still need source verification are called out instead of treated as facts
+
+If pattern readiness is missing, stop and return to `beer:planning`.
+
+Generated `Docs/` can supply expected pattern names, repo-flow hints, and
+verification targets, but those entries are not approval evidence by
+themselves. If a Docs hint matters for execution readiness, confirm it against
+current source, GitNexus, or the approved planning artifact before passing the
+gate.
+
 If the route uses beads, also check dependency correctness and collision risk.
+If `orchestration_strategy = multi-worker`, also require:
+
+1. explicit worker-sized task boundaries
+2. dependency notes that let `swarming` dispatch without guessing
+3. verification ownership for each worker boundary
+
+If those are missing, stop and return to `beer:planning`.
 
 ## Phase 2: Spike Decision
 
@@ -144,13 +174,14 @@ If beads exist:
 
 Do manual dependency and file-scope review.
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 Polish:
 
 - direct execution scope
 - verify command or manual test path
 - any file overlap risk if more than one task remains
+- `single-worker` constraint still holds
 
 ### Feature Repair Route
 
@@ -158,6 +189,7 @@ Polish:
 
 - root-cause preservation
 - repair boundary
+- chosen implementation pattern and evidence files
 - regression-proof verification path
 
 Do not let this route expand into unrelated feature planning.
@@ -170,6 +202,8 @@ Before approval, answer:
 2. Is the verification path believable?
 3. Does the execution route match the scope?
 4. For feature repair: does the repair still target the proven root cause?
+5. For feature routes with stories: does each story unlock, de-risk, or directly advance the current phase exit state?
+6. Is the implementation pattern explicit enough that `executing` can verify exact source facts before coding?
 
 Any unclear answer means FAIL until repaired.
 
@@ -208,7 +242,7 @@ node .beer\scripts\commands\beer-auto-accept.mjs --gate validating --json
 - route to `beer:swarming` when the slice is genuinely multi-task or swarm-ready
 - route to direct `beer:executing` only when the feature slice is intentionally bounded and approved for direct execution
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 - route to direct `beer:executing`
 
@@ -216,6 +250,8 @@ node .beer\scripts\commands\beer-auto-accept.mjs --gate validating --json
 
 - route to direct `beer:executing` by default
 - route to `beer:swarming` only if the validated repair still has multiple explicit tasks and dependency management matters
+
+Do not approve `beer:swarming` from a vague `multi-worker` label alone. The worker boundaries and verification ownership must already be explicit in planning artifacts.
 
 ## State Update
 

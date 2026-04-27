@@ -1,10 +1,11 @@
 # Learnings File Template
 
-Use this template when writing `history/learnings/YYYYMMDD-<slug>.md`.
+Use this template when at least one reusable learning passes compounding triage
+and needs `history/learnings/YYYYMMDD-<slug>.md`.
 
-One file per feature. Multiple learnings can appear in a single file — separate them
-with `---` dividers. Start each file with the YAML frontmatter below, then add
-individual learning entries.
+One file per completed unit of work. Multiple learnings can appear in a single
+file; separate them with `---` dividers. Start each file with the YAML
+frontmatter below, then add individual learning entries.
 
 ---
 
@@ -32,17 +33,17 @@ Repeat this block for each distinct learning. Separate entries with `---`.
 **Category:** pattern | decision | failure
 **Severity:** critical | standard
 **Tags:** [tag1, tag2]
-**Applicable-when:** <one sentence — under what conditions should future agents use this?>
+**Applicable-when:** <one sentence - under what conditions should future agents use this?>
 
 ## What Happened
 
 <2-4 sentences describing the situation: what was being built, what went wrong or right,
-what surprised the team. Be specific — name files, functions, tools, or commands involved.>
+what surprised the team. Be specific - name files, functions, tools, or commands involved.>
 
 ## Root Cause / Key Insight
 
 <The underlying reason this happened. For failures: what assumption was wrong, what was
-missing, what interaction wasn't understood. For patterns: what property makes this
+missing, what interaction was not understood. For patterns: what property makes this
 approach better than alternatives. For decisions: what information made this the right call.>
 
 ## Recommendation for Future Work
@@ -116,7 +117,7 @@ centralizes the contract and makes auth behavior consistent across the app.
 ## Recommendation for Future Work
 
 Always reach for `useAuthToken()` in components that need auth state. Do not access
-the token store directly. If the composable doesn't cover your use case, extend it
+the token store directly. If the composable does not cover your use case, extend it
 rather than writing parallel logic.
 ```
 
@@ -148,7 +149,7 @@ use this condensed format:
 **Tags:** [tag1, tag2]
 
 <2-4 sentence summary. What happened, root cause, and what to do differently.
-Enough context that a reader doesn't need to open the full file to act on it.>
+Enough context that a reader does not need to open the full file to act on it.>
 
 **Full entry:** history/learnings/YYYYMMDD-<slug>.md
 ```

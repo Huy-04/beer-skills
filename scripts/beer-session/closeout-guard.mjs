@@ -7,6 +7,12 @@ const KNOWLEDGE_BASE_DECISIONS = new Set([
   "refreshed",
 ]);
 
+const KNOWLEDGE_BASE_CLOSEOUT_STATUSES = new Set([
+  "not-needed",
+  "declined",
+  "refreshed",
+]);
+
 const GITNEXUS_READY_STATUSES = new Set(["completed", "skipped"]);
 
 function normalizeKnowledgeBaseDecision(value) {
@@ -142,11 +148,27 @@ export function assessCloseoutGuard(options = {}) {
   if (!KNOWLEDGE_BASE_DECISIONS.has(nextState.knowledge_base_refresh_status)) {
     return buildBlock(
       "knowledge_base_decision_missing",
-      "Closeout still needs an explicit knowledge-base refresh decision.",
+      "Closeout still needs an explicit generated Docs refresh decision.",
       nextStatus,
       {
         repo_root: repoRoot,
         state: nextState,
+      },
+    );
+  }
+
+  if (!KNOWLEDGE_BASE_CLOSEOUT_STATUSES.has(nextState.knowledge_base_refresh_status)) {
+    return buildBlock(
+      "knowledge_base_refresh_incomplete",
+      "Generated Docs refresh was approved but is not recorded as refreshed, declined, or not-needed.",
+      nextStatus,
+      {
+        repo_root: repoRoot,
+        state: nextState,
+        recommended_actions: [
+          "Run the approved generated Docs refresh and rerun closeout guard with --knowledge-base refreshed.",
+          "If the refresh is no longer needed, rerun closeout guard with --knowledge-base not-needed or --knowledge-base declined.",
+        ],
       },
     );
   }

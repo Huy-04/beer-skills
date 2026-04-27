@@ -5,16 +5,32 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_AREAS = [
-  "architecture",
-  "backend",
-  "frontend",
-  "boundaries",
-  "critical-flows",
-  "conventions",
-];
+const DEFAULT_OUTPUT_ROOT = "Docs";
+
+const DOC_PATHS = {
+  repoFlow: "Flows/repo-flow.md",
+  architectureOverview: "Architecture/system-overview.md",
+  implementationRules: "Conventions/implementation-rules.md",
+  cliEntrypoints: "CriticalFlows/cli-entrypoints-and-onboarding.md",
+  workflowRouting: "CriticalFlows/workflow-routing.md",
+  commandBoundary: "Boundaries/command-entrypoints-and-state.md",
+  frontendBackendBoundary: "Boundaries/frontend-backend-proxy.md",
+};
+
+const LEGACY_DOC_PATHS = new Map([
+  ["flows/repo-flow.md", DOC_PATHS.repoFlow],
+  ["architecture/system-overview.md", DOC_PATHS.architectureOverview],
+  ["conventions/implementation-rules.md", DOC_PATHS.implementationRules],
+  ["critical-flows/cli-entrypoints-and-onboarding.md", DOC_PATHS.cliEntrypoints],
+  ["critical-flows/workflow-routing.md", DOC_PATHS.workflowRouting],
+  ["boundaries/command-entrypoints-and-state.md", DOC_PATHS.commandBoundary],
+  ["backend/request-lifecycle.md", "Backend/request-lifecycle.md"],
+  ["frontend/app-structure-and-api-access.md", "Frontend/app-structure-and-api-access.md"],
+  ["boundaries/frontend-backend-proxy.md", DOC_PATHS.frontendBackendBoundary],
+]);
 
 const IGNORED_DIR_NAMES = new Set([
+  ".beer",
   ".git",
   ".hg",
   ".svn",
@@ -149,6 +165,80 @@ function normalizePath(filePath) {
   return filePath.split(path.sep).join("/");
 }
 
+function isSameOrInside(childPath, parentPath) {
+  const relativePath = path.relative(parentPath, childPath);
+  return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
+}
+
+function findDocsAnchorRoot(resolvedSourcePath) {
+  let current = resolvedSourcePath;
+
+  try {
+    if (fs.existsSync(current) && fs.statSync(current).isFile()) {
+      current = path.dirname(current);
+    }
+  } catch {
+    // Fall back to the provided source path when stat information is unavailable.
+  }
+
+  let gitRoot = "";
+
+  while (true) {
+    if (fs.existsSync(path.join(current, ".beer"))) {
+      return current;
+    }
+
+    if (!gitRoot && fs.existsSync(path.join(current, ".git"))) {
+      gitRoot = current;
+    }
+
+    const parent = path.dirname(current);
+    if (parent === current) {
+      break;
+    }
+    current = parent;
+  }
+
+  return gitRoot || resolvedSourcePath;
+}
+
+function resolveOutputRoot(outputRoot, resolvedSourcePath) {
+  if (path.isAbsolute(outputRoot)) {
+    return path.resolve(outputRoot);
+  }
+
+  return path.resolve(findDocsAnchorRoot(resolvedSourcePath), outputRoot);
+}
+
+function normalizeDocPath(filePath) {
+  const normalized = normalizePath(filePath);
+  if (LEGACY_DOC_PATHS.has(normalized)) {
+    return LEGACY_DOC_PATHS.get(normalized);
+  }
+  if (normalized.startsWith("flows/")) {
+    return `Flows/${normalized.slice("flows/".length)}`;
+  }
+  if (normalized.startsWith("architecture/")) {
+    return `Architecture/${normalized.slice("architecture/".length)}`;
+  }
+  if (normalized.startsWith("conventions/")) {
+    return `Conventions/${normalized.slice("conventions/".length)}`;
+  }
+  if (normalized.startsWith("critical-flows/")) {
+    return `CriticalFlows/${normalized.slice("critical-flows/".length)}`;
+  }
+  if (normalized.startsWith("boundaries/")) {
+    return `Boundaries/${normalized.slice("boundaries/".length)}`;
+  }
+  if (normalized.startsWith("backend/")) {
+    return `Backend/${normalized.slice("backend/".length)}`;
+  }
+  if (normalized.startsWith("frontend/")) {
+    return `Frontend/${normalized.slice("frontend/".length)}`;
+  }
+  return normalized;
+}
+
 function titleCase(value) {
   return value
     .replace(/[-_]/g, " ")
@@ -274,7 +364,7 @@ function createEmptyScan(generatedAt, sourcePath) {
 
 export function parseArgs(argv) {
   const args = {
-    outputRoot: "",
+    outputRoot: DEFAULT_OUTPUT_ROOT,
     sourcePath: "",
     gitnexusEvidence: "",
     generatedFromCommit: "unknown-git-unavailable",
@@ -387,16 +477,13 @@ export function parseArgs(argv) {
     throw new Error(`Unknown argument: ${arg}`);
   }
 
-  if (!args.outputRoot) {
-    throw new Error("Missing required argument: --output-root");
-  }
   if (!args.sourcePath) {
     throw new Error("Missing required argument: --source-path");
   }
 
   return {
     ...args,
-    outputRoot: path.resolve(args.outputRoot),
+    outputRoot: resolveOutputRoot(args.outputRoot, path.resolve(args.sourcePath)),
     resolvedSourcePath: path.resolve(args.sourcePath),
   };
 }
@@ -405,12 +492,14 @@ export function printHelp() {
   process.stdout.write(
     [
       "Usage:",
-      "  node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs --output-root <dir> --source-path <path> [options]",
+      "  node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs --source-path <path> [--output-root Docs] [options]",
       "",
-      "Scans the repository and writes an evidence-backed knowledge base in one pass.",
+      "Scans the repository and writes evidence-backed project docs in one pass.",
       "Prefers imported GitNexus evidence when provided and falls back to local source scanning.",
+      "By default, output is written to <target-repo>/Docs beside .beer when present.",
       "",
       "Options:",
+      "  --output-root <dir>    Default: Docs",
       "  --gitnexus-evidence <file.json>",
       "  --generated-from-commit <sha|unknown-*>",
       "  --mode <manual|gitnexus-assisted>",
@@ -424,18 +513,17 @@ export function printHelp() {
 }
 
 function writeJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
 function writeMarkdown(filePath, content) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${content.trim()}\n`, "utf8");
 }
 
 export function ensureDirs(root) {
   fs.mkdirSync(root, { recursive: true });
-  for (const area of DEFAULT_AREAS) {
-    fs.mkdirSync(path.join(root, area), { recursive: true });
-  }
 }
 
 function shouldIgnoreDirectory(fullPath, ignoredRoots) {
@@ -600,6 +688,10 @@ function normalizeStringArray(value) {
   return value.filter((item) => typeof item === "string" && item.trim() !== "");
 }
 
+function normalizeDocPathArray(value) {
+  return normalizeStringArray(value).map(normalizeDocPath);
+}
+
 function normalizeGraphPattern(pattern) {
   if (!pattern || typeof pattern !== "object" || typeof pattern.name !== "string") {
     return null;
@@ -615,16 +707,56 @@ function normalizeGraphPattern(pattern) {
   };
 }
 
+function inferDocRole({ area, title, file }) {
+  const normalizedFile = normalizeDocPath(file || "").toLowerCase();
+  const normalizedTitle = (title || "").toLowerCase();
+
+  if (normalizedFile === DOC_PATHS.architectureOverview.toLowerCase()) {
+    return "architecture-overview";
+  }
+  if (normalizedFile === DOC_PATHS.repoFlow.toLowerCase()) {
+    return "repo-flow-map";
+  }
+  if (normalizedFile === DOC_PATHS.implementationRules.toLowerCase()) {
+    return "implementation-rules";
+  }
+  if (normalizedFile === DOC_PATHS.cliEntrypoints.toLowerCase()) {
+    return "cli-entrypoints";
+  }
+  if (normalizedFile === DOC_PATHS.workflowRouting.toLowerCase()) {
+    return "workflow-routing";
+  }
+  if (normalizedFile === DOC_PATHS.commandBoundary.toLowerCase()) {
+    return "command-boundary";
+  }
+  if (normalizedFile === DOC_PATHS.frontendBackendBoundary.toLowerCase()) {
+    return "frontend-backend-boundary";
+  }
+  if (area === "backend" && /request|lifecycle|handler|endpoint/.test(`${normalizedTitle} ${normalizedFile}`)) {
+    return "backend-request-lifecycle";
+  }
+  if (area === "frontend" && /app|api|page|route|access/.test(`${normalizedTitle} ${normalizedFile}`)) {
+    return "frontend-app-api-access";
+  }
+
+  return normalizedTitle.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "generated-doc";
+}
+
 function normalizeGraphDoc(doc) {
   if (!doc || typeof doc !== "object" || typeof doc.file !== "string" || typeof doc.title !== "string") {
     return null;
   }
 
+  const area = typeof doc.area === "string" ? doc.area : "architecture";
+  const file = normalizeDocPath(doc.file);
+  const title = doc.title;
+
   return {
-    area: typeof doc.area === "string" ? doc.area : "architecture",
+    area,
     kind: typeof doc.kind === "string" ? doc.kind : "pattern",
-    title: doc.title,
-    file: doc.file,
+    role: typeof doc.role === "string" ? doc.role : inferDocRole({ area, title, file }),
+    title,
+    file,
     confidence: ["high", "medium", "low"].includes(doc.confidence) ? doc.confidence : "medium",
     summary: typeof doc.summary === "string" ? doc.summary : "",
     tags: normalizeStringArray(doc.tags),
@@ -647,7 +779,7 @@ function normalizeStringMap(value) {
 
   const normalized = {};
   for (const [key, items] of Object.entries(value)) {
-    normalized[key] = normalizeStringArray(items);
+    normalized[key] = normalizeDocPathArray(items);
   }
   return normalized;
 }
@@ -688,7 +820,8 @@ function normalizeTaskIndex(value) {
   for (const [key, rawEntry] of Object.entries(value)) {
     if (Array.isArray(rawEntry)) {
       normalized[key] = {
-        docs: normalizeStringArray(rawEntry),
+        docs: normalizeDocPathArray(rawEntry),
+        pattern_targets: [],
         layer_targets: [],
         boundary_targets: [],
         verification_targets: normalizeVerificationTargets({}),
@@ -701,7 +834,8 @@ function normalizeTaskIndex(value) {
     }
 
     normalized[key] = {
-      docs: normalizeStringArray(rawEntry.docs),
+      docs: normalizeDocPathArray(rawEntry.docs),
+      pattern_targets: normalizeStringArray(rawEntry.pattern_targets || rawEntry.patternTargets),
       layer_targets: normalizeStringArray(rawEntry.layer_targets || rawEntry.layerTargets),
       boundary_targets: normalizeStringArray(rawEntry.boundary_targets || rawEntry.boundaryTargets),
       verification_targets: normalizeVerificationTargets(rawEntry.verification_targets || rawEntry.verificationTargets),
@@ -792,6 +926,101 @@ function buildRepoShape({
   return "General project repository";
 }
 
+function hasFileMatching(files, patterns) {
+  return files.some((file) => patterns.some((pattern) => pattern.test(file)));
+}
+
+function detectBackendDocPlan(facts) {
+  const files = facts.codeFiles || [];
+  const layeredSignals = [
+    /(^|\/)(application)(\/|$)/i,
+    /(^|\/)(domain)(\/|$)/i,
+    /(^|\/)(infrastructure)(\/|$)/i,
+    /(^|\/)(api|controllers?|presentation)(\/|$)/i,
+  ].filter((pattern) => files.some((file) => pattern.test(file))).length;
+  const verticalSliceSignals = [
+    /(^|\/)(features?|modules?|slices?|use-cases?|usecases)(\/|$)/i,
+    /(^|\/)(commands?|queries?)(\/|$)/i,
+  ].filter((pattern) => files.some((file) => pattern.test(file))).length;
+  const hasRouteEntrypoint = hasFileMatching(files, [
+    /(^|\/)(routes?|controllers?|api)(\/|$)/i,
+    /(^|\/)app\.(js|ts|mjs|cjs)$/i,
+  ]);
+  const hasServiceSurface = hasFileMatching(files, [
+    /(^|\/)(services?|repositories?|handlers?|middleware)(\/|$)/i,
+  ]);
+
+  if (layeredSignals >= 3) {
+    return {
+      role: "backend-request-lifecycle",
+      architectureStyle: "layered-backend",
+      file: "Backend/patterns/request-lifecycle.md",
+      indexKey: "request-lifecycle",
+      targetPath: "backend.pattern_groups.request-lifecycle",
+      reason: "application, domain, infrastructure, and entrypoint layers were detected together",
+    };
+  }
+
+  if (verticalSliceSignals >= 2) {
+    return {
+      role: "backend-request-lifecycle",
+      architectureStyle: "vertical-slice-backend",
+      file: "Backend/feature-slices/request-lifecycle.md",
+      indexKey: "request-lifecycle",
+      targetPath: "backend.pattern_groups.request-lifecycle",
+      reason: "feature/module folders and command/query surfaces were detected together",
+    };
+  }
+
+  if (hasRouteEntrypoint && hasServiceSurface) {
+    return {
+      role: "backend-request-lifecycle",
+      architectureStyle: "route-service-backend",
+      file: "Backend/request-lifecycle.md",
+      indexKey: "request-lifecycle",
+      targetPath: "backend.pattern_groups.request-lifecycle",
+      reason: "route or API entrypoints and service-oriented files repeat without a full layer stack",
+    };
+  }
+
+  return {
+    role: "backend-request-lifecycle",
+    architectureStyle: "backend-surface",
+    file: "Backend/backend-flow.md",
+    indexKey: "backend-flow",
+    targetPath: "backend.pattern_groups.backend-flow",
+    reason: "backend files were detected, but no stronger architecture archetype cleared the threshold",
+  };
+}
+
+function detectFrontendDocPlan(facts) {
+  const files = facts.codeFiles || [];
+  const featureSignals = [
+    /(^|\/)(features?|modules?|slices?)(\/|$)/i,
+    /(^|\/)(hooks?|composables?|stores?|state)(\/|$)/i,
+  ].filter((pattern) => files.some((file) => pattern.test(file))).length;
+
+  if (featureSignals >= 2) {
+    return {
+      role: "frontend-app-api-access",
+      architectureStyle: "feature-structured-frontend",
+      file: "Frontend/patterns/app-structure-and-api-access.md",
+      indexKey: "app-structure-and-api-access",
+      targetPath: "frontend.pattern_groups.app-structure-and-api-access",
+      reason: "feature folders and shared state/composable surfaces were detected together",
+    };
+  }
+
+  return {
+    role: "frontend-app-api-access",
+    architectureStyle: "frontend-surface",
+    file: "Frontend/app-structure-and-api-access.md",
+    indexKey: "app-structure-and-api-access",
+    targetPath: "frontend.pattern_groups.app-structure-and-api-access",
+    reason: "frontend page/component/API files repeat without a stronger feature-pattern split",
+  };
+}
+
 function createPattern(name, confidence, areas, summary, keyFiles, tags) {
   return {
     name,
@@ -854,10 +1083,14 @@ function buildDominantPatterns(facts) {
   if (facts.backendConfidence !== null) {
     patterns.push(
       createPattern(
-        "Backend request and service layers",
+        facts.backendDocPlan?.architectureStyle === "layered-backend"
+          ? "Layered backend request flow"
+          : facts.backendDocPlan?.architectureStyle === "vertical-slice-backend"
+            ? "Vertical-slice backend flow"
+            : "Backend request and service flow",
         facts.backendConfidence,
         ["backend", "architecture"],
-        "Backend responsibilities are concentrated in route, handler, service, or persistence-oriented files.",
+        facts.backendDocPlan?.reason || "Backend responsibilities are concentrated in route, handler, service, or persistence-oriented files.",
         facts.backendFiles,
         ["backend", "request", "service"],
       ),
@@ -867,10 +1100,12 @@ function buildDominantPatterns(facts) {
   if (facts.frontendConfidence !== null) {
     patterns.push(
       createPattern(
-        "Frontend app and API-access surface",
+        facts.frontendDocPlan?.architectureStyle === "feature-structured-frontend"
+          ? "Feature-structured frontend app flow"
+          : "Frontend app and API-access surface",
         facts.frontendConfidence,
         ["frontend", "architecture"],
-        "UI structure is organized around page/component surfaces and API-facing client helpers.",
+        facts.frontendDocPlan?.reason || "UI structure is organized around page/component surfaces and API-facing client helpers.",
         facts.frontendFiles,
         ["frontend", "components", "api"],
       ),
@@ -910,6 +1145,9 @@ function createDoc({
   generatedAt,
   area,
   kind,
+  role,
+  architectureStyle,
+  docPlanReason,
   title,
   file,
   confidence,
@@ -921,6 +1159,7 @@ function createDoc({
   howToFollow,
   commonVariants,
   doNotDo,
+  flowDiagram,
   riskWhenChanging,
   confidenceReason,
   verificationTargets = { symbols: [], processes: [], queries: [] },
@@ -950,6 +1189,16 @@ function createDoc({
     "## Why It Exists Here",
     whyItExistsHere,
     "",
+    ...(flowDiagram
+      ? [
+          "## Flow Diagram",
+          "",
+          "```mermaid",
+          flowDiagram,
+          "```",
+          "",
+        ]
+      : []),
     "## How To Follow It",
     ...howToFollow.map((line) => `- ${line}`),
     "",
@@ -1001,6 +1250,9 @@ function createDoc({
     title,
     area,
     kind,
+    role: role || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+    architectureStyle,
+    docPlanReason,
     file,
     confidence,
     summary,
@@ -1025,8 +1277,9 @@ function buildArchitectureDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "architecture",
     kind: "architecture",
+    role: "architecture-overview",
     title: "System Overview",
-    file: "architecture/system-overview.md",
+    file: DOC_PATHS.architectureOverview,
     confidence: facts.dominantPatterns.length >= 2 ? "high" : "medium",
     summary: `Maps the repo shape, major surfaces, and dominant patterns observed in ${facts.repoShape.toLowerCase()}.`,
     tags: ["architecture", "overview", "repo-shape"],
@@ -1060,6 +1313,124 @@ function buildArchitectureDoc(facts) {
   });
 }
 
+function buildRepoFlowDiagram(facts) {
+  const lines = [
+    "flowchart TD",
+    "  Task[\"Task or change request\"]",
+    "  Source[\"Read current source\"]",
+    "  Entry[\"Find repo entrypoint\"]",
+    "  Verify[\"Verify changed flow\"]",
+    "  Docs[\"Refresh Docs if flow changed\"]",
+    "  Task --> Source",
+    "  Source --> Entry",
+  ];
+  const surfaces = [];
+
+  if (facts.commandScripts.length > 0) {
+    lines.push("  Command[\"Command or tooling flow\"]");
+    lines.push("  Entry --> Command");
+    surfaces.push("Command");
+  }
+  if (facts.backendConfidence !== null) {
+    lines.push("  Backend[\"Backend request flow\"]");
+    lines.push("  Entry --> Backend");
+    surfaces.push("Backend");
+  }
+  if (facts.frontendConfidence !== null) {
+    lines.push("  Frontend[\"Frontend app and API flow\"]");
+    lines.push("  Entry --> Frontend");
+    surfaces.push("Frontend");
+  }
+  if (facts.boundaryConfidence !== null) {
+    lines.push("  Boundary[\"Boundary or contract flow\"]");
+    lines.push("  Entry --> Boundary");
+    surfaces.push("Boundary");
+  }
+  if (surfaces.length === 0) {
+    lines.push("  LocalFiles[\"Nearest source files\"]");
+    lines.push("  Entry --> LocalFiles");
+    surfaces.push("LocalFiles");
+  }
+
+  for (const surface of surfaces) {
+    lines.push(`  ${surface} --> Verify`);
+  }
+
+  lines.push("  Verify --> Docs");
+  return lines.join("\n");
+}
+
+function buildRepoFlowDoc(facts) {
+  const flowSteps = [];
+
+  if (facts.commandScripts.length > 0) {
+    flowSteps.push("For command/tooling work, start from the exposed package or command entrypoint, then trace into the matching command script.");
+  }
+  if (facts.backendConfidence !== null) {
+    flowSteps.push("For backend work, start from request entrypoints or handlers, then follow the repo's detected backend flow before changing persistence or side effects.");
+  }
+  if (facts.frontendConfidence !== null) {
+    flowSteps.push("For frontend work, start from page/app/component entrypoints, then follow shared API or state helpers before changing leaf UI.");
+  }
+  if (facts.boundaryConfidence !== null) {
+    flowSteps.push("For cross-boundary work, inspect boundary docs before editing callers or responders on either side.");
+  }
+  if (facts.testFiles.length > 0) {
+    flowSteps.push("Use repo-native tests or verification scripts as the final proof path for changed flows.");
+  }
+
+  const keyFiles = unique([
+    facts.packageJsonPath,
+    ...facts.commandScripts.slice(0, 4),
+    ...facts.backendFiles.slice(0, 3),
+    ...facts.frontendFiles.slice(0, 3),
+    ...facts.boundaryFiles.slice(0, 3),
+    ...facts.testFiles.slice(0, 3),
+  ].filter(Boolean));
+
+  return createDoc({
+    generatedAt: facts.generatedAt,
+    area: "flows",
+    kind: "flow-map",
+    role: "repo-flow-map",
+    title: "Repository Flow Map",
+    file: DOC_PATHS.repoFlow,
+    confidence: flowSteps.length >= 3 ? "high" : "medium",
+    summary: "Default map of how implementation work should trace through this repo before changing code.",
+    tags: ["flow", "entrypoints", "verification"],
+    keyFiles,
+    whatThisIs: "The default flow map every future task should read before using more specific architecture, pattern, boundary, or critical-flow docs.",
+    whyItExistsHere: "Flow is the stable baseline artifact. Architecture and pattern folders adapt to the repo, but every repo still needs a source-linked path for tracing work.",
+    howToFollow: flowSteps.length > 0
+      ? flowSteps
+      : ["Start from the repo manifest or nearest entrypoint, identify the files touched by the task, then verify against current source before trusting generated docs."],
+    commonVariants: [
+      `Command surfaces detected: ${facts.commandScripts.length}.`,
+      `Backend evidence files detected: ${facts.backendFiles.length}.`,
+      `Frontend evidence files detected: ${facts.frontendFiles.length}.`,
+      `Boundary evidence files detected: ${facts.boundaryFiles.length}.`,
+      `Verification files detected: ${facts.testFiles.length}.`,
+    ],
+    doNotDo: [
+      "Do not skip flow tracing just because architecture or pattern docs are absent.",
+      "Do not treat generated architecture or pattern folders as mandatory when this flow map is the only well-supported artifact.",
+    ],
+    flowDiagram: buildRepoFlowDiagram(facts),
+    riskWhenChanging: "Medium to high. Missing the repo's entrypoint and verification flow makes later implementation and review work rely on guesses.",
+    confidenceReason: flowSteps.length >= 3
+      ? "multiple repo surfaces provided evidence for a task flow map"
+      : "source code exists, so a minimal flow map is required even when specialized patterns are not yet strong enough to promote",
+    verificationTargets: {
+      symbols: [],
+      processes: ["RepositoryFlow"],
+      queries: [
+        { tool: "query", query: "repo flow entrypoints verification" },
+      ],
+    },
+    textFiles: facts.textFiles,
+  });
+}
+
 function buildConventionsDoc(facts) {
   const conventions = [];
 
@@ -1080,8 +1451,9 @@ function buildConventionsDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "conventions",
     kind: "convention",
+    role: "implementation-rules",
     title: "Implementation Rules",
-    file: "conventions/implementation-rules.md",
+    file: DOC_PATHS.implementationRules,
     confidence: conventions.length >= 3 ? "high" : "medium",
     summary: "Captures repeated directory, naming, and documentation conventions that future edits should preserve.",
     tags: ["conventions", "naming", "structure"],
@@ -1121,8 +1493,9 @@ function buildCliFlowDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "critical-flows",
     kind: "critical-flow",
+    role: "cli-entrypoints",
     title: "CLI Entrypoints And Onboarding",
-    file: "critical-flows/cli-entrypoints-and-onboarding.md",
+    file: DOC_PATHS.cliEntrypoints,
     confidence: facts.commandScripts.length >= 5 ? "high" : "medium",
     summary: "Shows how package-level entrypoints hand off into command scripts and onboarding/status flows.",
     tags: ["critical-flow", "cli", "onboarding"],
@@ -1164,8 +1537,9 @@ function buildWorkflowRoutingDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "critical-flows",
     kind: "critical-flow",
+    role: "workflow-routing",
     title: "Workflow Routing",
-    file: "critical-flows/workflow-routing.md",
+    file: DOC_PATHS.workflowRouting,
     confidence: facts.workflowSkillFiles.length >= 4 ? "high" : "medium",
     summary: "Explains how workflow and support skills divide responsibility and hand work from one phase to the next.",
     tags: ["critical-flow", "workflow", "skills"],
@@ -1208,8 +1582,9 @@ function buildCommandBoundaryDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "boundaries",
     kind: "boundary",
+    role: "command-boundary",
     title: "Command Entrypoints And State",
-    file: "boundaries/command-entrypoints-and-state.md",
+    file: DOC_PATHS.commandBoundary,
     confidence: facts.commandBoundaryConfidence,
     summary: "Documents the seam between command entrypoints and workflow/state artifacts that downstream phases rely on.",
     tags: ["boundary", "state", "commands"],
@@ -1243,24 +1618,30 @@ function buildCommandBoundaryDoc(facts) {
 }
 
 function buildBackendDoc(facts) {
+  const plan = facts.backendDocPlan || detectBackendDocPlan(facts);
   return createDoc({
     generatedAt: facts.generatedAt,
     area: "backend",
     kind: "pattern",
+    role: plan.role,
+    architectureStyle: plan.architectureStyle,
+    docPlanReason: plan.reason,
     title: "Request Lifecycle",
-    file: "backend/request-lifecycle.md",
+    file: plan.file,
     confidence: facts.backendConfidence,
     summary: "Shows the repeated backend path from entrypoint-style files into service, domain, or persistence work.",
     tags: ["backend", "request", "lifecycle"],
     keyFiles: facts.backendFiles,
     whatThisIs: "The backend request path repeated across route, handler, middleware, and service-oriented files.",
-    whyItExistsHere: "Backend changes are safer when they preserve the repo's existing split between request handling, domain logic, and side effects.",
+    whyItExistsHere: `Backend changes are safer when they preserve the repo's observed ${plan.architectureStyle} shape instead of forcing a generic layer template.`,
     howToFollow: [
       "Start from route or handler entrypoints before changing service or repository code.",
       "Check where middleware, authentication, or persistence boundaries appear in the existing flow.",
-      "Preserve repeated layering instead of pushing business rules into whichever file is easiest to edit.",
+      "Preserve the repeated flow shape found in this repo instead of assuming every backend is four-layer.",
     ],
     commonVariants: [
+      `Detected backend architecture style: ${plan.architectureStyle}.`,
+      `Doc path selected because ${plan.reason}.`,
       `Backend evidence files: ${facts.backendFiles.join(", ")}.`,
       "Read-heavy paths may be thinner than mutation flows, but they should still respect the same entrypoint boundaries.",
     ],
@@ -1282,24 +1663,30 @@ function buildBackendDoc(facts) {
 }
 
 function buildFrontendDoc(facts) {
+  const plan = facts.frontendDocPlan || detectFrontendDocPlan(facts);
   return createDoc({
     generatedAt: facts.generatedAt,
     area: "frontend",
     kind: "pattern",
+    role: plan.role,
+    architectureStyle: plan.architectureStyle,
+    docPlanReason: plan.reason,
     title: "App Structure And API Access",
-    file: "frontend/app-structure-and-api-access.md",
+    file: plan.file,
     confidence: facts.frontendConfidence,
     summary: "Explains the repeated frontend shape for pages/components and the helpers that reach APIs or shared state.",
     tags: ["frontend", "app", "api"],
     keyFiles: facts.frontendFiles,
     whatThisIs: "The frontend structure repeated across page, component, app, and API-client surfaces.",
-    whyItExistsHere: "Frontend work stays consistent when UI entrypoints and API access patterns stay aligned with the existing app structure.",
+    whyItExistsHere: `Frontend work stays consistent when UI entrypoints and API access patterns stay aligned with the observed ${plan.architectureStyle} shape.`,
     howToFollow: [
       "Start from page, app, or component entrypoints before changing lower-level API helpers.",
       "Trace where API calls are centralized instead of duplicating fetch logic inside leaf components.",
       "Preserve repeated naming and placement rules for components, hooks, or app-level modules.",
     ],
     commonVariants: [
+      `Detected frontend architecture style: ${plan.architectureStyle}.`,
+      `Doc path selected because ${plan.reason}.`,
       `Frontend evidence files: ${facts.frontendFiles.join(", ")}.`,
       "Pages, app modules, or feature folders may differ slightly, but API access should still follow the repeated helper surface.",
     ],
@@ -1325,8 +1712,9 @@ function buildBoundaryDoc(facts) {
     generatedAt: facts.generatedAt,
     area: "boundaries",
     kind: "boundary",
+    role: "frontend-backend-boundary",
     title: "Frontend Backend Proxy",
-    file: "boundaries/frontend-backend-proxy.md",
+    file: DOC_PATHS.frontendBackendBoundary,
     confidence: facts.boundaryConfidence,
     summary: "Captures the seam between frontend callers and backend-facing proxy, contract, or API-client files.",
     tags: ["boundary", "frontend", "backend", "proxy"],
@@ -1366,6 +1754,7 @@ function buildTaskIndex(docEntries) {
     if (!taskIndex[task]) {
       taskIndex[task] = {
         docs: [],
+        pattern_targets: [],
         layer_targets: [],
         boundary_targets: [],
         verification_targets: {
@@ -1377,6 +1766,10 @@ function buildTaskIndex(docEntries) {
     }
 
     taskIndex[task].docs = unique([...(taskIndex[task].docs || []), file]);
+    taskIndex[task].pattern_targets = unique([
+      ...(taskIndex[task].pattern_targets || []),
+      ...(options.patternTargets || []),
+    ]);
     taskIndex[task].layer_targets = unique([
       ...(taskIndex[task].layer_targets || []),
       ...(options.layerTargets || []),
@@ -1398,23 +1791,33 @@ function buildTaskIndex(docEntries) {
   }
 
   for (const entry of docEntries) {
-    if (entry.file === "architecture/system-overview.md") {
+    if (entry.role === "repo-flow-map") {
+      add("understand repo flow", entry.file, {
+        patternTargets: ["flows.repo-flow"],
+        verificationTargets: entry.verificationTargets,
+      });
+      add("trace default flow", entry.file, {
+        patternTargets: ["flows.repo-flow"],
+        verificationTargets: entry.verificationTargets,
+      });
+    }
+    if (entry.role === "architecture-overview") {
       add("understand repo shape", entry.file);
       add("trace architecture", entry.file);
     }
-    if (entry.file === "conventions/implementation-rules.md") {
+    if (entry.role === "implementation-rules") {
       add("follow repo conventions", entry.file);
       add("add new repo artifact", entry.file);
     }
-    if (entry.file === "critical-flows/cli-entrypoints-and-onboarding.md") {
+    if (entry.role === "cli-entrypoints") {
       add("change command entrypoint", entry.file);
       add("touch onboarding", entry.file);
     }
-    if (entry.file === "critical-flows/workflow-routing.md") {
+    if (entry.role === "workflow-routing") {
       add("change workflow skill", entry.file);
       add("change routing", entry.file);
     }
-    if (entry.file === "boundaries/command-entrypoints-and-state.md") {
+    if (entry.role === "command-boundary") {
       add("touch command boundary", entry.file, {
         boundaryTargets: ["boundaries.command-entrypoints-and-state"],
         verificationTargets: entry.verificationTargets,
@@ -1424,27 +1827,31 @@ function buildTaskIndex(docEntries) {
         verificationTargets: entry.verificationTargets,
       });
     }
-    if (entry.file === "backend/request-lifecycle.md") {
+    if (entry.role === "backend-request-lifecycle") {
       add("add backend endpoint", entry.file, {
-        layerTargets: ["backend.layer_patterns.request-lifecycle"],
+        patternTargets: ["backend.pattern_groups.request-lifecycle"],
+        layerTargets: ["backend.pattern_groups.request-lifecycle"],
         verificationTargets: entry.verificationTargets,
       });
       add("change backend handler flow", entry.file, {
-        layerTargets: ["backend.layer_patterns.request-lifecycle"],
+        patternTargets: ["backend.pattern_groups.request-lifecycle"],
+        layerTargets: ["backend.pattern_groups.request-lifecycle"],
         verificationTargets: entry.verificationTargets,
       });
     }
-    if (entry.file === "frontend/app-structure-and-api-access.md") {
+    if (entry.role === "frontend-app-api-access") {
       add("add frontend api call", entry.file, {
-        layerTargets: ["frontend.layer_patterns.app-structure-and-api-access"],
+        patternTargets: ["frontend.pattern_groups.app-structure-and-api-access"],
+        layerTargets: ["frontend.pattern_groups.app-structure-and-api-access"],
         verificationTargets: entry.verificationTargets,
       });
       add("change frontend page/composable flow", entry.file, {
-        layerTargets: ["frontend.layer_patterns.app-structure-and-api-access"],
+        patternTargets: ["frontend.pattern_groups.app-structure-and-api-access"],
+        layerTargets: ["frontend.pattern_groups.app-structure-and-api-access"],
         verificationTargets: entry.verificationTargets,
       });
     }
-    if (entry.file === "boundaries/frontend-backend-proxy.md") {
+    if (entry.role === "frontend-backend-boundary") {
       add("change proxy", entry.file, {
         boundaryTargets: ["boundaries.frontend-backend-proxy"],
         verificationTargets: entry.verificationTargets,
@@ -1480,17 +1887,30 @@ function buildSearchIndex(docEntries) {
   return searchIndex;
 }
 
+function mergeStringMaps(primary, fallback) {
+  const merged = {};
+  for (const [key, value] of Object.entries(fallback || {})) {
+    merged[key] = unique([...(Array.isArray(value) ? value : [])]);
+  }
+  for (const [key, value] of Object.entries(primary || {})) {
+    merged[key] = unique([...(merged[key] || []), ...(Array.isArray(value) ? value : [])]);
+  }
+  return merged;
+}
+
 function mergeTaskIndex(primary, fallback) {
   const merged = normalizeTaskIndex(fallback);
   for (const [key, value] of Object.entries(normalizeTaskIndex(primary))) {
     const existing = merged[key] || {
       docs: [],
+      pattern_targets: [],
       layer_targets: [],
       boundary_targets: [],
       verification_targets: { symbols: [], processes: [], queries: [] },
     };
     merged[key] = {
       docs: unique([...(existing.docs || []), ...(value.docs || [])]),
+      pattern_targets: unique([...(existing.pattern_targets || []), ...(value.pattern_targets || [])]),
       layer_targets: unique([...(existing.layer_targets || []), ...(value.layer_targets || [])]),
       boundary_targets: unique([...(existing.boundary_targets || []), ...(value.boundary_targets || [])]),
       verification_targets: {
@@ -1511,6 +1931,7 @@ function buildGraphDocEntry(doc, facts) {
     generatedAt: facts.generatedAt,
     area: doc.area,
     kind: doc.kind,
+    role: doc.role,
     title: doc.title,
     file: doc.file,
     confidence: doc.confidence,
@@ -1588,6 +2009,11 @@ export function buildReadme(args, scan) {
     ? taskBuckets.map(([task, entry]) => `- ${titleCase(task)}: ${(entry.docs || []).map((file) => `\`${file}\``).join(", ")}`)
     : ["- No task-oriented routing entries were promoted from this scan."];
 
+  const flowEntries = scan.docEntries.filter((entry) => entry.area === "flows");
+  const flowLines = flowEntries.length > 0
+    ? flowEntries.map((entry) => `- ${entry.title}: \`${entry.file}\` (${entry.summary})`)
+    : ["- No repo flow doc was generated."];
+
   const boundaryEntries = scan.docEntries.filter((entry) => entry.area === "boundaries");
   const boundaryLines = boundaryEntries.length > 0
     ? boundaryEntries.map((entry) => `- ${entry.title}: \`${entry.file}\` (${entry.summary})`)
@@ -1603,7 +2029,7 @@ export function buildReadme(args, scan) {
     : ["- No evidence-backed doc was generated beyond metadata and index files."];
 
   return [
-    "# Knowledge Base",
+    "# Codebase Docs",
     "",
     `Pattern-first implementation map generated from \`${args.sourcePath}\` as a ${scan.repoShape.toLowerCase()}.`,
     "",
@@ -1622,6 +2048,10 @@ export function buildReadme(args, scan) {
     "",
     ...taskLines,
     "",
+    "## Flow Map",
+    "",
+    ...flowLines,
+    "",
     "## High-Risk Boundaries",
     "",
     ...boundaryLines,
@@ -1636,7 +2066,7 @@ export function buildReadme(args, scan) {
     "",
     "## Source Of Truth",
     "",
-    "- This cache is advisory. If an entry drifts from current code, trust the repository source and refresh the cache.",
+    "- This generated map is advisory. If an entry drifts from current code, trust the repository source and refresh Docs.",
   ].join("\n");
 }
 
@@ -1644,16 +2074,18 @@ export function buildIndex(scan) {
   const stats = {
     total_files: scan.files.length,
     generated_docs: scan.docEntries.length,
+    flow_docs: scan.docEntries.filter((entry) => entry.area === "flows").length,
     backend_docs: scan.docEntries.filter((entry) => entry.area === "backend").length,
     frontend_docs: scan.docEntries.filter((entry) => entry.area === "frontend").length,
     boundary_docs: scan.docEntries.filter((entry) => entry.area === "boundaries").length,
     critical_flows: scan.docEntries.filter((entry) => entry.area === "critical-flows").length,
   };
 
-  const backendRequestLifecycle = scan.docEntries.find((entry) => entry.file === "backend/request-lifecycle.md");
-  const frontendApiAccess = scan.docEntries.find((entry) => entry.file === "frontend/app-structure-and-api-access.md");
-  const frontendBackendBoundary = scan.docEntries.find((entry) => entry.file === "boundaries/frontend-backend-proxy.md");
-  const commandStateBoundary = scan.docEntries.find((entry) => entry.file === "boundaries/command-entrypoints-and-state.md");
+  const backendRequestLifecycle = scan.docEntries.find((entry) => entry.role === "backend-request-lifecycle");
+  const frontendApiAccess = scan.docEntries.find((entry) => entry.role === "frontend-app-api-access");
+  const frontendBackendBoundary = scan.docEntries.find((entry) => entry.role === "frontend-backend-boundary");
+  const commandStateBoundary = scan.docEntries.find((entry) => entry.role === "command-boundary");
+  const repoFlow = scan.docEntries.find((entry) => entry.role === "repo-flow-map");
 
   return {
     version: "1.0",
@@ -1664,6 +2096,9 @@ export function buildIndex(scan) {
       title: entry.title,
       area: entry.area,
       kind: entry.kind,
+      role: entry.role,
+      architecture_style: entry.architectureStyle,
+      doc_plan_reason: entry.docPlanReason,
       file: entry.file,
       confidence: entry.confidence,
       tags: entry.tags,
@@ -1677,10 +2112,11 @@ export function buildIndex(scan) {
       key_files: pattern.keyFiles,
     })),
     backend: {
-      layer_patterns: backendRequestLifecycle
+      pattern_groups: backendRequestLifecycle
         ? {
             "request-lifecycle": {
-              mission: "orchestrate backend request flow without collapsing boundaries between entrypoints, deeper layers, and side effects",
+              architecture_style: backendRequestLifecycle.architectureStyle || "backend-surface",
+              mission: "orchestrate backend request flow while preserving the architecture style actually detected in this repo",
               dominant_patterns: backendRequestLifecycle.howToFollow,
               do_not_do: backendRequestLifecycle.doNotDo,
               docs: [backendRequestLifecycle.file],
@@ -1688,6 +2124,7 @@ export function buildIndex(scan) {
             },
           }
         : {},
+      layer_patterns: {},
       flow_patterns: backendRequestLifecycle
         ? {
             "request-lifecycle": {
@@ -1698,10 +2135,11 @@ export function buildIndex(scan) {
         : {},
     },
     frontend: {
-      layer_patterns: frontendApiAccess
+      pattern_groups: frontendApiAccess
         ? {
             "app-structure-and-api-access": {
-              mission: "keep frontend pages, components, and API access aligned with the established app shape",
+              architecture_style: frontendApiAccess.architectureStyle || "frontend-surface",
+              mission: "keep frontend pages, components, and API access aligned with the frontend structure actually detected in this repo",
               dominant_patterns: frontendApiAccess.howToFollow,
               do_not_do: frontendApiAccess.doNotDo,
               docs: [frontendApiAccess.file],
@@ -1709,6 +2147,7 @@ export function buildIndex(scan) {
             },
           }
         : {},
+      layer_patterns: {},
       flow_patterns: frontendApiAccess
         ? {
             "app-structure-and-api-access": {
@@ -1717,6 +2156,17 @@ export function buildIndex(scan) {
             },
           }
         : {},
+    },
+    flows: {
+      ...(repoFlow
+        ? {
+            "repo-flow": {
+              summary: repoFlow.summary,
+              docs: [repoFlow.file],
+              verification_targets: repoFlow.verificationTargets,
+            },
+          }
+        : {}),
     },
     boundaries: {
       ...(frontendBackendBoundary
@@ -1783,6 +2233,7 @@ export function buildMetadata(args, scan) {
       synthesis: "single-writer",
       evidence_priority: scan.graphEvidenceUsed ? "gitnexus-first" : "local-fallback",
       lanes: scan.discoveryLanes,
+      doc_plan: scan.docPlan || [],
       optional_lanes: [
         "integration-patterns",
         "state-boundaries",
@@ -1804,7 +2255,7 @@ export function scanRepository(args) {
   const sourceRoot = args.resolvedSourcePath || path.resolve(args.sourcePath);
   const ignoredRoots = [];
 
-  if (args.outputRoot.startsWith(sourceRoot)) {
+  if (isSameOrInside(args.outputRoot, sourceRoot)) {
     ignoredRoots.push(args.outputRoot);
   }
 
@@ -1862,6 +2313,7 @@ export function scanRepository(args) {
     generatedAt,
     sourcePath: args.sourcePath,
     files,
+    codeFiles,
     topLevelDirs: topLevel.directories,
     topLevelFiles: topLevel.files,
     packageJsonPath,
@@ -1896,6 +2348,17 @@ export function scanRepository(args) {
     ],
   };
 
+  if (facts.backendConfidence !== null) {
+    facts.backendDocPlan = detectBackendDocPlan(facts);
+  }
+  if (facts.frontendConfidence !== null) {
+    facts.frontendDocPlan = detectFrontendDocPlan(facts);
+  }
+  facts.docPlan = [
+    facts.backendDocPlan,
+    facts.frontendDocPlan,
+  ].filter(Boolean);
+
   const dominantPatterns = buildDominantPatterns(facts);
   facts.dominantPatterns = dominantPatterns;
 
@@ -1903,6 +2366,10 @@ export function scanRepository(args) {
     buildArchitectureDoc(facts),
     buildConventionsDoc(facts),
   ];
+
+  if (codeFiles.length > 0) {
+    docEntries.unshift(buildRepoFlowDoc(facts));
+  }
 
   if (commandScripts.length >= 3) {
     docEntries.push(buildCliFlowDoc(facts));
@@ -1972,7 +2439,7 @@ export function main(argv = process.argv.slice(2)) {
 
   process.stdout.write(
     [
-      `Knowledge base written to ${args.outputRoot}`,
+      `Knowledge docs written to ${args.outputRoot}`,
       `Source path: ${args.sourcePath}`,
       `Repo shape: ${scan.repoShape}`,
       `Docs generated: ${scan.docEntries.length}`,

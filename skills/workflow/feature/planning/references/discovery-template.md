@@ -22,7 +22,7 @@
 ### Existing Pattern to Reuse
 
 - `<pattern>` in `path/to/file`
-- `<pattern>` in `path/to/file`
+- `<adjacent pattern or variant>` in `path/to/file`
 
 ### Constraints
 
@@ -38,7 +38,7 @@
 - existing implementation shape: `<summary>`
 - external research needed: `<yes/no and why>`
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 - directly implicated files: `<summary>`
 - nearby pattern to follow: `<summary>`

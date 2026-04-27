@@ -2,7 +2,7 @@
 name: codebase-knowledge
 description: >
   This skill should be used when the user asks to ["/scan codebase"], ["/analyze project"],
-  ["build knowledge base"], ["scan project patterns"], ["refresh knowledge base"], or otherwise
+  ["build project Docs"], ["scan project patterns"], ["refresh generated Docs"], or otherwise
   needs a refreshed project-local implementation map. It is strongest when used to
   consolidate stable repository patterns, boundaries, and critical flows after work
   has already clarified how the codebase really operates.
@@ -18,9 +18,9 @@ metadata:
     - knowledge
     - patterns
   inputs: "Repo root + optional GitNexus evidence handoff + optional approved refresh handoff"
-  outputs: "`.beer/knowledge-base/` evidence-backed implementation map with generated docs, metadata, and index.json"
+  outputs: "`Docs/` evidence-backed implementation map with generated docs, metadata, and index.json"
   upstream: "using-beer (user-initiated or compounding-approved refresh)"
-  downstream: "context-intake, planning, validating, reviewing (read-only consumers)"
+  downstream: "context-intake, exploring, planning, validating, reviewing, debugging (read-only consumers)"
   dependencies:
     - id: gitnexus
       kind: mcp_server
@@ -40,8 +40,9 @@ disable-model-invocation: false
 
 # codebase-knowledge
 
-Create or refresh project-local `.beer/knowledge-base/` as a pattern-first,
-source-linked implementation map. The repository source remains authoritative.
+Create or refresh project-local `Docs/` as a pattern-first, source-linked
+implementation map. `Docs/` sits beside `.beer/` in the target repo. The
+repository source remains authoritative.
 This skill exists to preserve stable knowledge that helps future work follow the
 real shape of the repo instead of rediscovering it from scratch.
 
@@ -49,14 +50,14 @@ real shape of the repo instead of rediscovering it from scratch.
 
 | | |
 |---|---|
-| **Use when** | The user explicitly wants the knowledge base created/refreshed, or compounding already won approval because finished work revealed reusable patterns |
-| **Do not use when** | A one-off repo question can be answered from current source, GitNexus, or locked context without generating cache artifacts |
-| **Produces** | Project-local `.beer/knowledge-base/` with evidence-backed docs, `index.json`, `00-metadata.json`, verification targets, and a return-to-caller refresh summary |
+| **Use when** | The user explicitly wants generated project Docs created/refreshed, or compounding already won approval because finished work revealed reusable patterns |
+| **Do not use when** | A one-off repo question can be answered from current source, GitNexus, or locked context without generating Docs artifacts |
+| **Produces** | Project-local `Docs/` with evidence-backed docs, `index.json`, `00-metadata.json`, verification targets, and a return-to-caller refresh summary |
 | **Consumers** | Planning, validating, reviewing, debugging, and onboarding read it as optional context only |
 
 ## 30-Second Version
 
-1. Confirm this is a legitimate knowledge-base refresh request.
+1. Confirm this is a legitimate knowledge-docs refresh request.
 2. Run one real repo scan pass to lock repo shape, entrypoints, and high-signal evidence.
 3. Fan out child agents by lane to inspect architecture/conventions, backend, frontend, boundaries, and critical flows in parallel.
 4. Add optional lanes only when the codebase actually shows those patterns.
@@ -65,15 +66,15 @@ real shape of the repo instead of rediscovering it from scratch.
 
 ## Scope and Authority
 
-- Treat `.beer/knowledge-base/` as a cache, not a source of truth.
-- Store it inside the current project/repo, not in a global folder.
+- Treat generated `Docs/` entries as derived docs, not a source of truth.
+- Store `Docs/` inside the current project/repo beside `.beer/`, not inside `.beer/` and not in a global folder.
 - Default commit policy is `local-cache-by-default`: do not commit it unless the user/team explicitly wants shared repo knowledge.
-- A missing knowledge base permits a full scan-and-write pass; do not stop at a bootstrap skeleton.
-- If a knowledge-base entry conflicts with current source code, trust source code for immediate analysis, mark the entry stale, and ask whether the user wants to update knowledge/docs or change code to match the documented pattern.
+- Missing Docs output permits a full scan-and-write pass; do not stop at a bootstrap skeleton.
+- If a generated Docs entry conflicts with current source code, trust source code for immediate analysis, mark the entry stale, and ask whether the user wants to update knowledge/docs or change code to match the documented pattern.
 - Use GitNexus first for structure, flow, route, and boundary evidence when available. Use local source scanning to confirm snippets, fill gaps, and degrade cleanly when graph support is unavailable.
 - This skill owns a one-pass real scan. Discovery lanes fan out through child agents by default and collapse back into one writer for synthesis.
 - This skill is a knowledge compiler, not a generic repo Q&A helper.
-- The invoking owner still owns workflow state and approval context. `codebase-knowledge` refreshes the cache and returns a result; it does not take over Beer closeout or route control.
+- The invoking owner still owns workflow state and approval context. `codebase-knowledge` refreshes generated docs and returns a result; it does not take over Beer closeout or route control.
 - If the refresh came from `compounding` approval, do not ask for a second approval prompt inside this skill.
 
 ## Output Philosophy
@@ -90,32 +91,36 @@ Do not optimize for producing many notes. Optimize for a small set of durable,
 implementation-oriented docs plus a machine-usable index that helps review and
 planning verify real BE/FE/boundary patterns quickly.
 
-## Stable Skeleton, Adaptive Content
+## Minimal Skeleton, Adaptive Content
 
 Always write the baseline artifacts:
 
 - `README.md`
 - `00-metadata.json`
 - `index.json`
-- `architecture/system-overview.md` when evidence exists
-- `conventions/implementation-rules.md` when evidence exists
 
-Generate additional docs only when the repository actually supports them.
-Examples:
+Generate directories and docs only when the repository evidence supports them.
+`Architecture/` and `Conventions/` are common, but even those should be backed
+by a real scan. `patterns/` is not a default folder; it is a promotion target
+for repositories that actually repeat reusable patterns strongly enough.
+`Flows/repo-flow.md` is required when the scan finds source code or command
+entrypoints. Do not create a flow doc for repos with no code yet.
 
-- `backend/request-lifecycle.md`
-- `backend/module-template.md`
-- `backend/cqrs-and-handler-shape.md`
-- `backend/data-access-and-unit-of-work.md`
-- `backend/domain-events-and-outbox.md`
-- `frontend/app-structure-and-api-access.md`
-- `frontend/session-and-refresh-patterns.md`
-- `boundaries/frontend-backend-proxy.md`
-- `boundaries/contracts-and-error-shape.md`
-- `critical-flows/*.md`
+Four-layer backend is one detected architecture style, not the generation
+baseline. Pick output paths from the repo shape:
+
+- layered backend: `Backend/patterns/request-lifecycle.md`
+- vertical-slice backend: `Backend/feature-slices/request-lifecycle.md`
+- route/service backend: `Backend/request-lifecycle.md`
+- CLI/tooling repo: `CLI/commands-and-state.md` or `CriticalFlows/cli-entrypoints-and-onboarding.md`
+- frontend surface: `Frontend/app-structure-and-api-access.md`
+- feature-structured frontend: `Frontend/patterns/app-structure-and-api-access.md`
+- default repo flow map when code exists: `Flows/repo-flow.md`
+- `Boundaries/frontend-backend-proxy.md`
+- `CriticalFlows/*.md`
 
 Do not force event, queue, workflow-engine, or plugin docs into a repo that
-does not have those patterns.
+does not have those patterns. Do not create empty `patterns/` folders.
 
 ## Discovery Model
 
@@ -134,11 +139,12 @@ This pre-scan is part of the same run. It is not a separate bootstrap phase.
 
 | Lane | Purpose | Typical outputs |
 |---|---|---|
-| Architecture + conventions | Consolidate repo shape, major folders, entrypoints, and repeated implementation rules | `README.md`, `architecture/system-overview.md`, `conventions/implementation-rules.md` |
-| Backend | Detect backend layer missions, handler/lifecycle/data-access patterns, and backend verification targets | `backend/*.md`, `index.json.backend.*` |
-| Frontend | Detect frontend layer missions, page/API/state/session patterns, and frontend verification targets | `frontend/*.md`, `index.json.frontend.*` |
-| Boundaries | Detect FE/BE seams, command/state seams, contract coupling, auth/session boundaries, and boundary verification targets | `boundaries/*.md`, `index.json.boundaries.*` |
-| Critical flows | Capture only high-blast-radius flows that are strong enough to deserve their own docs | `critical-flows/*.md` |
+| Flow map | Capture the default source-linked path for tracing code work in the repo | `Flows/repo-flow.md`, `index.json.flows.*` when code exists |
+| Architecture + conventions | Consolidate repo shape, major folders, entrypoints, and repeated implementation rules | `README.md`, `Architecture/system-overview.md`, `Conventions/implementation-rules.md` |
+| Backend | Detect backend architecture style, request/handler/data-access patterns, and backend verification targets | `Backend/*.md`, `Backend/patterns/*.md`, or `Backend/feature-slices/*.md` depending on evidence |
+| Frontend | Detect frontend app shape, page/API/state/session patterns, and frontend verification targets | `Frontend/*.md` or `Frontend/patterns/*.md` depending on evidence |
+| Boundaries | Detect FE/BE seams, command/state seams, contract coupling, auth/session boundaries, and boundary verification targets | `Boundaries/*.md`, `index.json.boundaries.*` |
+| Critical flows | Capture only high-blast-radius flows that are strong enough to deserve their own docs | `CriticalFlows/*.md` |
 
 ### Optional Lanes
 
@@ -217,7 +223,7 @@ this schema over ad hoc summaries.
 
 ## Update Triggers
 
-Update the knowledge base after:
+Refresh generated Docs after:
 
 - architecture or boundary changes
 - request lifecycle changes
@@ -235,14 +241,14 @@ Usually skip updates for:
 ## Completion Note
 
 ```text
-Knowledge base updated at `.beer/knowledge-base/`.
+Knowledge docs updated at `Docs/`.
 [N] docs generated, [M] dominant patterns captured, [K] critical flows documented.
 Current source remains authoritative; stale/conflicting entries are marked.
 Strategy: pattern-first. Execution: one-pass real scan -> child-agent lane fan-out -> single-writer synthesis.
 Invocation reason: <user-request | compounding-approved-refresh | explicit-partial-scan>.
 ```
 
-If invoked inside another Beer workflow, return this note plus the updated cache path. If invoked directly by the user, this note is the final result summary.
+If invoked inside another Beer workflow, return this note plus the updated Docs path. If invoked directly by the user, this note is the final result summary.
 
 ## References
 
@@ -253,4 +259,4 @@ If invoked inside another Beer workflow, return this note plus the updated cache
 - [Pressure scenarios](references/pressure-scenarios.md)
 - [Init script](scripts/init-knowledge-base.mjs)
 - [Example output](examples/example-output.md)
-- [Cache conflict example](examples/cache-conflict-resolution.md)
+- [Docs conflict example](examples/cache-conflict-resolution.md)

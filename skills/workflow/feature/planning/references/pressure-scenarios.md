@@ -90,3 +90,20 @@ Auto-accept is on, so don't pause even if this repair touches auth and data migr
 
 - Write the artifacts.
 - Pause because the slice is still high risk.
+
+## Scenario 6: Multi-Worker Plan Without Real Worker Boundaries
+
+**Input**
+
+```text
+We will probably use several workers. Just say `multi-worker` in the plan and validating can figure out the actual assignments later.
+```
+
+**Failure Mode**
+
+- Marks the route as `multi-worker` without recording worker-sized tasks, dependency edges, or verification ownership.
+
+**Expected Behavior**
+
+- Refuse vague multi-worker prep.
+- Make worker boundaries explicit in the plan or compact contract before handing off to `beer:validating`.

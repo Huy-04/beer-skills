@@ -13,7 +13,7 @@ Always present findings before overview or praise.
 Good:
 
 ```text
-P1 - auth token refresh can fail silently when the cookie is missing. This leaves users in a broken session loop. Scenario: a user resumes a stale tab and every protected request redirects until refresh succeeds manually. Fix direction: guard the missing-cookie path and fall back to an explicit re-auth response.
+P1: auth token refresh can fail silently when the cookie is missing. This leaves users in a broken session loop. Scenario: a user resumes a stale tab and every protected request redirects until refresh succeeds manually. Fix direction: guard the missing-cookie path and fall back to an explicit re-auth response.
 ```
 
 Bad:
@@ -27,8 +27,13 @@ Looks mostly good overall. One thing to keep an eye on is auth refresh.
 ```text
 Review route: <feature-final | direct-completion | manual-review>
 Task scope: <backend | frontend | boundary | mixed>
-Outcome: <pass | repair-needed | review-only>
+Outcome: <pass | repair-needed | blocked | review-only>
 Blocking findings: <count>
+Finding summary: <P1=x, P2=y, P3=z>
+Required specialist reports: <none | beer-test-reviewer, ...>
+Specialist report results: <beer-test-reviewer=PASS, ...>
+Execution evidence: <complete | missing route artifact | missing pattern/source facts/TDD/deviations>
+Post-change verification signals: <none | metric/log/trace/SLO names>
 Next owner: <beer:compounding | beer:executing | none>
 ```
 
@@ -43,3 +48,11 @@ Review found blocking issue(s). Keep the current scope anchored to: <goal or roo
 
 Use `beer:planning` or `beer:validating` as the next owner when the problem is
 slice shape, route fit, or review-unit size rather than a local implementation defect.
+
+Default route guidance:
+
+- specialist report failure or missing required report -> usually `beer:validating`
+- missing direct execution evidence fields -> usually `beer:executing`
+- missing aggregate swarm evidence fields -> usually `beer:swarming`
+- `P1` implementation defect inside the approved slice -> usually `beer:executing`
+- `P2` implementation defect inside the approved slice -> usually `beer:executing`

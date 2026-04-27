@@ -1,6 +1,6 @@
 ---
 skill: codebase-knowledge
-purpose: Knowledge base reporting standards
+purpose: Generated Docs reporting standards
 version: "1.1"
 ---
 
@@ -9,12 +9,12 @@ version: "1.1"
 ## Authority Standard
 
 When communicating findings, state that current source code remains
-authoritative. If a saved knowledge-base entry disagrees with current source,
-report the conflict, trust the source for immediate analysis, mark the cached
+authoritative. If a generated Docs entry disagrees with current source,
+report the conflict, trust the source for immediate analysis, mark the generated
 entry stale, and ask whether the user wants to update knowledge/docs or change
 code.
 
-Also state that `.beer/knowledge-base/` is project-local and
+Also state that `Docs/` is project-local, sits beside `.beer/`, and is
 `local-cache-by-default`. Do not imply it should be committed unless the
 user/team explicitly wants shared repo knowledge.
 
@@ -58,22 +58,20 @@ It should help the next person answer:
 
 Do not describe README as a simple file list.
 
-## Knowledge Base Structure
+## Generated Docs Structure
 
 ```text
-.beer/knowledge-base/
+Docs/
   README.md
   00-metadata.json
   index.json
-  architecture/
-  backend/
-  frontend/
-  boundaries/
-  critical-flows/
-  conventions/
 ```
 
-Optional docs should only appear when the repo supports them.
+`Flows/repo-flow.md` is required when the repo has source code or command
+entrypoints, and should include a Mermaid `flowchart`. Repos with no code yet
+should not get a synthetic flow doc. Every other subfolder is optional and
+evidence-driven. `patterns/` should appear only when the repo repeats reusable
+patterns strongly enough to deserve that grouping.
 
 ## Confidence Levels
 
@@ -86,7 +84,7 @@ Optional docs should only appear when the repo supports them.
 ## Handoff Shape
 
 ```markdown
-Knowledge base updated at `.beer/knowledge-base/`.
+Knowledge docs updated at `Docs/`.
 - Return to: beer:<caller> | user
 - Strategy: pattern-first
 - Execution: one-pass real scan -> child-agent lane fan-out -> single-writer synthesis
@@ -96,7 +94,7 @@ Knowledge base updated at `.beer/knowledge-base/`.
 - Boundaries captured: [N]
 - Dominant patterns captured: [N]
 - Critical flows documented: [K]
-- Source authority: current code wins over cached entries
+- Source authority: current code wins over generated Docs entries
 - Commit policy: local-cache-by-default
 - Invocation reason: user-request | compounding-approved-refresh | explicit-partial-scan
 - Scan scope: full | partial
@@ -107,7 +105,7 @@ Knowledge base updated at `.beer/knowledge-base/`.
 | Issue | Action |
 |---|---|
 | Pattern conflict | document the contradiction and lower confidence |
-| Cache contradicts source | trust source, mark stale, ask update knowledge/docs vs change code |
+| Docs contradict source | trust source, mark stale, ask update knowledge/docs vs change code |
 | Git metadata unavailable | use `unknown-*`, record reason, avoid strong freshness claims |
 | README is just a file list | rewrite it as an implementation entrypoint |
 | Too many shallow docs | consolidate into fewer stronger docs |

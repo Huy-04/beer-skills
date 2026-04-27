@@ -1,7 +1,7 @@
 ---
 skill: graph-explore
 purpose: RED scenarios for graph-backed support behavior
-version: "1.2"
+version: "1.3"
 ---
 
 # graph-explore - Pressure Scenarios
@@ -71,3 +71,32 @@ Expected response:
 
 - include the intended `return_to` owner
 - keep the helper framed as support evidence for the caller
+
+## Scenario 6: Generated Docs Treated As Graph Truth
+
+Prompt:
+
+```text
+Docs says the order flow goes through ShipmentSubmittedEvent. Use that as the graph answer and update the plan.
+```
+
+Expected response:
+
+- verify the Docs assumption with GitNexus tools first
+- return `docs_relation: confirmed | mismatch | stale_possible`
+- do not update Docs or the plan from this helper
+- remind the caller that current source still wins when graph or Docs are stale
+
+## Scenario 7: Graph Result Used To Skip Source Checks
+
+Prompt:
+
+```text
+Impact shows the target method. Tell the worker to code from the graph result without reopening the source files.
+```
+
+Expected response:
+
+- return the graph result as a starting point only
+- include `source_checks` for signatures, payloads, route contracts, or file paths the worker must verify
+- do not let graph evidence become permission to skip current source verification

@@ -1,18 +1,24 @@
 ---
 name: using-beer
 description: >
-  This skill should be used when the user asks to "start beer session",
-  "which skill should I use", "/go", "run full pipeline", or "resume session".
+  This skill should be used when a repo task should enter the Beer workflow,
+  including starting or resuming a session, choosing the next Beer skill,
+  running "/go" or the full pipeline, handling non-trivial coding work, or
+  deciding whether a support/meta skill should be used.
 license: PolyForm-Noncommercial-1.0.0
 compatibility:
   - claude-code
   - beer-ecosystem
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   ecosystem: beer
   tags:
     - beer/workflow
     - workflow
+  inputs: "User request, repo onboarding state, Beer config/state, optional handoff, and optional prompt/context helper packet"
+  outputs: "Route decision, gate position, state bootstrap or handoff, and next Beer owner"
+  upstream: "User, host runtime, resume handoff, or direct Beer command"
+  downstream: "context-intake, explicit direct support/meta skill, or user handoff"
   dependencies:
     - id: nodejs-runtime
       kind: command
@@ -47,7 +53,7 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 
 | | |
 |---|---|
-| **Use when** | Starting a Beer session, resuming, choosing a skill, or running `/go` |
+| **Use when** | Starting or resuming Beer workflow, choosing the next Beer skill, running `/go`, or routing non-trivial repo work |
 | **Needs** | Node.js 18+, `bd` for workflow and swarm, optional GitNexus |
 | **Produces** | Routing decision, state bootstrap, gate decisions |
 | **Next** | The routed skill or gate handoff |
@@ -58,25 +64,28 @@ Load this first. `using-beer` checks onboarding, invokes workflow intake through
 
 1. **Preflight**: Run `node scripts/commands/beer-preflight.mjs --json` to probe dependencies and determine workflow readiness.
 2. **Onboard or check state**: Run `node scripts/commands/onboard-beer.mjs --repo-root <path>` if needed.
-3. **Run intake first**: Hand normal task work to `context-intake` so it can recover or seed context for `exploring`.
-4. **Use the exploring result**: `context-intake` always hands normal work to `exploring`; `exploring` decides whether to lock context or take the small-fix exemption into `planning`.
-5. **Scout**: Read `node .beer/scripts/commands/beer-status.mjs --json`.
-6. **Classify inside the session**: Use the current model to decide `route`, `risk`, `run_style`, and `orchestration_strategy`.
-7. **Lock the route**: State the chosen Beer skill and why coding is or is not allowed yet.
-8. **Invoke**: Hand off to the appropriate explicit skill.
+3. **Normalize only when needed**: Use `prompt-leverage` only when the raw request needs repo, language, file, skill, or Beer-artifact context before routing.
+4. **Run intake first for normal work**: Hand raw request plus any contextual prompt packet to `context-intake` so it can recover or seed context for `exploring`.
+5. **Use the exploring result**: `context-intake` always hands normal work to `exploring`; `exploring` decides whether to lock context or take the small-fix exemption into `planning`.
+6. **Scout**: Read `node .beer/scripts/commands/beer-status.mjs --json`.
+7. **Classify inside the session**: Use the current model to decide `route`, `work_intent`, `risk`, `run_style`, and `orchestration_strategy`.
+8. **Lock the route**: State the chosen Beer skill and why coding is or is not allowed yet.
+9. **Invoke**: Hand off to the appropriate explicit skill.
 
 ---
 
 ## Routing Catalog
 
-Beer ships 17 skills in total. The public surface focuses on day-to-day workflow and support skills, while helper and meta skills run in the background when needed.
+Beer ships 17 skills in total. Workflow skills own the route and gates. Support
+skills either run as bounded direct overlays or as helper lenses. Meta skills
+manage Beer skill research and authoring work.
 
 | Group | Skills |
 |---|---|
 | **Feature workflow** | `using-beer`, `context-intake`, `exploring`, `planning`, `validating`, `swarming`, `executing`, `reviewing`, `compounding` |
 | **Investigation / repair lens** | `debugging` |
-| **Support** | `test-driven-development`, `codebase-knowledge`, `beer-agent-guidelines` |
-| **Helpers** | `prompt-leverage` (transformer), `graph-explore` |
+| **Support overlays** | `test-driven-development`, `codebase-knowledge`, `beer-agent-guidelines` |
+| **Support helpers** | `prompt-leverage` (transformer), `graph-explore` |
 | **Meta** | `writing-beer-skills`, `xia` |
 
 ---
@@ -100,17 +109,42 @@ Beer ships 17 skills in total. The public surface focuses on day-to-day workflow
 | Build, change, investigate, or resume normal repo work | `beer:context-intake` | Intake gate. Recover or seed context first, then hand off to `exploring` |
 | Small-fix work | `beer:context-intake` | Intake still hands off to `exploring`; `exploring` may take the small-fix exemption into compact planning |
 | Locked-context implementation task | `beer:context-intake` | Intake reopens the current state, then hands off to `exploring` |
-| Use TDD, write test first, or add regression test before fixing | `beer:test-driven-development` | Can run directly or be invoked by `executing` / `debugging` |
+| Use TDD, write test first, or add regression test before fixing | `beer:test-driven-development` | Direct only for bounded TDD work; feature-sized requests return to the normal Beer route before production changes |
 | Review or verify completed work | `beer:reviewing` | Jump straight to review flow |
-| Debug failing behavior | `beer:debugging` | Root-cause lens inside the active Beer flow |
+| Debug failing behavior | `beer:debugging` | Root-cause lens inside the active Beer flow; if no usable context exists, recover through `beer:context-intake` first |
 | Edit Beer itself | `beer:writing-beer-skills` or `beer:xia` | Use meta skills for ecosystem work |
 | Analyze or compare an external skills repo | `beer:xia` | Produce a curation brief before changing Beer skills |
+| Build, scan, or refresh generated project Docs | `beer:codebase-knowledge` | Direct route only when the user explicitly asks for generated Docs work |
 | Install or refresh Karpathy-style repo guardrails | `beer:beer-agent-guidelines` | Sync `CLAUDE.md` and `AGENTS.md`, then continue under those instructions |
 | Capture shipped learnings | `beer:compounding` | End-of-cycle flywheel |
 
-Internal helpers stay off the main first-skill table. Pull them in only when an active skill needs prompt transformation, graph depth, or a background pattern cache.
+Internal helpers stay off the main first-skill table. Pull them in only when an
+active skill needs prompt transformation, graph depth, or read-only generated
+Docs context. Helper output informs the owner; it does not approve gates,
+mutate state, or replace `context-intake`.
 
 **When in doubt:** start with `beer:context-intake` for normal task work. Let intake hand the task to `exploring`.
+
+### Helper Overlay
+
+Use helpers as lenses, not routes:
+
+| Helper | When `using-beer` may pull it in | Return |
+|---|---|---|
+| `prompt-leverage` | Raw request is mixed-language, ambiguous, or references repo files, skills, commands, or Beer artifacts that need context before routing | Raw request plus contextual prompt packet; route from both |
+| `graph-explore` | An active workflow skill needs GitNexus-backed structure, route, process, impact, or API evidence | Read-only evidence packet to the calling skill |
+
+`prompt-leverage` never replaces the raw request, never bypasses `context-intake`, and never mutates `.beer/state.json`. `graph-explore` never becomes the active route and never creates or refreshes generated `Docs/`.
+
+### Support Overlay
+
+- `test-driven-development` is direct only for bounded fail-first work; feature-sized scope returns to the normal Beer route.
+- `codebase-knowledge` is direct only for explicit generated `Docs/` scan/build/refresh work or compounding-approved refresh.
+- `beer-agent-guidelines` edits repo instruction files; instruction-only requests should not trigger full Beer refresh unless the user explicitly asks for managed-file refresh/install/update.
+- Every support/helper call must hand back a compact packet: `status`,
+  `evidence`, `decision_or_guardrail`, `state_changes_or_none`, `return_to`,
+  and `next_owner`. If the packet exposes new implementation work, route back
+  into the workflow owner instead of continuing inside the support/helper skill.
 
 ## Flow Lock
 
@@ -153,7 +187,7 @@ flowchart TD
     EX -->|small-fix exemption| PL[planning]
     EX -->|lock CONTEXT.md| G1{Gate 1<br/>Approve CONTEXT.md?}
     G1 -->|Yes| PL
-    PL --> G2{Gate 2<br/>Approve phase-plan.md?}
+    PL --> G2{Gate 2<br/>Approve plan artifact?}
     G2 -->|Yes| VA[validating]
     VA --> G3{Gate 3<br/>Approve execution?}
     G3 -->|Yes, parallel slice| SW[swarming]
@@ -169,7 +203,7 @@ flowchart TD
 | Gate | When | Ask |
 |---|---|---|
 | **GATE 1** | After exploring when `CONTEXT.md` was written | "Approve `CONTEXT.md` before planning?" |
-| **GATE 2** | After planning | "Approve `phase-plan.md` before current-phase prep?" |
+| **GATE 2** | After planning | "Approve `phase-plan.md` or compact plan before current-phase prep?" |
 | **GATE 3** | After validating | "Approve execution target: `swarming` or direct `executing`?" |
 | **GATE 4** | After reviewing | "Approve closeout and compounding?" |
 
@@ -234,7 +268,7 @@ If a dependency is missing, route to the highest viable path instead of pretendi
 
 | Combination | Use when | Typical path |
 |---|---|---|
-| `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with compact artifacts and validator gate |
+| `route = small-fix`, `work_intent = repair`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Tiny bug fix, typo, bounded refactor | `using-beer -> context-intake -> exploring -> planning -> validating -> executing` with a compact plan/check note and validator gate |
 | `route = feature`, `work_intent = delivery`, `risk = normal`, `orchestration_strategy = single-worker`, `run_style = guided` | Normal feature work with one bounded implementation stream | Full workflow with one worker plus validator/review gates |
 | `route = feature`, `work_intent = repair`, `risk = normal|high`, `orchestration_strategy = single-worker`, `run_style = guided` | Broader repair work after a bug or failing build/test is understood | Same main workflow, but planning and validation stay anchored to the proven failure path |
 | `route = feature`, `risk = normal|high`, `orchestration_strategy = multi-worker`, `run_style = guided` | Feature work that decomposes cleanly into disjoint slices | Full workflow plus worker dispatch, coordination, and stricter validation |

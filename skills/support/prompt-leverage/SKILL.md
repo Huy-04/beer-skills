@@ -9,17 +9,19 @@ compatibility:
   - claude-code
   - beer-ecosystem
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   ecosystem: beer
   tags:
     - beer/support
     - prompt
     - context
+  inputs: "Raw user request + invoking owner + optional repo root + referenced files, skills, Beer artifacts, and language intent"
+  outputs: "Raw request plus contextual prompt packet with context sources, preserved identifiers, assumptions, unknowns, and return owner"
+  upstream: "using-beer, context-intake, workflow skills, meta skills, or direct user request"
+  downstream: "invoking owner, using-beer, context-intake, or user handoff"
   dependencies: []
 allowed-tools:
   - Read
-  - Write
-  - Edit
   - Bash
 user-invocable: true
 disable-model-invocation: false
@@ -37,7 +39,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 |---|---|
 | **Use when** | A raw prompt needs structure, repo context, or Beer-specific normalization |
 | **Needs** | The original request, the invoking owner, and any local files, skills, or Beer artifacts it references |
-| **Produces** | A context-aware execution prompt, a context packet, preserved identifiers, and explicit assumptions |
+| **Produces** | Raw request plus context-aware execution prompt, context packet, context sources, preserved identifiers, assumptions, unknowns, and return owner |
 | **Next** | Hand the upgraded prompt to the downstream Beer skill or coding agent |
 
 ## 30-Second Version
@@ -71,7 +73,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 4. **Synthesize semantically**: infer intent from the whole context, not from keyword categories.
 5. **Ask or assume**: ask up to 3 questions only when missing information blocks safe execution; otherwise state assumptions.
 6. **Hand off** a prompt with context, objective, scope, execution guidance, verification, output contract, and stop/ask criteria.
-7. **Return** the packet to the invoking owner instead of silently taking over routing.
+7. **Return** the packet to the invoking owner instead of silently taking over routing, state, or execution.
 
 ---
 
@@ -81,6 +83,7 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 - Preserve nuance from mixed-language, partial, or informal user requests instead of compressing them into generic task labels.
 - Produce a stronger execution prompt, not just a cleaner sentence.
 - Surface unresolved ambiguity clearly so the workflow skill can route or ask with confidence.
+- Keep generated `Docs/` as optional read-only hints only when explicitly referenced. Do not scan, create, or refresh generated `Docs/` as part of prompt upgrade.
 
 ---
 
@@ -99,6 +102,8 @@ Build context-aware execution prompts. Do not upgrade by keyword classification.
 - `using-beer` or the calling workflow skill owns routing, state mutation, and final execution decisions.
 - This skill may return a stronger execution prompt and structured context, but it must keep the raw request available for the router.
 - Record the invoking owner and intended `return_to` target when prompt upgrade is part of a larger Beer workflow.
+- Suggested downstream route is advisory. It must be justified from the raw request plus context packet and confirmed by the invoking owner.
+- Do not mutate `.beer/state.json`, approve gates, write planning artifacts, create tests, edit code, or refresh generated `Docs/`.
 
 ---
 
@@ -187,17 +192,19 @@ An upgraded prompt must include:
 
 - original intent
 - relevant local context that was actually found
+- context sources used and context sources intentionally skipped
 - unresolved unknowns or assumptions
 - preserved technical identifiers exactly as written
 - explicit response-language intent when relevant
 - verification and stop/ask criteria
+- invoking owner and `return_to` when used inside another Beer workflow
 
 ---
 
 ## Integration
 
 - `using-beer` should route from the raw request and contextual prompt together when an upgrade is applied.
-- `context-intake` runs after normalization so discovery works from a cleaner request.
+- `context-intake` may receive the raw request plus contextual prompt after normalization; prompt upgrade does not bypass intake.
 - Multilingual normalization uses this skill's language-policy reference instead of a separate Beer skill.
 
 ---

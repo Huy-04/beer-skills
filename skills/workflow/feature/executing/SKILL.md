@@ -81,21 +81,27 @@ Use when:
 
 1. Read `AGENTS.md`, Beer state, the current contract, and any active handoff note.
 2. Confirm `approved_gates.execution = true` before starting code changes.
-3. Confirm whether this run is direct execution or swarm-worker execution.
-4. Load the exact approved work item, file scope, verification target, and any target type definitions the slice depends on.
-5. Verify exact constructors, factories, events, DTOs, commands, and value objects before coding against them.
-6. Verify before claiming completion.
-7. Run `beer-auto-accept.mjs --gate reviewing` if the handoff to review would auto-advance.
-8. Record what changed, what passed, and what the next owner should do.
-9. Stop and escalate if scope expands, verification fails repeatedly, or context safety drops.
+3. Confirm `contract_verified = true`; if it is false or missing, return to `beer:validating`.
+4. Confirm whether this run is direct execution or swarm-worker execution.
+5. Load the exact route artifact: `compact-plan.md`, current phase contract, or coordinator assignment.
+6. Read the implementation pattern, evidence files, verification target, and any target type definitions the slice depends on.
+7. Re-check exact constructors, factories, events, DTOs, commands, and value objects before coding against them.
+8. Treat generated `Docs/` as read-only hints only; do not refresh Docs during execution.
+9. Verify before claiming completion.
+10. Run `beer-auto-accept.mjs --gate reviewing` if the handoff to review would auto-advance.
+11. Record what changed, what passed, what pattern/source facts were re-checked, and what the next owner should do.
+12. Stop and escalate if scope expands, verification fails repeatedly, source facts contradict the plan, or context safety drops.
 
 ## Hard Rules
 
 - Never start work without an approved slice.
 - Never start work when `approved_gates.execution` is still false.
+- Never start work when `contract_verified` is not true.
 - Never widen scope just because the nearby code is convenient to change.
 - Never skip verification.
 - Never ignore locked decisions from `CONTEXT.md`.
+- Never code from a pattern name alone; open the evidence files and verify exact source facts first.
+- Never treat generated `Docs/` as approval to code or refresh Docs inside execution.
 - Never lose the debug root-cause anchor on repair work.
 - Never turn a direct route into a pseudo-swarm; if coordination becomes necessary, route back to `planning` and `validating`.
 - Never treat `STATE.md` as authoritative; update `state.json` first.
@@ -109,8 +115,13 @@ Use when:
 If the slice adds or changes behavior and a meaningful failing-test path exists,
 invoke `beer:test-driven-development` before treating the implementation as
 complete. For behavior-changing slices, record `tdd_required = true` in
-`.beer/state.json`; after the RED/GREEN/REFACTOR loop, record
-`tdd_status = complete` and `tdd_evidence_path`.
+`.beer/state.json` and set `tdd_status = required` before the loop starts.
+After the RED/GREEN/REFACTOR loop, record `tdd_status = complete` and
+`tdd_evidence_path`.
+
+If TDD is not used for a behavior-changing slice, record the disposition:
+`tdd_status = waived` with the reason, or `tdd_status = not-required` when the
+slice is non-behavioral. Do not silently skip the decision.
 
 ## State Contract
 
@@ -119,12 +130,14 @@ complete. For behavior-changing slices, record `tdd_required = true` in
 - Record TDD state for behavior changes: `tdd_required`, `tdd_status`, and `tdd_evidence_path`.
 - Write execution evidence to `history/<feature>/execution-evidence.md` for every Beer route that reached approved execution.
 - Store that path in `execution_evidence_path`.
+- Execution evidence must include the route artifact read, implementation pattern followed, source facts re-checked, files changed, verification run, TDD disposition, and any deviation from the approved plan.
 - For swarm-worker execution, report completion or blockers back to the coordinator instead of self-advancing the global route.
 - For swarm-worker execution, the completion report should always name:
   - files touched
   - verification run
   - blocker or `no blocker`
   - recommended next owner action
+- For swarm-worker execution, treat the worker result as a stable record, not a casual chat note; if the runtime uses Beer-owned worker state instead of beads, update that state before claiming the assignment is complete.
 - Regenerate `.beer/STATE.md` after `state.json` changes.
 
 ## References

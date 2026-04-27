@@ -10,7 +10,7 @@ version: "1.0"
 
 - Prefer existing locked context over any inferred source.
 - Treat `.beer/seed/` as inferred only.
-- Treat `.beer/knowledge-base/` as an optional accelerator only.
+- Treat generated `Docs/` as an optional accelerator only; do not refresh it inside intake.
 - Use scout beads for context gathering only, never for delivery decomposition.
 - Never auto-resume from beads or `HANDOFF.json`.
 - Always hand normal task work to `beer:exploring` after context recovery or seeding.
@@ -94,6 +94,8 @@ Required files:
 
 Add `.beer/seed/05-gaps.md` when confidence is degraded or low.
 
+Seed should also preserve quick-scout scope signals, especially anything that may later disprove a `small-fix` exemption.
+
 ## State Outcomes
 
 | Context found | State change |
@@ -119,6 +121,7 @@ Add `.beer/seed/05-gaps.md` when confidence is degraded or low.
 - [ ] Scout path kept research-only
 - [ ] `.beer/seed/` written when context is inferred
 - [ ] `05-gaps.md` written for degraded context
+- [ ] quick-scout scope signals recorded when they affect later route honesty
 - [ ] Locked context never overwritten
 - [ ] `next_handoff` set to `beer:exploring`
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T20:29:15.525Z",
+  "generated_at": "2026-04-27T15:02:44.033Z",
   "skills_total": 17,
   "entries": [
     {
@@ -28,7 +28,7 @@
     },
     {
       "name": "codebase-knowledge",
-      "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build knowledge base\"], [\"scan project patterns\"], [\"refresh knowledge base\"], or otherwise needs a refreshed project-local implementation map. It is strongest when used to consolidate stable repository patterns, boundaries, and critical flows after work has already clarified how the codebase really operates.",
+      "description": "This skill should be used when the user asks to [\"/scan codebase\"], [\"/analyze project\"], [\"build project Docs\"], [\"scan project patterns\"], [\"refresh generated Docs\"], or otherwise needs a refreshed project-local implementation map. It is strongest when used to consolidate stable repository patterns, boundaries, and critical flows after work has already clarified how the codebase really operates.",
       "category": "support",
       "family": "",
       "directory": "codebase-knowledge",
@@ -124,7 +124,7 @@
     },
     {
       "name": "using-beer",
-      "description": "This skill should be used when the user asks to \"start beer session\", \"which skill should I use\", \"/go\", \"run full pipeline\", or \"resume session\".",
+      "description": "This skill should be used when a repo task should enter the Beer workflow, including starting or resuming a session, choosing the next Beer skill, running \"/go\" or the full pipeline, handling non-trivial coding work, or deciding whether a support/meta skill should be used.",
       "category": "workflow",
       "family": "feature",
       "directory": "using-beer",

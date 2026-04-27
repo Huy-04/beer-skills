@@ -1,10 +1,10 @@
 ---
 skill: using-beer
 purpose: Communication standards and tone guidelines
-version: "1.0"
+version: "1.1"
 ---
 
-# using-beer — Communication Standards
+# using-beer - Communication Standards
 
 Default communication style for all Beer skills.
 
@@ -24,11 +24,11 @@ Default communication style for all Beer skills.
 
 When presenting plans, findings, blockers, or handoffs:
 
-1. **Plain-language summary** — What is happening or proposed
-2. **Current behavior/state** — What the system does today
-3. **Why it matters** — What requirement, decision, or goal this affects
-4. **Concrete scenario** — Realistic example with values, timestamps, actions
-5. **Next step** — Smallest credible fix or decision needed
+1. **Plain-language summary** - What is happening or proposed
+2. **Current behavior/state** - What the system does today
+3. **Why it matters** - What requirement, decision, or goal this affects
+4. **Concrete scenario** - Realistic example with values, timestamps, actions
+5. **Next step** - Smallest credible fix or decision needed
 
 ---
 
@@ -43,13 +43,13 @@ When presenting plans, findings, blockers, or handoffs:
 
 ## Translation Rule
 
-If you use technical language, immediately translate it.
+If technical language is needed, translate it immediately.
 
 | Instead of | Say |
 |------------|-----|
 | "This write is non-monotonic." | "An older update can overwrite a newer timestamp, so the system can think the user was last active earlier than they really were." |
 | "Violates D5." | "Decision D5 says the fallback should use the most recent inbound user message time. Right now the code uses webhook ingest time instead, which can drift from the real message time." |
-| "Coverage gap." | "The test doesn't verify what happens when the cache is empty, so the bug there wasn't caught." |
+| "Coverage gap." | "The test does not verify what happens when the cache is empty, so the bug there was not caught." |
 
 ---
 
@@ -62,13 +62,13 @@ Apply this tone to:
 - Reviewing findings and user-facing summaries
 - Swarming blocker reports and handoffs
 
-Keep structure if skill requires it, but make content follow this tone.
+Keep structure if a skill requires it, but make content follow this tone.
 
 ---
 
 ## Checkpoint Phrase
 
-```
+```text
 More questions about [area], or move to next? (Remaining: [list])
 ```
 
@@ -76,8 +76,8 @@ More questions about [area], or move to next? (Remaining: [list])
 
 ## Scope Creep Response
 
-```
-[Feature X] is a new capability — that's its own work item. I'll note it
+```text
+[Feature X] is a new capability - that is its own work item. I'll note it
 as a deferred idea. Back to [current area]: [return to current question]
 ```
 
@@ -87,7 +87,8 @@ as a deferred idea. Back to [current area]: [return to current question]
 
 | Anti-Pattern | Fix |
 |--------------|-----|
-| "Skip context check to save time" | Always run Context Coordination |
+| "Skip context check to save time" | Run `context-intake` for normal task work |
 | "Auto-resume from HANDOFF" | Present resume prompt, wait for "yes" |
 | "Jargon-first explanation" | Start with what happens, then name it |
 | "Abstract without concrete" | Always pair with realistic example |
+| "Helper output means coding can start" | Route through the owning Beer skill and gate before implementation |

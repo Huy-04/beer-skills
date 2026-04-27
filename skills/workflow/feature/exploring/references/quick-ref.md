@@ -87,10 +87,12 @@ CONTEXT.md is now the single source of truth for downstream planning.
 Invoke `beer:planning`.
 ```
 
-Direct-fix exemption:
+Small-fix exemption:
 
 ```text
 This is a small, local, low-ambiguity fix.
 Skipping locked-context capture.
 Invoke `beer:planning` with the compact small-fix route.
 ```
+
+If the quick scout already reveals multiple worker-sized tasks or dependency management needs, do not use the exemption.

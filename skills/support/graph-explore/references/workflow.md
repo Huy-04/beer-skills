@@ -1,7 +1,7 @@
 ---
 skill: graph-explore
 purpose: Step-by-step workflow for graph-based codebase exploration
-version: "1.1"
+version: "1.2"
 ---
 
 # graph-explore - Workflow Details
@@ -16,6 +16,8 @@ version: "1.1"
 
 This helper is a support lens. It gathers graph evidence and returns it to the
 calling Beer skill. It does not take over Beer state or workflow ownership.
+Generated `Docs/` may supply a hypothesis to check, but this helper never
+creates or refreshes Docs.
 
 ---
 
@@ -26,6 +28,7 @@ Record the calling owner before graph work:
 - `calling_phase`
 - the concrete question to answer
 - the expected return owner such as `beer:exploring`, `beer:planning`, `beer:validating`, `beer:debugging`, or `beer:reviewing`
+- optional generated `Docs/` assumption the caller wants verified
 
 ```yaml
 list_repos: {}
@@ -42,6 +45,8 @@ Use every relevant GitNexus view needed to answer the caller: `query`, `context`
 Return evidence to the caller instead of taking over `exploring`. The calling skill decides whether to continue with local inspection.
 When a symbol name is ambiguous, prefer an exact `file_path`, file path target, or symbol UID from a previous result.
 The caller owns Beer state, `CONTEXT.md`, plans, and code. If the index is stale or missing, return degraded/stale status plus the precise indexing recommendation.
+If graph evidence contradicts generated `Docs/`, return `docs_relation:
+mismatch` or `stale_possible`; do not refresh Docs here.
 
 ---
 
@@ -118,10 +123,16 @@ Return structured findings to the calling skill. Do not write directly to CONTEX
 - `return_to`: the calling Beer owner
 - `source`: `gitnexus`
 - `status`: `ok` or `degraded`
+- `question`: the caller's concrete graph question
+- `tools_used`: the GitNexus tools used
 - `processes`: relevant execution flows when `query` is used
 - `communities`: relevant communities when `cypher` is used
 - `patterns`: recurring code patterns
 - `dependencies`: caller/importer or blast-radius findings
+- `starting_points`: files or symbols the caller should inspect next
+- `source_checks`: exact facts the caller or worker must verify in current source before coding
+- `docs_relation`: `not_used`, `confirmed`, `mismatch`, or `stale_possible`
+- `risks`: blast-radius, stale-index, API, route, or boundary risks
 - `confidence`: High / Medium / Low with reason
 
 If Route or Tool nodes are absent in the index, report that explicitly rather than treating route/tool outputs as failures in the skill.
@@ -173,6 +184,9 @@ context-intake
 {
   "source": "gitnexus",
   "status": "ok",
+  "return_to": "beer:planning",
+  "question": "Which checkout flow symbols and dependencies matter for this slice?",
+  "tools_used": ["query", "impact"],
   "processes": [
     { "name": "Checkout", "relevance": 0.94 }
   ],
@@ -181,6 +195,17 @@ context-intake
   ],
   "patterns": [
     { "type": "query-handler", "filePath": "BE/.../GetOrderQueryHandler.cs" }
+  ],
+  "starting_points": [
+    "BE/.../Order.cs",
+    "BE/.../ReserveInventory.cs"
+  ],
+  "source_checks": [
+    "Confirm Order lifecycle method signature and event payload before coding."
+  ],
+  "docs_relation": "not_used",
+  "risks": [
+    "Order lifecycle changes have upstream shipment and inventory callers."
   ],
   "confidence": {
     "level": "High",

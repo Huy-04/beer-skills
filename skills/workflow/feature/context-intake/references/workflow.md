@@ -52,7 +52,7 @@ Read in this order:
 
 1. `.beer/state.json`
 2. `.beer/HANDOFF.json` if present
-3. `.beer/knowledge-base/` summaries only after state recovery and only as an accelerator
+3. generated `Docs/` summaries only after state recovery and only as an accelerator
 
 ### Step 0.2: Respect Existing Context Stage
 
@@ -238,7 +238,8 @@ Summarize:
 - original request,
 - interpreted goal,
 - success criteria,
-- obvious out-of-scope assumptions.
+- obvious out-of-scope assumptions,
+- any quick-scout scope signals that may matter later, such as behavior-boundary uncertainty or evidence that the work may already exceed a tiny local fix.
 
 ### 02-structure.md
 
@@ -274,7 +275,8 @@ Document:
 
 - unknowns,
 - low-confidence areas,
-- questions worth asking the user.
+- questions worth asking the user,
+- any signal that would make a future `small-fix` exemption dishonest if ignored.
 
 ## Resume Logic
 
@@ -299,7 +301,7 @@ If the user declines resume:
 - Never treat `.beer/seed/` as locked context.
 - Never let stale or conflicting seed context outrank direct repo evidence.
 - Never let context scouts become delivery beads.
-- Never use `.beer/knowledge-base/` as a substitute for direct evidence.
+- Never use generated `Docs/` as a substitute for direct evidence.
 - Never claim repo-wide certainty from a degraded scan.
 - Never hand work past `beer:exploring`.
 
@@ -344,4 +346,5 @@ If the user declines resume:
 - `approved_gates.execution = true`
 - `approved_gates.review = true`
 - `execution_target`
+- `orchestration_strategy`
 - delivery decomposition artifacts

@@ -37,8 +37,8 @@ debugging start from stronger evidence.
 | | |
 |---|---|
 | **Use when** | Review passed with Gate 4 approved, direct work finished cleanly, or debugging exposed a reusable lesson |
-| **Needs** | `.beer/state.json`, the finished route source (`review_route` or debug evidence), and enough context to state what was learned |
-| **Produces** | One learnings file, optional critical-pattern promotion, optional knowledge-base refresh ask, and an updated Beer state trail |
+| **Needs** | `.beer/state.json`, the finished route source (`review_route` or debug evidence), the route/evidence artifacts that explain what happened, and closeout refresh statuses |
+| **Produces** | A learnings file when reusable learning exists, optional critical-pattern promotion, optional generated Docs refresh ask, or a no-learning closeout trail |
 | **Next** | Idle Beer state, or the next feature with stronger starting knowledge |
 
 ## Compounding Routes
@@ -61,27 +61,35 @@ full feature.
 
 - `reviewing` owns the quality gate and closeout decision.
 - `debugging` owns reproduction evidence and root-cause proof.
-- `compounding` owns the learning synthesis, promotion decision, and deciding whether a knowledge-base refresh is worth asking the user for.
+- `compounding` owns the learning synthesis, promotion decision, and deciding whether a generated Docs refresh is worth asking the user for.
 - the orchestrator owns the final closeout-state mutation and idle reset after compounding obligations are satisfied.
 - `compounding` does not require subagents by default. Local synthesis is the default path.
 
 ## 30-Second Version
 
 1. Detect the compounding route from authoritative Beer state or proven debug evidence.
-2. Read only the artifacts needed to explain what happened.
+2. Read only the artifacts needed to explain what happened, including the route artifact or execution evidence named by state.
 3. Capture three buckets locally: patterns, decisions, failures.
-4. Write one learnings file for the finished unit of work.
-5. Promote only the small subset that is truly reusable across future work.
-6. Let the workflow auto-refresh the current repo's GitNexus index when task closeout changed graph-relevant code.
-7. Ask the user about `.beer/knowledge-base/` only when the finished work produced reusable project patterns worth preserving.
-8. Run `beer closeout-guard` before claiming compounding is complete or resetting Beer to idle.
-9. Update Beer state and clear temporary compounding artifacts.
+4. If no candidate is reusable, record a no-learning closeout decision and skip the learnings file.
+5. Write one learnings file only when at least one reusable learning exists.
+6. Promote only the small subset that is truly reusable across future work.
+7. Resolve GitNexus refresh status to `completed` or `skipped` before closeout.
+8. Ask the user about refreshing generated `Docs/` only when the finished work produced reusable project patterns worth preserving.
+9. Run `beer closeout-guard` before claiming compounding is complete or resetting Beer to idle.
+10. Update Beer state and clear temporary compounding artifacts.
 
 ## Output Contract
 
-Always produce:
+Produce when reusable learning exists:
 
 - `history/learnings/YYYYMMDD-<slug>.md`
+
+If no reusable learning exists:
+
+- do not create a ceremonial learnings file
+- record `learnings_file = ""` and `critical_promotions = 0`
+- record `knowledge_base_refresh_status = not-needed`
+- still satisfy GitNexus refresh status and closeout guard before idle reset
 
 Promote only when warranted:
 
@@ -94,7 +102,7 @@ Optional supporting artifacts:
 
 ## Hard Rules
 
-- Never skip compounding solely because the work felt small; skip only when nothing reusable emerged.
+- Never skip closeout solely because the work felt small; when nothing reusable emerged, record the no-learning path and finish the closeout obligations without a learnings file.
 - Never fabricate learnings to make the file look substantial.
 - Never promote a feature-specific quirk to `critical-patterns.md`.
 - Never require merged branch history to capture a valid learning.
@@ -102,8 +110,10 @@ Optional supporting artifacts:
 - Never treat `STATE.md` as authoritative; update `state.json` first.
 - Never leave a learning without an `applicable_when` condition.
 - Never treat post-task GitNexus refresh as a tool update; it means re-indexing the current repo, typically via `npx gitnexus analyze`.
-- Never ask for knowledge-base refresh unless the finished work created reusable patterns, conventions, architecture notes, or critical-flow guidance worth keeping.
-- Never finish compounding while GitNexus refresh status or the knowledge-base decision is still missing from `.beer/state.json`.
+- Never reset to idle while `gitnexus_refresh_status` is `manual-required`, `failed`, or empty.
+- Never ask for generated Docs refresh unless the finished work created reusable patterns, conventions, architecture notes, or critical-flow guidance worth keeping.
+- Never treat `knowledge_base_refresh_status = approved` as final closeout; it is an intermediate state until the refresh is recorded as `refreshed`, `declined`, or `not-needed`.
+- Never finish compounding while GitNexus refresh status or the final generated Docs refresh decision is still missing from `.beer/state.json`.
 - Never reset Beer to idle before `beer closeout-guard` says closeout obligations are complete.
 
 ## State Contract

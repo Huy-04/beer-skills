@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "active_feature": "swarm-coordination",
+  "route": "feature",
+  "work_intent": "delivery",
+  "risk": "high",
+  "orchestration_strategy": "multi-worker",
+  "run_style": "guided",
+  "phase": "executing",
+  "next_handoff": "swarming",
+  "execution_target": "swarming",
+  "swarm_status": "active",
+  "current_slice": "swarm-slice",
+  "context_locked": true,
+  "plan_ready": true,
+  "validation_status": "approved",
+  "review_status": "pending",
+  "closeout_status": "pending",
+  "debug_active": false,
+  "debug_entry_phase": null,
+  "debug_exit_target": null,
+  "active_workers": [
+    {
+      "worker_id": "worker-1",
+      "codex_name": "worker-1",
+      "assigned_work_item": "Implement shared contract",
+      "task_kind": "implement",
+      "role": "coding",
+      "model": "gpt-5.3-codex",
+      "reasoning_effort": "high",
+      "status": "completed",
+      "blocked_by": [],
+      "blocks": [
+        "Integrate downstream consumer"
+      ],
+      "dependency_state": "ready",
+      "files_touched": [
+        "src/contract.ts"
+      ],
+      "verification": "npm test -- contract",
+      "notes": ""
+    },
+    {
+      "worker_id": "worker-2",
+      "codex_name": "worker-2",
+      "assigned_work_item": "Integrate downstream consumer",
+      "task_kind": "implement",
+      "role": "coding",
+      "model": "gpt-5.3-codex",
+      "reasoning_effort": "high",
+      "status": "queued",
+      "blocked_by": [
+        "Implement shared contract"
+      ],
+      "blocks": [],
+      "dependency_state": "ready",
+      "files_touched": [],
+      "verification": "",
+      "notes": ""
+    }
+  ],
+  "artifacts": {
+    "context_path": ".beer-run/context/swarm-coordination.md",
+    "plan_path": ".beer-run/plans/swarm-coordination.md",
+    "review_path": ".beer-run/reviews/swarm-coordination.md",
+    "closeout_path": ".beer-run/closeout/swarm-coordination.md",
+    "execution_evidence_path": null,
+    "worker_assignments_path": ".beer-run/workers/swarm-coordination.assignments.json",
+    "specialist_review_path": null
+  },
+  "blockers": [],
+  "notes": [
+    "Initialized by materialize-beer-run for swarm-coordination",
+    "Context intake stage: seeded",
+    "Context source: manual-scan",
+    "Exploring locked context. Gate 1: approved",
+    "Plan updated for slice swarm-slice",
+    "Validation result: approved",
+    "Swarm dispatched with 2 workers.",
+    "Worker result: worker-1 -> completed"
+  ],
+  "context_stage": "locked",
+  "context_confidence": 1,
+  "approved_gates": {
+    "context": true,
+    "phase_plan": true,
+    "execution": true,
+    "review": false
+  },
+  "active_skill": "exploring",
+  "planning_contract": {
+    "verification_owner": "beer-validator",
+    "work_items": [
+      "Implement shared contract",
+      "Integrate downstream consumer"
+    ],
+    "dependency_edges": [
+      "Implement shared contract -> Integrate downstream consumer"
+    ],
+    "multi_worker_ready": true
+  }
+}

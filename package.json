@@ -15,7 +15,8 @@
     "planning:gate": "node scripts/commands/beer-planning-gate.mjs",
     "cli": "node scripts/commands/beer-cli.mjs",
     "check-links": "node scripts/maintenance/check-markdown-links.mjs",
-    "skills:sync": "node scripts/maintenance/sync-skills.mjs"
+    "skills:sync": "node scripts/maintenance/sync-skills.mjs",
+    "quality": "node scripts/maintenance/beer-quality-check.mjs"
   },
   "keywords": [
     "ai-agent",

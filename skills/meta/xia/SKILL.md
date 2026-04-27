@@ -14,12 +14,6 @@ metadata:
     - beer/meta
     - beer/research
   dependencies:
-    - id: exa
-      kind: mcp_server
-      server_names: [exa]
-      config_sources: [global_codex_config, plugin_mcp_manifest]
-      missing_effect: degraded
-      reason: Xia can use Exa for current official docs when a candidate skill depends on external tooling or framework behavior.
     - id: deepwiki
       kind: mcp_server
       server_names: [deepwiki]
@@ -49,7 +43,7 @@ Analyze a repository that contains skills, compare it against the current Beer s
 |---|---|
 | **Use when** | User wants a skill repo analyzed before deciding what to add or update in Beer |
 | **Needs** | Access to the target repo and the current Beer skill list |
-| **Produces** | Skill curation brief with labeled evidence and explicit `source skill -> closest Beer skill -> recommendation + priority + Beer effect` decisions |
+| **Produces** | Skill curation brief with labeled evidence and decision cards for each serious source skill |
 | **Next** | `beer:writing-beer-skills` for selected additions or updates, or user handoff |
 
 ---
@@ -60,7 +54,7 @@ Analyze a repository that contains skills, compare it against the current Beer s
 2. **Map the target repo**: Read repo contracts and identify how skills are organized.
 3. **Inventory candidate skills**: Find the skills, their triggers, outputs, and dependencies.
 4. **Compare against Beer**: Match source-repo candidates to existing Beer skills, overlaps, and gaps.
-5. **Validate externally when needed**: Use `deepwiki` or `exa` only when a candidate skill depends on unfamiliar external behavior.
+5. **Validate externally when needed**: Use free/best-effort sources such as `deepwiki`, direct official docs, or current search only when a candidate skill depends on unfamiliar external behavior.
 6. **Return brief**: Label every claim as `Local`, `Upstream`, `Docs`, or `Inference`.
 7. **Recommend**: Say which source-repo skills Beer should add, update, adapt, or ignore, and which ones should happen now vs later.
 
@@ -71,7 +65,7 @@ Analyze a repository that contains skills, compare it against the current Beer s
 ### Capability First
 
 - Scout the target skills repo deeply enough to make useful adoption decisions, not just an inventory.
-- Use local repo evidence, target repo artifacts, and external docs when needed to understand real skill behavior.
+- Use local repo evidence, target repo artifacts, and free/best-effort external docs when needed to understand real skill behavior.
 - Produce a sharp curation brief or requested research artifact that lets `beer:writing-beer-skills` act decisively.
 
 ### Ownership Boundary
@@ -116,7 +110,8 @@ Analyze a repository that contains skills, compare it against the current Beer s
 ### Step 5: Validate Externally Only When Needed
 
 - Use `deepwiki` as best-effort support when the target repo or candidate skill depends on an unfamiliar upstream pattern.
-- Use `exa` or current search/browser capability when a candidate skill relies on official tooling or framework behavior that should be checked.
+- Use direct official docs or current search/browser capability when a candidate skill relies on official tooling or framework behavior that should be checked.
+- Do not require paid MCP services for `xia`; local repo evidence must remain enough for a useful baseline brief.
 - Do not turn this step into generic web research. External research is only for clarifying candidate-skill behavior or dependencies.
 
 ### Step 6: Return the Skill Curation Brief
@@ -129,7 +124,7 @@ Use `references/research-brief-template.md`. Required sections:
 - candidate skill inventory
 - overlap and gap analysis
 - optional upstream or docs findings
-- recommendation matrix
+- decision cards
 - priority ordering
 - expected Beer effect
 - risks / unknowns
@@ -143,14 +138,15 @@ Label every non-trivial claim:
 - `Docs` - official documentation
 - `Inference` - conclusions from evidence
 
-The brief should read like a curation decision for Beer, not a generic research memo. Make the result easy to scan as:
+The brief should read like a curation decision for Beer, not a generic research memo. Use decision cards, not a table, so each candidate has enough reasoning space:
 
 - source-repo candidate
 - closest Beer skill
 - recommendation class
 - priority band
 - Beer effect
-- why that class won
+- evidence
+- why that class won and why the next-best alternative lost
 
 ### Step 7: Recommend
 

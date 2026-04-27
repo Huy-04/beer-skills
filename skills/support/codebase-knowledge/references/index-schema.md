@@ -1,15 +1,16 @@
 ---
 skill: codebase-knowledge
-purpose: Canonical schema for `.beer/knowledge-base/index.json`
+purpose: Canonical schema for `Docs/index.json`
 version: "1.1"
 ---
 
 # index.json Schema
 
-Use this file as the source of truth for the generated knowledge-base index.
+Use this file as the source of truth for the generated Docs index.
 
-`.beer/knowledge-base/` is project-local and local-cache-by-default. Current
-source code remains authoritative when generated entries drift.
+`Docs/` is project-local, sits beside `.beer/`, and is
+local-cache-by-default. Current source code remains authoritative when generated
+entries drift.
 
 ## Required Top-Level Fields
 
@@ -21,6 +22,7 @@ source code remains authoritative when generated entries drift.
   "stats": {
     "total_files": 0,
     "generated_docs": 0,
+    "flow_docs": 1,
     "backend_docs": 0,
     "frontend_docs": 0,
     "boundary_docs": 0,
@@ -29,13 +31,16 @@ source code remains authoritative when generated entries drift.
   "entries": [],
   "dominant_patterns": [],
   "backend": {
+    "pattern_groups": {},
     "layer_patterns": {},
     "flow_patterns": {}
   },
   "frontend": {
+    "pattern_groups": {},
     "layer_patterns": {},
     "flow_patterns": {}
   },
+  "flows": {},
   "boundaries": {},
   "task_index": {},
   "critical_files": [],
@@ -99,15 +104,22 @@ Each entry should contain:
 
 ```json
 {
-  "title": "Request Lifecycle",
+    "title": "Request Lifecycle",
   "area": "backend",
   "kind": "pattern",
-  "file": "backend/request-lifecycle.md",
+  "role": "backend-request-lifecycle",
+  "architecture_style": "route-service-backend",
+  "file": "Backend/request-lifecycle.md",
   "confidence": "high",
   "tags": ["backend", "request", "lifecycle"],
   "summary": "Shows the usual path from entrypoint to persistence and side effects."
 }
 ```
+
+`Flows/repo-flow.md` is required when source code or command entrypoints exist.
+Repos with no code yet should not get a synthetic flow doc. When present, it
+must include a `## Flow Diagram` section with a Mermaid `flowchart` so the
+default repo flow is readable as text and renderable in docs tools.
 
 The markdown file referenced by each entry should include:
 
@@ -130,19 +142,21 @@ Use this for short, high-signal summaries that README can mirror:
 ]
 ```
 
-## `backend.layer_patterns`, `frontend.layer_patterns`, and `boundaries`
+## `backend.pattern_groups`, `frontend.pattern_groups`, and `boundaries`
 
 Use these sections for machine-usable pattern expectations and verification
-targets.
+targets. `layer_patterns` may exist as a compatibility alias, but writers
+should not imply every repo uses four layers.
 
 Example:
 
 ```json
 {
   "backend": {
-    "layer_patterns": {
-      "application-handler": {
-        "mission": "orchestrate request flow without absorbing domain or infrastructure responsibilities",
+    "pattern_groups": {
+      "request-lifecycle": {
+        "architecture_style": "route-service-backend",
+        "mission": "orchestrate request flow while preserving the architecture style actually detected in this repo",
         "dominant_patterns": [
           "thin handler orchestration",
           "delegation into lifecycle/domain methods",
@@ -163,8 +177,9 @@ Example:
     }
   },
   "frontend": {
-    "layer_patterns": {
+    "pattern_groups": {
       "api-access": {
+        "architecture_style": "frontend-surface",
         "mission": "route page/composable work through the established client/proxy shape",
         "dominant_patterns": [
           "API access through shared client/proxy",
@@ -196,11 +211,10 @@ Use task buckets to route common implementation intents to the right docs:
 {
   "add backend endpoint": {
     "docs": [
-      "backend/request-lifecycle.md",
-      "backend/module-template.md",
-      "conventions/implementation-rules.md"
+      "Backend/request-lifecycle.md",
+      "Conventions/implementation-rules.md"
     ],
-    "layer_targets": ["backend.layer_patterns.application-handler"],
+    "pattern_targets": ["backend.pattern_groups.request-lifecycle"],
     "verification_targets": {
       "processes": ["CreateOrder"],
       "queries": [
@@ -210,8 +224,8 @@ Use task buckets to route common implementation intents to the right docs:
   },
   "change auth": {
     "docs": [
-      "critical-flows/auth-session.md",
-      "boundaries/frontend-backend-proxy.md"
+      "CriticalFlows/auth-session.md",
+      "Boundaries/frontend-backend-proxy.md"
     ],
     "boundary_targets": ["boundaries.auth-session"],
     "verification_targets": {
@@ -223,10 +237,13 @@ Use task buckets to route common implementation intents to the right docs:
 
 ## Rules
 
-- `file` must be relative to `.beer/knowledge-base/`
+- `file` must be relative to `Docs/`
+- `Flows/repo-flow.md` must exist and `index.json.flows.repo-flow` must point to it when source code exists
+- `role` should identify the reusable meaning, such as `backend-request-lifecycle`, independent of the generated file path
+- `architecture_style` should be recorded when a doc path depends on detected shape, for example `layered-backend`, `vertical-slice-backend`, or `route-service-backend`
 - `confidence` must be one of `high`, `medium`, `low`
-- `area` should match a real knowledge-base subfolder
-- `kind` should reflect what the doc is about: `architecture`, `pattern`, `boundary`, `critical-flow`, or `convention`
+- `area` should match a real generated Docs area such as `flows`, `backend`, `frontend`, `boundaries`, `critical-flows`, `architecture`, or `conventions`
+- `kind` should reflect what the doc is about: `flow-map`, `architecture`, `pattern`, `boundary`, `critical-flow`, or `convention`
 - `search_index` values must point to files already declared in `entries[]`
 - `task_index.docs` values must point to files already declared in `entries[]`
 - backend and frontend patterns should stay separate unless the pattern is truly boundary-scoped

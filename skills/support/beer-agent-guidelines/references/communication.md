@@ -1,7 +1,7 @@
 ---
 name: beer-agent-guidelines
 description: Communication templates for syncing execution guardrails into repo instruction files
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # beer-agent-guidelines - Communication Templates
@@ -15,11 +15,20 @@ Target files:
 - [CLAUDE.md]
 - [AGENTS.md]
 
+Sync method:
+- [manual instruction-only sync | Beer managed refresh/install/update]
+
 Created:
 - [file or none]
 
 Updated:
 - [file or none]
+
+Managed block:
+- [added | replaced | created]
+
+Extra managed surfaces touched:
+- [none | skills/hooks/config refreshed because full managed refresh was requested]
 ```
 
 ## Managed Block Note
@@ -55,12 +64,18 @@ I preserved it outside the managed block instead of silently rewriting it.
 You asked for guardrails only in `[single file]`, so I left the other instruction file unchanged.
 ```
 
+## Instruction-Only Scope Note
+
+```text
+I did not run a full Beer refresh for this instruction-only sync. Only the requested instruction files changed.
+```
+
 ## Canonical Block Reminder
 
 ```text
 The managed block should stay concise:
 
-- four principles
+- concise principles
 - short bullets
 - no workflow sprawl
 ```

@@ -24,7 +24,7 @@ Add a new approval flow for partner payouts. We can fill in details later.
 - Identify the gray areas.
 - Lock decisions before planning.
 
-## Scenario 2: Explore a Tiny Direct Fix
+## Scenario 2: Explore a Tiny Small-Fix
 
 **Input**
 
@@ -41,7 +41,7 @@ Fix the wrong date format in this serializer. It should be ISO-8601.
 - Recognize the small-fix exemption.
 - Keep the normal `context-intake -> exploring` entry.
 - Exit `exploring` through the small-fix exemption.
-- Route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
+- Route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker` as the exemption constraint.
 
 ## Scenario 3: Seed Becomes Locked Without Confirmation
 
@@ -94,3 +94,21 @@ Ask me whatever you need all at once so we can go faster.
 
 - Keep one-question-at-a-time discipline.
 - Explain only if needed, then continue sequentially.
+
+## Scenario 6: Small-Fix Exemption Hides Multi-Worker Reality
+
+**Input**
+
+```text
+This still looks small enough. Skip CONTEXT.md and call it `small-fix`, even though the scout already shows three coordinated changes with separate verification paths.
+```
+
+**Failure Mode**
+
+- uses the small-fix exemption even though the work already needs explicit worker coordination or multi-worker planning.
+
+**Expected Behavior**
+
+- refuse the exemption
+- stay in normal exploring flow or hand off a feature route to planning
+- do not force `single-worker` when the quick scout already disproves it

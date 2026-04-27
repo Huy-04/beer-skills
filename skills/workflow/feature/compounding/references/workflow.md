@@ -36,9 +36,9 @@ Read the smallest honest set:
 
 - `.beer/state.json`
 - `history/<feature>/CONTEXT.md` when decisions matter
-- `history/<feature>/discovery.md`
-- `history/<feature>/approach.md`
-- execution evidence or review summary
+- the route artifact named by execution or review evidence: `compact-plan.md`, current phase contract, coordinator assignment, or full planning artifact
+- execution evidence and review summary
+- `history/<feature>/discovery.md` or `history/<feature>/approach.md` only when those artifacts were actually part of the route or broader feature context is needed
 - debug note or root-cause sentence for `debug-learning`
 - any reusable findings candidates already written
 
@@ -68,10 +68,11 @@ Promotion guide:
 
 - `critical` only when the learning would likely save meaningful future effort across more than one feature
 - otherwise `standard`
+- if no candidate has a concrete `applicable_when`, choose the no-learning closeout path instead of writing a placeholder file
 
 ## Phase 4: Write the Learnings Entry
 
-Write one file:
+Write one file only when at least one reusable learning passes triage:
 
 ```text
 history/learnings/YYYYMMDD-<slug>.md
@@ -79,6 +80,14 @@ history/learnings/YYYYMMDD-<slug>.md
 
 One file per completed unit of work. Group related lessons inside it instead of
 splitting one file per finding.
+
+If no reusable learning exists:
+
+- do not create a learnings file
+- set `learnings_file = ""`
+- set `critical_promotions = 0`
+- record `knowledge_base_refresh_status = not-needed`
+- continue to GitNexus refresh and closeout guard
 
 ## Phase 5: Promote Critical Items
 
@@ -106,35 +115,54 @@ npx gitnexus analyze
 
 Do not ask a separate human approval question just for this re-index path.
 
-### Knowledge-Base Refresh
+Review approval normally records `gitnexus_refresh_status` automatically. Before
+closeout, require one final status:
 
-Ask about `.beer/knowledge-base/` only when the finished work changed reusable
+- `completed`: proceed
+- `skipped`: proceed when no graph-relevant code changed
+- `manual-required`: run `beer index` when available because it records state, or run `npx gitnexus analyze` and record a completed or skipped status before closeout
+- `failed`: fix or rerun the repo index before closeout
+
+For `debug-learning` or no-code closeout, set `gitnexus_refresh_status = skipped`
+when no graph-relevant source changed.
+
+### Generated Docs Refresh
+
+Ask about refreshing generated `Docs/` only when the finished work changed reusable
 patterns, conventions, architecture, business rules, or critical flows worth
 preserving as curated docs.
 
 Preferred prompt shape:
 
 ```text
-Compounding is complete. This task produced reusable project patterns. Refresh `.beer/knowledge-base/` now?
+Compounding is complete. This task produced reusable project patterns. Refresh generated `Docs/` now?
 ```
 
 If the user approves:
 
 1. invoke `beer:codebase-knowledge`
-2. treat that approval as covering the knowledge-base refresh; do not ask again inside the downstream skill
+2. treat that approval as covering the generated Docs refresh; do not ask again inside the downstream skill
+3. after the refresh finishes, record `knowledge_base_refresh_status = refreshed`
 
 If the user declines:
 
-- skip the knowledge-base refresh cleanly
+- skip the generated Docs refresh cleanly
 - keep the learnings and closeout trail
 - finish compounding normally
+
+If no generated Docs update is warranted, record
+`knowledge_base_refresh_status = not-needed`.
+
+`knowledge_base_refresh_status = approved` is intermediate. It records that the
+user approved a refresh, but it is not a valid final closeout status. Do not
+reset to idle until the status is `refreshed`, `declined`, or `not-needed`.
 
 ## Phase 7: Closeout Guard
 
 Before resetting Beer to idle, run:
 
 ```powershell
-node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base <approved | declined | not-needed | refreshed> --json
+node .beer/scripts/commands/beer-closeout-guard.mjs --knowledge-base <declined | not-needed | refreshed> --json
 ```
 
 Only continue when the result is an allow/pass outcome for closeout. Treat any
@@ -148,6 +176,8 @@ Update `.beer/state.json` first with:
 - `compounding_route`
 - `learnings_file`
 - `critical_promotions`
+- `gitnexus_refresh_status`
+- `knowledge_base_refresh_status`
 - the closeout trail needed before idle reset
 
 Then return Beer to idle while preserving the closeout trail:

@@ -44,7 +44,7 @@ version: "1.0.0"
 | Beer baseline | Local Beer files | - |
 | Target repo truth | Target repo files | - |
 | Unfamiliar upstream pattern | deepwiki | Direct GitHub |
-| Official tool behavior | exa | Web search |
+| Official tool behavior | Direct official docs | Current search/browser capability |
 
 ## Quick Commands
 
@@ -79,7 +79,15 @@ Get-Content docs/skill-inventory.json
 ## Expected Output Shape
 
 ```text
-source-repo skill -> closest Beer skill -> Adopt | Update | Adapt | Ignore -> Now | Next | Later | Ignore -> Beer effect -> one-line reason
+Decision card:
+source-repo skill
+Decision: Adopt | Update | Adapt | Ignore
+Priority: Now | Next | Later | Ignore
+Closest Beer skill: beer:<skill> | none
+Beer effect: <one short payoff>
+Evidence: Local/Upstream/Docs/Inference bullets
+Why not alternative: <one tradeoff note>
+Recommended Beer change: <next action or none>
 ```
 
 If `Closest Beer skill` is unclear, write `none` explicitly instead of leaving the comparison implicit.
@@ -120,7 +128,7 @@ If `Closest Beer skill` is unclear, write `none` explicitly instead of leaving t
 4. Candidate skill inventory
 5. Overlap and gap analysis
 6. Upstream/docs findings (if needed)
-7. Recommendation matrix
+7. Decision cards
 8. Priority ordering
 9. Expected Beer effect
 10. Risks/unknowns
@@ -128,11 +136,12 @@ If `Closest Beer skill` is unclear, write `none` explicitly instead of leaving t
 12. Next step
 ```
 
-## Recommendation Matrix Completeness
+## Decision Card Completeness
 
-- [ ] Every serious candidate from the inventory appears in the matrix
-- [ ] Each row has `Adopt`, `Update`, `Adapt`, or `Ignore`
-- [ ] Each row has `Now`, `Next`, `Later`, or `Ignore`
-- [ ] Each row names the closest Beer skill or `none`
-- [ ] Each row states the Beer effect
-- [ ] Each row explains why the next-best alternative lost
+- [ ] Every serious candidate from the inventory has a decision card
+- [ ] Each card has `Adopt`, `Update`, `Adapt`, or `Ignore`
+- [ ] Each card has `Now`, `Next`, `Later`, or `Ignore`
+- [ ] Each card names the closest Beer skill or `none`
+- [ ] Each card states the Beer effect
+- [ ] Each card includes labeled evidence
+- [ ] Each card explains why the next-best alternative lost

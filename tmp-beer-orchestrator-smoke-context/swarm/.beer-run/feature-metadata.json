@@ -1,0 +1,10 @@
+{
+  "id": "swarm-context-smoke",
+  "route": "feature",
+  "work_intent": "delivery",
+  "status": "completed",
+  "context_path": ".beer-run/context/swarm-context-smoke.md",
+  "plan_path": ".beer-run/plans/swarm-context-smoke.md",
+  "review_path": ".beer-run/reviews/swarm-context-smoke.md",
+  "closeout_path": ".beer-run/closeout/swarm-context-smoke.md"
+}

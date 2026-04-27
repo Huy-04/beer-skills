@@ -11,7 +11,7 @@ version: "1.0"
 | Route | Required depth | Execution target rule |
 |---|---|---|
 | `feature` | Full validation | `swarming` only for a real parallel slice; otherwise direct `executing` |
-| `feature + repair` | Full validation + root-cause retention | direct `beer:executing` by default; `swarming` only when the repair truly becomes multi-task |
+| `feature + repair` | Compact when bounded, full when broad, always root-cause anchored | direct `beer:executing` by default; `swarming` only when the repair truly becomes multi-task |
 | `small-fix` | Compact validation | direct `beer:executing` |
 
 ## Required Checks
@@ -34,6 +34,7 @@ version: "1.0"
 - file-scope sanity
 - verification completeness
 - direct execution credibility
+- `orchestration_strategy = single-worker`
 
 ### Feature Repair
 
@@ -43,12 +44,29 @@ version: "1.0"
 - verification completeness
 - execution credibility
 
+### Multi-Worker Sanity
+
+- worker-sized task boundaries are explicit
+- dependency edges are explicit
+- verification ownership is explicit
+- `swarming` is chosen for a real parallel slice, not as a fallback for vague planning
+
+### Pattern Readiness
+
+- chosen implementation pattern is named
+- evidence files are listed
+- exact source facts for `executing` to re-check are explicit
+- unverified pattern assumptions are called out
+- generated `Docs/` verification targets are confirmed against source before approval
+
 ## Useful Commands
 
 ```powershell
 Get-Content .beer\state.json
 if (Test-Path .beer\STATE.md) { Get-Content .beer\STATE.md }
+if (Test-Path history\<feature>\compact-plan.md) { Get-Content history\<feature>\compact-plan.md }
 if (Test-Path history\<feature>\phase-plan.md) { Get-Content history\<feature>\phase-plan.md }
+if (Test-Path Docs\index.json) { Get-Content Docs\index.json }
 rg -n "<keyword>" history\<feature>
 bd ready --json
 node .beer\scripts\commands\beer-auto-accept.mjs --gate validating --json
@@ -66,3 +84,5 @@ Run a spike only when a high-risk unknown still blocks safe execution.
 - Auto-accept requires `beer-auto-accept.mjs --gate validating` to return `ALLOW`
 - validating proposes `swarming` vs direct `executing` based on the route and actual slice size, then approves that target through the execution gate
 - `small-fix` is valid only when it arrived as a compact plan from upstream; validating does not invent the compact route locally
+- `contract_verified = true` means the plan has enough contract, pattern, and verification detail for execution to proceed without guessing
+- generated `Docs/` is read-only context; it cannot replace source-backed evidence

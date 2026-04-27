@@ -18,9 +18,10 @@ Collect and use these dimensions when available:
 4. Mentioned skills
 5. Package scripts or commands
 6. Beer state and artifacts
-7. Preserved technical identifiers
-8. Explicit constraints
-9. Unknowns and assumptions
+7. Generated `Docs/` only when explicitly referenced, labeled as hints
+8. Preserved technical identifiers
+9. Explicit constraints
+10. Unknowns and assumptions
 
 ## Prompt Shapes
 
@@ -74,6 +75,7 @@ Context:
 - Relevant files/systems:
 - Constraints:
 - Unknowns:
+- Source authority:
 
 Objective:
 - ...
@@ -120,3 +122,4 @@ A strong contextual prompt:
 4. tells the downstream agent how to inspect and verify
 5. has clear stop/ask criteria
 6. avoids filler that does not affect execution
+7. keeps generated `Docs/` subordinate to source and approved Beer artifacts

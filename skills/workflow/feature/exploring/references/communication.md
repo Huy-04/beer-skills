@@ -15,7 +15,7 @@ version: "1.0"
 
 ## Standard Messages
 
-### Direct-Fix Exemption
+### Small-Fix Exemption
 
 ```text
 This looks like a small, local, low-ambiguity fix.
@@ -23,6 +23,8 @@ Skipping locked-context capture in `exploring`.
 
 Next step: route to `beer:planning` with `route = small-fix` and `orchestration_strategy = single-worker`.
 ```
+
+Here `single-worker` is the exemption constraint. Do not use this message if the quick scout already suggests `multi-worker` planning or explicit dependency management.
 
 ### Seeded Context Input
 
@@ -110,7 +112,7 @@ Correct:
 
 ## Self-Review Checklist
 
-- [ ] Direct-fix exemption checked first
+- [ ] Small-fix exemption checked first
 - [ ] All locked decisions are user-confirmed
 - [ ] Delegated areas are separated from locked decisions
 - [ ] No seeded inference was promoted without confirmation

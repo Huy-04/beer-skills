@@ -15,12 +15,16 @@ Validation route: feature.
 I am checking whether the current phase is ready for its approved execution path.
 ```
 
-### Small Direct-Fix Route
+### Small-Fix Route
 
 ```text
 Validation route: small-fix.
 This is a compact safety gate before direct execution.
 ```
+
+Small-fix passes only when the incoming `single-worker` constraint still holds.
+
+If `execution_target = swarming`, say explicitly which worker boundaries and verification owners were confirmed.
 
 ### Feature Repair Route
 
@@ -37,6 +41,7 @@ Route: [feature | small-fix | feature repair]
 Current slice: [name]
 Execution target: [swarming | executing]
 Risk notes: [summary]
+Pattern readiness: [PASS | FAIL: reason]
 Auto-accept policy: [not used | ALLOW | BLOCK: reason]
 
 Approve execution? (yes / revise / no)
@@ -51,6 +56,7 @@ Stop immediately if:
 3. feature repair no longer mentions the root cause
 4. the chosen execution target does not match slice size
 5. auto-accept is being used to hide a high-risk pause
+6. generated `Docs/` is being treated as approval evidence instead of a source-checked hint
 
 ## Anti-Patterns
 

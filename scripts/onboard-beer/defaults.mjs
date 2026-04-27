@@ -149,7 +149,7 @@ export function buildDefaultStateMd() {
     "Pattern: (none)",
     "Review quality: (none)",
     "Review: (none)",
-    "Knowledge-base refresh: (none)",
+    "Generated Docs refresh: (none)",
     "Closeout ready: no",
     "Next handoff: (none)",
     "",

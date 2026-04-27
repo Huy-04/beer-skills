@@ -11,25 +11,24 @@ version: "1.1"
 - Only run on explicit user request or compounding-approved refresh.
 - If invoked from compounding's refresh handoff, do not ask for a second approval prompt here.
 - Record `invoking_owner` and `return_to` before scanning.
-- Normal feature planning/validation may read existing KB entries but must not auto-generate a new KB.
-- Current repository source wins over `.beer/knowledge-base/`.
-- Store `.beer/knowledge-base/` inside the current project/repo, not globally.
+- Normal feature planning/validation may read existing Docs entries but must not auto-generate new Docs output.
+- Current repository source wins over generated `Docs/` entries.
+- Store `Docs/` inside the current project/repo beside `.beer/`, not globally and not inside `.beer/`.
 - Default commit policy is `local-cache-by-default`.
-- Missing `.beer/knowledge-base/` means you may run a full scan-and-write pass during an approved run; do not stop at scaffolding only.
-- If cache entries conflict with source, trust source for immediate analysis, mark entries stale, and ask whether to update knowledge/docs or change code.
+- Missing `Docs/` means you may run a full scan-and-write pass during an approved run; do not stop at scaffolding only.
+- If generated Docs entries conflict with source, trust source for immediate analysis, mark entries stale, and ask whether to update knowledge/docs or change code.
 - If Git commit lookup is blocked/unavailable, use `generated_from_commit: unknown-*` and record the reason in metadata notes.
 - Prefer evidence-backed docs over exhaustive inventories.
 - Default execution is one-pass real scan -> child-agent lane fan-out -> single-writer synthesis.
 - Evidence priority is `gitnexus-first` when graph evidence is available, otherwise `local-fallback`.
 - If child agents are unavailable, degrade locally but keep the same output contract.
-- This skill refreshes cache artifacts only; it does not own Beer gates or idle reset.
+- This skill refreshes generated Docs artifacts only; it does not own Beer gates or idle reset.
 - Separate backend, frontend, and boundary patterns. Do not treat a single full-stack end-to-end story as the default verification unit.
 
 ## Scan Command
 
 ```text
 node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
-  --output-root .beer/knowledge-base \
   --source-path <repo-or-subpath> \
   --gitnexus-evidence <tmp-or-project-json> \
   --generated-from-commit unknown-git-unavailable \
@@ -38,21 +37,21 @@ node skills/support/codebase-knowledge/scripts/init-knowledge-base.mjs \
 ```
 
 Omit `--gitnexus-evidence` and use `--mode manual` when GitNexus is unavailable.
+`--output-root Docs` is optional; relative output roots resolve under the target repo root beside `.beer/`.
 
 ## Baseline Directory Shape
 
 ```text
-.beer/knowledge-base/
+Docs/
   README.md
   00-metadata.json
   index.json
-  architecture/
-  backend/
-  frontend/
-  boundaries/
-  critical-flows/
-  conventions/
 ```
+
+Everything below the baseline is generated only when evidence supports it.
+When source code or command entrypoints exist, `Flows/repo-flow.md` is required.
+When no code exists, skip flow docs instead of inventing one.
+`patterns/` is optional, not a skeleton folder.
 
 ## Discovery Lanes
 
@@ -101,13 +100,16 @@ Add only when the repo supports them:
 
 ## Canonical Docs To Prefer
 
-- `architecture/system-overview.md`
-- `backend/request-lifecycle.md`
-- `backend/module-template.md`
-- `frontend/app-structure-and-api-access.md`
-- `boundaries/frontend-backend-proxy.md`
-- `conventions/implementation-rules.md`
-- `critical-flows/*.md`
+- `Flows/repo-flow.md` (required when code exists)
+- `Architecture/system-overview.md`
+- layered backend: `Backend/patterns/request-lifecycle.md`
+- vertical-slice backend: `Backend/feature-slices/request-lifecycle.md`
+- route/service backend: `Backend/request-lifecycle.md`
+- simple frontend: `Frontend/app-structure-and-api-access.md`
+- feature-structured frontend: `Frontend/patterns/app-structure-and-api-access.md`
+- `Boundaries/frontend-backend-proxy.md`
+- `Conventions/implementation-rules.md`
+- `CriticalFlows/*.md`
 
 Do not force all of these into every repo. Generate only the docs supported by evidence.
 
@@ -128,19 +130,21 @@ Do not force all of these into every repo. Generate only the docs supported by e
 - [ ] `discovery.execution` is present
 - [ ] `discovery.synthesis = single-writer`
 - [ ] `discovery.evidence_priority = gitnexus-first | local-fallback`
+- [ ] `flows.repo-flow` present when source code exists
 - [ ] `dominant_patterns` present
 - [ ] `task_index` present
 - [ ] `entries[]` point to real files
 - [ ] `search_index` is keyword-oriented
 - [ ] `task_index` is implementation-task-oriented
 - [ ] backend patterns are separated from frontend patterns
-- [ ] boundaries are modeled separately from BE and FE layer patterns
-- [ ] task entries can point review toward layer/boundary verification targets
+- [ ] boundaries are modeled separately from BE and FE pattern groups
+- [ ] task entries can point review toward pattern/boundary verification targets
 
 ## Doc Checklist
 
 - [ ] `Key Files` points to real repo files
 - [ ] `Source Evidence` names the strongest supporting files
+- [ ] `Flows/repo-flow.md` includes `## Flow Diagram` with a Mermaid `flowchart` when flow exists
 - [ ] `Representative Snippet` is copied from current source, not invented
 
 ## Example Task Buckets
@@ -149,21 +153,19 @@ Do not force all of these into every repo. Generate only the docs supported by e
 {
   "task_index": {
     "add backend endpoint": [
-      "backend/request-lifecycle.md",
-      "backend/module-template.md",
-      "conventions/implementation-rules.md"
+      "Backend/request-lifecycle.md",
+      "Conventions/implementation-rules.md"
     ],
     "change backend handler flow": [
-      "backend/request-lifecycle.md",
-      "backend/domain-rules-and-lifecycle.md"
+      "Backend/request-lifecycle.md"
     ],
     "add frontend api call": [
-      "frontend/app-structure-and-api-access.md",
-      "boundaries/frontend-backend-proxy.md"
+      "Frontend/app-structure-and-api-access.md",
+      "Boundaries/frontend-backend-proxy.md"
     ],
     "change auth": [
-      "critical-flows/auth-session.md",
-      "boundaries/frontend-backend-proxy.md"
+      "CriticalFlows/auth-session.md",
+      "Boundaries/frontend-backend-proxy.md"
     ]
   }
 }
@@ -176,7 +178,7 @@ node -e "
 const fs=require('fs'), {execSync}=require('child_process');
 const curr=execSync('git rev-parse HEAD',{encoding:'utf8'}).trim();
 let last='none';
-try { const m=require('./.beer/knowledge-base/00-metadata.json'); last=m.generated_from_commit||'none'; } catch {}
+try { const m=require('./Docs/00-metadata.json'); last=m.generated_from_commit||'none'; } catch {}
 if(last.startsWith('unknown-')){ console.log('NON-AUTHORITATIVE: git commit unavailable ('+last+')'); process.exit(0); }
 if(curr!==last){ console.log('STALE: last='+last+' current='+curr); process.exit(1); }
 else { console.log('FRESH: '+curr); }
@@ -186,12 +188,13 @@ else { console.log('FRESH: '+curr); }
 ## Integration Reads
 
 ```powershell
-Test-Path .beer/knowledge-base/index.json
-Get-Content .beer/knowledge-base/README.md
-Get-Content .beer/knowledge-base/backend/*.md
-Get-Content .beer/knowledge-base/frontend/*.md
-Get-Content .beer/knowledge-base/boundaries/*.md
-Get-Content .beer/knowledge-base/critical-flows/*.md
+Test-Path Docs/index.json
+Get-Content Docs/README.md
+if (Test-Path Docs/Flows/repo-flow.md) { Get-Content Docs/Flows/repo-flow.md }
+Get-ChildItem Docs/Backend -Recurse -File
+Get-ChildItem Docs/Frontend -Recurse -File
+Get-Content Docs/Boundaries/*.md
+Get-Content Docs/CriticalFlows/*.md
 ```
 
 ## Red Flags

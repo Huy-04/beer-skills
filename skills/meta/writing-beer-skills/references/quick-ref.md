@@ -18,14 +18,16 @@ version: "1.0.0"
 
 ## Internal Method Checklist
 
-- [ ] Ran `SCENARIO RED / INSTRUCTION GREEN / PATTERN REFACTOR` for every new skill and every behavior-changing edit
+- [ ] Chose pressure depth: `full RED`, `focused RED`, or `mechanical waiver`
+- [ ] Used `full RED` for new skills, broad behavior changes, route/ownership rewrites, dependency changes, and pattern/template/checklist changes
+- [ ] Used `focused RED` for narrow behavior edits to an existing skill
 - [ ] Treated pattern/template/checklist/example edits as behavior-changing when they changed authoring decisions
-- [ ] If `SCENARIO RED` was skipped, the handoff says the edit was mechanical-only and behavior was unchanged
-- [ ] If a behavior-changing edit happened before `SCENARIO RED`, recorded the lapse and ran retroactive coverage before handoff
+- [ ] If pressure coverage was skipped, the handoff says the edit was mechanical-only and behavior was unchanged
+- [ ] If a behavior-changing edit happened before pressure coverage, recorded the lapse and ran retroactive coverage before handoff
 - [ ] Captured useful shortcuts or rationalizations before finalizing wording
 - [ ] Added at least one change-specific scenario targeting the exact rule or behavior changed
 - [ ] Used at least two pressures in the change-specific scenario
-- [ ] Captured a concrete failure or verbatim rationalization from a real run, or documented the blocker
+- [ ] Captured real-run evidence for `full RED`, or labeled the evidence as `focused/manual`
 - [ ] Tightened wording after pressure-testing
 
 ## Final Package Checklist
@@ -55,9 +57,9 @@ version: "1.0.0"
 
 ## Minimum Handoff Evidence
 
-- [ ] Include `SCENARIO RED` status: `run` or `waived legitimately`
-- [ ] If `SCENARIO RED` ran, include a minimal SCENARIO RED report
-- [ ] If `SCENARIO RED` was waived, include the mechanical-only justification
+- [ ] Include pressure depth: `full RED`, `focused RED`, or `mechanical waiver`
+- [ ] If pressure coverage ran, include a minimal pressure report
+- [ ] If pressure coverage was waived, include the mechanical-only justification
 - [ ] Include manual review evidence with line refs, field values, or file-level observations
 
 ## Fast Smell Test
@@ -67,5 +69,6 @@ version: "1.0.0"
 - references point to missing files
 - repo-native checks passed but no manual semantic review was shown
 - manual review says `pass` but gives no evidence
-- `SCENARIO RED` ran but no report was included
-- `SCENARIO RED` outcomes are hypothetical instead of coming from a real run
+- pressure coverage ran but no report was included
+- `full RED` outcomes are hypothetical instead of coming from a real run
+- `focused RED` evidence is not labeled as focused/manual

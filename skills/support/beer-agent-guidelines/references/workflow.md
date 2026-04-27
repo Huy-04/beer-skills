@@ -1,7 +1,7 @@
 ---
 name: beer-agent-guidelines
 description: Detailed workflow for syncing Karpathy-style coding guardrails into repo instruction files
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # beer-agent-guidelines - Workflow Detail
@@ -9,6 +9,9 @@ version: "1.0.0"
 ## Purpose
 
 Use this support skill to install or refresh concise Karpathy-style guardrails in `CLAUDE.md` and `AGENTS.md`. The result should look like a compact instruction payload, not a large workflow document.
+
+This skill edits repo instruction files. It does not own Beer state, workflow
+gate approval, generated `Docs/`, or code implementation.
 
 ## Phase 1: Read the Existing Instruction Surface
 
@@ -26,6 +29,7 @@ Decision rule:
 - Default to updating both files.
 - If the user explicitly named only one file, honor that narrower target.
 - If local repo instructions conflict with the canonical block, keep the local rules outside the managed block and report the conflict instead of silently rewriting it.
+- For instruction-only requests, do not run a full Beer install or refresh command just to update one or two instruction files. Those commands also resync skills, hooks, and config.
 
 ## Phase 2: Load the Canonical Guardrails
 
@@ -40,6 +44,7 @@ Those files are the source of truth for the installed content. Keep them compact
 - simplicity first
 - surgical changes
 - goal-driven execution
+- contract verification and generated-Docs-as-hints discipline
 
 Do not expand the installed block into a long Beer workflow explanation. The reference repo works because the instructions stay short enough to be read and applied repeatedly.
 
@@ -59,6 +64,7 @@ Rules:
 - If the wrapper does not exist, append the block after existing repo-specific instructions with a blank line separator.
 - If the file does not exist, create it with the canonical content.
 - Do not rewrite unrelated sections just to "make the file cleaner."
+- If the user narrowed the target to one file, edit that file from its template and leave the peer file untouched.
 
 If the repo keeps both files, sync both in the same pass so future agents do not see divergent rules.
 
@@ -81,8 +87,10 @@ Before handoff, confirm:
 - the targeted files exist
 - each targeted file contains the Beer-managed wrapper or the canonical content
 - both files express the same four principles
+- both files include Beer route lock, the narrow trivial escape hatch, contract verification, and generated `Docs/` as read-only hints
 - project-specific content outside the wrapper still exists
 - the diff stayed limited to the instruction files requested or implied by the task
+- `.beer/state.json` and generated `Docs/` were not changed by this skill
 
 ## Pressure Scenarios
 
@@ -131,14 +139,40 @@ Correct behavior:
 
 - compress the wording until it reads like a short behavioral policy
 
+### Scenario E: Full refresh for instruction-only sync
+
+Bad behavior:
+
+- run `beer refresh` when the user only asked to update `AGENTS.md` or `CLAUDE.md`
+- modify skills, hooks, `.codex/`, or `.claude/` settings as a side effect
+
+Correct behavior:
+
+- edit only the requested instruction file(s) from the canonical template
+- use full refresh only when the user asked for managed Beer refresh/install/update
+
+### Scenario F: Generated Docs drift gets folded into guardrails
+
+Bad behavior:
+
+- refresh generated `Docs/` because the installed guardrail mentions them
+
+Correct behavior:
+
+- keep generated `Docs/` out of scope
+- say they are read-only hints in the installed instructions
+
 ## Minimum Handoff Shape
 
 Return:
 
 - `Target files`
+- `Sync method`
 - `Created`
 - `Updated`
+- `Managed block`
 - `Conflict notes`
+- `Extra managed surfaces touched`
 - `Follow-up`
 
 Keep the handoff short enough that the repo owner can see exactly what happened without rereading the full templates.

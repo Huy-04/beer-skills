@@ -1,0 +1,10 @@
+{
+  "id": "order-history-pdf",
+  "route": "feature",
+  "work_intent": "delivery",
+  "status": "completed",
+  "context_path": ".beer-run/context/order-history-pdf.md",
+  "plan_path": ".beer-run/plans/order-history-pdf.md",
+  "review_path": ".beer-run/reviews/order-history-pdf.md",
+  "closeout_path": ".beer-run/closeout/order-history-pdf.md"
+}

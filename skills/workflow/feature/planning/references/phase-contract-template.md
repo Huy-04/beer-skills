@@ -36,12 +36,19 @@
 - nearest regression scope: `<scope>`
 - required evidence file: `<history/<feature>/execution-evidence.md or .beer/execution-evidence/<slug>.md>`
 
-## 8. Special Route Notes
+## 8. Implementation Pattern To Follow
+
+- chosen pattern: `<pattern name or local convention>`
+- evidence files: `<file paths planning inspected>`
+- executing must verify before coding: `<exact signatures, DTOs, commands, event shapes, or other source facts>`
+- do not assume: `<pattern-looking detail that still needs exact source confirmation or n/a>`
+
+## 9. Special Route Notes
 
 ### Debug Escalation
 
 - root cause preserved: `<sentence or n/a>`
 
-### Small Direct Fix
+### Small-Fix
 
 - why no broader planning is needed: `<summary or n/a>`

@@ -28,7 +28,7 @@ Avoid:
 
 ## Rationalization Capture Standard
 
-When documenting SCENARIO RED failures, record:
+When documenting pressure failures, record:
 
 - the scenario name
 - the combined pressures
@@ -80,14 +80,15 @@ It must:
 
 ---
 
-## SCENARIO RED Phase Report Template
+## Pressure Coverage Report Template
 
 ```markdown
-Internal SCENARIO RED complete for `<skill-name>`
+Internal pressure coverage complete for `<skill-name>`
 
+Pressure depth: `full RED` | `focused RED`
 Scenarios run: N
 Scenario execution status:
-- Scenario "<name>": executed | blocked (<reason>)
+- Scenario "<name>": executed | focused/manual | blocked (<reason>)
 Baseline failures captured: N
 Change-specific scenarios run: N
 
@@ -97,7 +98,7 @@ Key rationalizations:
 - Scenario "<name>": "<verbatim rationalization 3>"
 
 Late-detected lapse:
-- Behavior-changing edit made before SCENARIO RED: yes | no
+- Behavior-changing edit made before pressure coverage: yes | no
 - If yes, retroactive coverage run before handoff: yes | no
 
 Changed rule or behavior targeted:
@@ -118,10 +119,10 @@ Ready to tighten the draft skill using these failures.
 
 ---
 
-## SCENARIO RED Waiver Template
+## Mechanical Waiver Template
 
 ```markdown
-SCENARIO RED waived for `<skill-name>`
+Pressure coverage waived for `<skill-name>`
 
 Reason:
 - edit is mechanical-only: yes
@@ -131,7 +132,7 @@ Reason:
 Change scope:
 - <spelling | formatting | broken link | similar mechanical fix>
 
-Why SCENARIO RED was not needed:
+Why pressure coverage was not needed:
 - <brief justification>
 ```
 
@@ -182,10 +183,10 @@ Validation complete for `<skill-name>`
 - manual semantic checklist: pass | fail
 
 Temporary artifacts removed: yes | no
-SCENARIO RED run or waived legitimately: run | waived
+Pressure depth: full RED | focused RED | mechanical waiver
 Manual review evidence:
 - <checklist item>: <file:line or field value> -> <what this proves>
-- <checklist item>: <file:line or field value> -> <what this proves>
+- <second checklist item>: <file:line or field value> -> <what this proves>
 - <route metadata item if present>: <file:line or field value> -> <what this proves>
 Final package matches pattern: yes | no
 Remaining weaknesses: <list or "none">
@@ -199,8 +200,8 @@ Remaining weaknesses: <list or "none">
 Skill updated: <skill-name>
 Internal pressure scenarios run: <N>
 New loopholes closed: <N>
-SCENARIO RED status: run | waived legitimately
-SCENARIO RED summary:
+Pressure depth: full RED | focused RED | mechanical waiver
+Pressure summary:
 - Scenario execution status: <executed summary or blocked reasons>
 - Changed rule or behavior targeted: <item>
 - Strongest rationalization found: <quote or "waived legitimately">
@@ -210,7 +211,7 @@ Validation:
 - manual semantic checklist: pass | fail
 Manual review evidence:
 - <checklist item>: <file:line or field value> -> <what this proves>
-- <checklist item>: <file:line or field value> -> <what this proves>
+- <second checklist item>: <file:line or field value> -> <what this proves>
 - <route metadata item if present>: <file:line or field value> -> <what this proves>
 
 Final package is clean and ready for review.

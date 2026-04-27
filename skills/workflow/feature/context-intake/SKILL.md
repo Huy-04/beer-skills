@@ -67,7 +67,7 @@ Recover current Beer task context before normal workflow. Prefer graph or saved 
 - `exploring` owns locked decisions and `history/<feature>/CONTEXT.md`.
 - `planning` owns delivery beads, story/bead graphs, and execution decomposition.
 - Scout beads are research-only context scouts. They are not delivery beads and must not be treated as phase execution work.
-- `.beer/knowledge-base/` is an optional accelerator only. It never outranks locked context or direct repo evidence.
+- Generated `Docs/` is an optional accelerator only. It never outranks locked context or direct repo evidence, and `context-intake` must not refresh it.
 - Do not auto-resume from beads or `HANDOFF.json`; always ask the user first.
 - `context-intake` does not choose execution target, worker topology, or review path.
 - `context-intake` may preserve or confirm `route` and `work_intent`, but it must not silently expand scope or skip `exploring`.
@@ -104,6 +104,7 @@ When writing `.beer/seed/`, include:
 - `00-metadata.json` with source and confidence.
 - `01-task.md`, `02-structure.md`, `03-conventions.md`, `04-relevant-files.md`.
 - `05-gaps.md` when context is degraded or low confidence.
+- enough scope signals that `exploring` can honestly re-check `small-fix` vs feature flow without treating seed as a locked route decision.
 
 ## Hard Rules
 
@@ -115,7 +116,7 @@ When writing `.beer/seed/`, include:
 - Never write `history/<feature>/CONTEXT.md`.
 - Never let `.beer/seed/` substitute for locked context.
 - Never let stale seed context outrank direct repo evidence.
-- Never treat `.beer/knowledge-base/` as a source of truth.
+- Never treat generated `Docs/` as a source of truth.
 - Never claim repo-wide certainty from a degraded or partial scan.
 - Never hand work past `beer:exploring`.
 
@@ -124,6 +125,7 @@ When writing `.beer/seed/`, include:
 - `state.json` is authoritative.
 - `context-intake` may update `phase`, `active_skill`, `context_stage`, `seed_path`, `context_path`, `context_confidence`, `feature_slug` when known, and `next_handoff = beer:exploring`.
 - `context-intake` may preserve or confirm `route` and `work_intent`, but it should not invent downstream execution details.
+- `context-intake` must not set `orchestration_strategy`; that belongs to `planning` after `exploring` finishes the route boundary honestly.
 - `context-intake` must not set `approved_gates.context = true`; only `exploring` may prepare that handoff for Gate 1 approval.
 - `context-intake` must not set `approved_gates.phase_plan`, `approved_gates.execution`, or `approved_gates.review`.
 

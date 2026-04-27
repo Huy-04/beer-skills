@@ -1,7 +1,7 @@
 ---
 skill: using-beer
 purpose: Quick commands, file reference, and chaining contract
-version: "1.0"
+version: "1.1"
 ---
 
 # using-beer - Quick Reference
@@ -80,9 +80,42 @@ cat .beer/HANDOFF.json 2>/dev/null || echo "No handoff"
 
 ## Chaining Contract
 
-At the end of every skill, update `.beer/state.json` first, then regenerate `.beer/STATE.md` from `state.json`. `STATE.md` is derived and human-readable; `state.json` is the authoritative source of truth.
+State-owning workflow skills update `.beer/state.json` first, then regenerate
+`.beer/STATE.md` from `state.json`. `STATE.md` is derived and human-readable;
+`state.json` is the authoritative source of truth.
 
-### Direct-Fix Signal
+Support helpers such as `prompt-leverage` and `graph-explore` return packets to
+their caller and do not mutate state. TDD state is recorded only when the active
+Beer route requires fail-first proof.
+
+### Support / Helper Handoff Minimum
+
+Return a compact packet with:
+
+- `status`
+- `evidence`
+- `decision_or_guardrail`
+- `state_changes_or_none`
+- `return_to`
+- `next_owner`
+
+If the result creates implementation work, stale Docs cleanup, or wider repair,
+route back to the current workflow owner instead of continuing inside the
+support/helper skill.
+
+### Prompt Normalization
+
+Use `prompt-leverage` only when the request needs normalization before routing:
+
+- mixed-language request
+- referenced files, commands, Beer artifacts, or skill names need local context
+- user asks to improve, structure, normalize, or leverage a prompt
+- request is vague but likely resolvable from repo/session context
+
+Return raw request plus contextual prompt. Then `using-beer` routes using both.
+Normal task work still enters through `context-intake`.
+
+### Small-Fix Signal
 
 Keep `beer:context-intake` as intake. If the task is:
 
@@ -95,6 +128,7 @@ Typical examples: wrong type, wrong format, tiny rename, obvious single-path fix
 
 | Skill | Reads | Writes |
 |---|---|---|
+| `prompt-leverage` | Raw request, repo docs, mentioned files/skills, optional `.beer/state.json` | No state or code writes; returns contextual prompt packet |
 | `context-intake` | User request, `.beer/state.json`, optional `HANDOFF.json`, optional `.beer/seed/` | Seed context, context-stage updates, next-phase routing decision |
 | `exploring` | User conversation, prior context, optional `.beer/seed/` | `history/<feature>/CONTEXT.md` |
 | `planning` | `CONTEXT.md`, `critical-patterns.md` | `discovery.md`, `approach.md`, `phase-plan.md`, beads |
@@ -102,6 +136,9 @@ Typical examples: wrong type, wrong format, tiny rename, obvious single-path fix
 | `swarming` | Validated beads, state files | Worker coordination, updated state, optional handoff |
 | `executing` | Bead, context, reservations | Implementation, verification, closed bead |
 | `test-driven-development` | Target behavior, focused test command, code scope | RED/GREEN/REFACTOR evidence and regression proof |
+| `codebase-knowledge` | Explicit scan/build/refresh request or compounding-approved refresh | Generated `Docs/` beside `.beer/` |
+| `graph-explore` | Calling skill question, GitNexus/index status, optional Docs-derived assumption | No state writes; returns read-only graph evidence packet |
+| `beer-agent-guidelines` | Existing `AGENTS.md`/`CLAUDE.md`, canonical templates | Instruction files only unless user asked for full managed refresh |
 | `reviewing` | Diff, `CONTEXT.md`, `approach.md` | Review beads, UAT outcome, finish decision |
 | `compounding` | Full feature history | Learnings file and critical-pattern updates |
 
@@ -126,11 +163,19 @@ Examples:
 ```json
 {
   "schema_version": "1.0",
+  "feature_slug": "",
   "route": "",
+  "work_intent": "delivery",
   "risk": "normal",
   "run_style": "guided",
   "orchestration_strategy": "",
+  "active_skill": "using-beer",
+  "context_stage": "none",
+  "seed_path": ".beer/seed/",
+  "context_path": "",
+  "context_confidence": 0,
   "phase": "idle",
+  "phase_number": 0,
   "current_phase_name": "",
   "current_slice": "",
   "slice_count": 0,
@@ -143,26 +188,42 @@ Examples:
   "spike_status": "",
   "swarm_status": "",
   "active_work_item": "",
+  "tdd_required": false,
+  "tdd_status": "not-required",
+  "tdd_evidence_path": "",
   "execution_evidence_path": "",
-  "verification_status": "",
+  "verification_status": "not-run",
+  "gitnexus_refresh_status": "",
+  "code_quantity_status": "",
+  "pattern_status": "",
+  "review_quality_status": "",
   "review_route": "",
   "review_status": "",
   "open_findings_count": 0,
   "compounding_route": "",
   "learnings_file": "",
   "critical_promotions": 0,
+  "knowledge_base_refresh_status": "",
   "closeout_ready": false,
   "next_handoff": "",
-  "context_stage": "none",
-  "seed_path": ".beer/seed/",
-  "context_path": "",
-  "context_confidence": 0,
+  "epic_id": "",
   "approved_gates": {
     "context": false,
     "phase_plan": false,
     "execution": false,
     "review": false
-  }
+  },
+  "active_beads": [],
+  "active_workers": [],
+  "auto_accept": {
+    "enabled": false,
+    "planning": false,
+    "validating": false,
+    "swarming": false,
+    "reviewing": false,
+    "compounding": false
+  },
+  "blockers": []
 }
 ```
 
@@ -174,17 +235,33 @@ Examples:
 Current: idle
 Feature: (none)
 Route: (none)
+Work intent: delivery
 Risk: normal
 Run style: guided
 Orchestration: (none)
-Phase: idle
+Skill: using-beer
+Context: none
+Context path: (none)
+Current phase: (none)
+Current slice: (none)
 Slices: 0
 Planned workers: 0
-Contract verified: no
-Execution target: (none)
 Gate approvals: context=no, phase_plan=no, execution=no, review=no
+Contract verified: no
 Validation: (none)
 Validator: (none)
-Verification: (none)
+Execution target: (none)
+TDD required: no
+TDD status: not-required
+TDD evidence: (none)
 Execution evidence: (none)
+Verification: (none)
+GitNexus refresh: (none)
+Code quantity: (none)
+Pattern: (none)
+Review quality: (none)
+Review: (none)
+Generated Docs refresh: (none)
+Closeout ready: no
+Next handoff: (none)
 ```

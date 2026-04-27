@@ -1,7 +1,7 @@
 ---
 skill: prompt-leverage
 purpose: Escape commands, script usage, and context-preservation rules
-version: "2.0"
+version: "2.1"
 ---
 
 # prompt-leverage - Quick Reference
@@ -32,6 +32,7 @@ In PowerShell, use single quotes when the prompt contains backticks so preserved
 - preserve Beer terms and identifiers exactly
 - preserve file names, paths, commands, flags, env vars, and code blocks
 - use local files as evidence
+- use generated `Docs/` only when explicitly referenced and label them as hints
 - mark unresolved file/path mentions as unknowns
 - ask up to 3 questions only when critical context is missing
 - carry working/output language intent exactly as defined in `references/language-policy.md`
@@ -67,6 +68,7 @@ Inspect the planning skill, rename CONTEXT.md into a Vietnamese equivalent, and 
 - the raw user request, unchanged
 - the contextual prompt
 - the context packet
+- context sources used and skipped
 - a clearer objective
 - grounded local context
 - preserved technical terms
@@ -74,6 +76,7 @@ Inspect the planning skill, rename CONTEXT.md into a Vietnamese equivalent, and 
 - explicit response-language intent when needed
 - suggested downstream route only when the raw request and context support it
 - `return_to` so the caller remains the workflow owner
+- no Beer state mutation, planning artifact write, code edit, or generated Docs refresh
 
 ## Language Policy
 

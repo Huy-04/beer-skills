@@ -15,11 +15,13 @@ Use short factual updates:
 - which worker profiles are active when it matters
 - whether blockers exist
 - whether the slice is still on the validated scope
+- whether worker payloads include pattern/source-fact/TDD expectations
+- whether worker results are fully recorded yet
 
 Good:
 
 ```text
-Swarm active for Phase 1. Three workers online. Profiles: 2 coding, 1 research_synthesis. No blockers. Current scope unchanged.
+Swarm active for Phase 1. Three workers online. Profiles: 2 coding, 1 research_synthesis. Payload contracts include pattern/source-fact/TDD expectations. No blockers. Current scope unchanged. Worker results current.
 ```
 
 Bad:
@@ -42,16 +44,24 @@ Template:
 Worker blocked on <work item>. Cause: <conflict or missing decision>. Need: <specific judgment or reroute>.
 ```
 
+Source-fact mismatch template:
+
+```text
+Worker blocked on <work item>. Cause: source facts contradicted the validated artifact at <file or symbol>. Need: route back to beer:<planning or validating>.
+```
+
 ## Completion Reporting
 
 At slice completion, report:
 
 - slice name
 - whether all required work items finished
+- whether worker results and evidence are fully recorded
+- whether pattern/source-fact/TDD disposition evidence is recorded
 - next owner
 
 Template:
 
 ```text
-Swarm complete for <slice>. Required work finished. Next owner: beer:<planning or reviewing>.
+Swarm complete for <slice>. Required work finished. Worker results, pattern/source-fact checks, TDD disposition, and evidence recorded. Next owner: beer:<planning or reviewing>.
 ```

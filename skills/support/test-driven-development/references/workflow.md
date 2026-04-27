@@ -1,7 +1,7 @@
 ---
 name: test-driven-development
 description: Detailed RED -> GREEN -> REFACTOR workflow for Beer
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # test-driven-development - Workflow Details
@@ -10,7 +10,7 @@ version: "1.0.0"
 
 **Role:** Nested test-first behavior proof loop  
 **Job:** Prove the target behavior with a failing test before writing production code, then pass it with the smallest change and return evidence to the parent phase  
-**Output:** Focused test evidence, minimal implementation, and a trustworthy TDD exit target
+**Output:** Phase-separated RED/GREEN/REFACTOR evidence, minimal implementation, and a trustworthy TDD exit target
 
 ## Beer Flow Integration
 
@@ -18,7 +18,9 @@ version: "1.0.0"
 - From `debugging`: preserve root-cause evidence and return RED/GREEN proof to the debug or planned repair path.
 - From `executing`: stay inside the current phase contract. TDD does not expand scope.
 - Before `validating`: provide test evidence as validation input; do not bypass Beer gates.
-- Direct user invocation: finish the smallest useful RED/GREEN/REFACTOR loop, then route changed code to `reviewing`.
+- Direct user invocation: finish the smallest useful RED/GREEN/REFACTOR loop only when the request is bounded and ownership is clear.
+- If a direct TDD request becomes feature-sized, lacks approval, or needs scope decisions, return to `context-intake`, `planning`, or `validating` before production code changes.
+- TDD does not create or refresh generated `Docs/`. Current source and executable test results are authoritative; generated `Docs/` are hints only.
 
 ## Core Sequence
 
@@ -36,6 +38,16 @@ Run in order unless TDD is legitimately waived.
 9. Report evidence or waiver
 ```
 
+Preferred evidence layout:
+
+```text
+tdd_red_evidence_path
+tdd_green_evidence_path
+tdd_refactor_evidence_path
+```
+
+A combined `tdd_evidence_path` is acceptable only if the three phases are clearly separated inside one artifact.
+
 ## Step 0: Enter
 
 Record:
@@ -43,6 +55,7 @@ Record:
 - `tdd_entry_phase`
 - target behavior
 - intended `tdd_exit_target`
+- whether the request came from an approved parent slice or a bounded direct TDD request
 
 Typical entry phases:
 
@@ -50,6 +63,9 @@ Typical entry phases:
 - `debugging`
 - pre-`validating`
 - direct user request
+
+If the direct request is not bounded, stop before production-code changes and
+handoff the proposed RED target to the normal Beer route.
 
 ## Step 1: Confirm TDD Applies
 
@@ -75,6 +91,10 @@ If a waiver is used, record:
 - why no meaningful failing-test path existed
 - what alternative verification was used
 - what risk remains because TDD was skipped
+
+For required Beer TDD, record `tdd_required = true` and `tdd_status = required`
+before the loop starts. Move `tdd_status` to `complete` only after trustworthy
+RED/GREEN/REFACTOR evidence exists.
 
 ## Step 2: Write the RED Test
 
@@ -109,6 +129,14 @@ If RED passes immediately:
 - the test does not prove the intended change
 
 Fix the test before any production-code work continues.
+
+RED evidence should record:
+
+- focused test path or scope
+- exact command
+- exit status
+- short failure excerpt
+- a one-line statement of why this is the right failure
 
 If production code for the targeted behavior was already written before RED:
 
@@ -158,6 +186,13 @@ GREEN is complete only when:
 - nearby regression scope passes
 - no new warning or error indicates a hidden break
 
+GREEN evidence should record:
+
+- focused test command and result
+- regression scope and result
+- exit status or short pass excerpt
+- any limitation in the chosen regression scope
+
 ## Step 6: REFACTOR
 
 Refactor only after GREEN.
@@ -177,6 +212,12 @@ Forbidden during REFACTOR:
 
 After every meaningful refactor, re-run the focused test and the chosen regression scope.
 
+REFACTOR evidence should record:
+
+- what cleanup was done
+- what tests were rerun
+- whether refactor was intentionally skipped because GREEN was already minimal
+
 ## Step 7: Report
 
 The handoff should make TDD audit-friendly.
@@ -194,6 +235,10 @@ Minimum report content:
 - regression scope used
 - blocked attempts, if any
 - waiver or limitation, if any
+- `tdd_status` and required state updates
+- route artifact or bounded direct-scope boundary used
+- RED/GREEN/REFACTOR artifact paths if the evidence is split across files
+- generated Docs refresh disposition, normally `not_performed`
 
 ## Exit Targets
 
@@ -233,9 +278,11 @@ This workflow is done when:
 
 - the behavior under change was represented by a focused test
 - RED failed for the right reason
+- RED evidence artifact captured the right-failure proof, not just "tests failed"
 - GREEN passed with minimal production code
 - nearby regression scope was run
 - RED and GREEN evidence included exit status or short output excerpts
+- REFACTOR evidence exists or explicitly says `no refactor`
 - blocked attempts were reported if any command could not produce valid TDD evidence
 - any refactor preserved green tests
 - the handoff records concrete TDD evidence or a legitimate waiver
@@ -248,3 +295,5 @@ This workflow is done when:
 - Do not use mock-only tests when real behavior can be exercised.
 - Do not broaden the implementation beyond the failing test during GREEN.
 - Do not skip the nearby regression scope after focused GREEN passes.
+- Do not use direct TDD invocation to bypass feature planning, validation, or execution approval.
+- Do not create or refresh generated `Docs/` inside the TDD loop.

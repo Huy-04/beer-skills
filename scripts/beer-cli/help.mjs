@@ -34,7 +34,7 @@ export function printHelp() {
       "  --dry-run-tools     Print the install command without executing it",
       "  --path <file>       Target file path for flow-guard (repeatable)",
       "  --trivial           Explicit trivial-task bypass for flow-guard",
-      "  --knowledge-base    Record a closeout decision: not-needed, approved, declined, or refreshed",
+      "  --knowledge-base    Record generated Docs status: not-needed, approved (intermediate), declined, or refreshed",
       "",
       "Shared options:",
       "  --yes               Skip the uninstall confirmation prompt",

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "active_feature": "order-history-pdf",
+  "route": "feature",
+  "work_intent": "delivery",
+  "risk": "normal",
+  "orchestration_strategy": "multi-worker",
+  "run_style": "guided",
+  "phase": "idle",
+  "next_handoff": null,
+  "execution_target": "swarming",
+  "swarm_status": "complete",
+  "current_slice": "slice-1",
+  "context_locked": false,
+  "plan_ready": true,
+  "validation_status": "approved",
+  "review_status": "approved",
+  "closeout_status": "completed",
+  "debug_active": false,
+  "debug_entry_phase": null,
+  "debug_exit_target": null,
+  "active_workers": [],
+  "artifacts": {
+    "context_path": ".beer-run/context/order-history-pdf.md",
+    "plan_path": ".beer-run/plans/order-history-pdf.md",
+    "review_path": ".beer-run/reviews/order-history-pdf.md",
+    "closeout_path": ".beer-run/closeout/order-history-pdf.md",
+    "execution_evidence_path": ".beer-run/reviews/order-history-pdf.execution.md",
+    "worker_assignments_path": ".beer-run/workers/order-history-pdf.assignments.json"
+  },
+  "blockers": [],
+  "notes": [
+    "Initialized by materialize-beer-run for order-history-pdf",
+    "Plan updated for slice slice-1",
+    "Validation result: approved",
+    "Swarm dispatched with 2 workers.",
+    "Worker result: worker-1 -> completed",
+    "Worker result: worker-2 -> completed",
+    "Review result: approved",
+    "Closeout result: completed"
+  ]
+}

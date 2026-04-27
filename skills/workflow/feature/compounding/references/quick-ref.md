@@ -18,10 +18,13 @@ version: "1.0"
 
 - `.beer/state.json`
 - relevant execution or review evidence
+- route artifact named by execution or review evidence
 - `CONTEXT.md` or root-cause note when needed
 - `review_status = pass`
 - `approved_gates.review = true` for review-derived closeout
 - `open_findings_count = 0` unless remaining findings were explicitly deferred
+- `gitnexus_refresh_status = completed | skipped`
+- `knowledge_base_refresh_status = refreshed | declined | not-needed`
 
 ## Route Guard
 
@@ -37,6 +40,9 @@ A learning is worth keeping when someone who was not in the session can answer:
 3. when to apply this lesson again
 4. what to do differently
 
+If no candidate passes this test, finish the no-learning closeout path instead
+of writing a ceremonial file.
+
 ## Promotion Test
 
 Promote only if all are true:
@@ -47,13 +53,15 @@ Promote only if all are true:
 
 ## Post-Task Refresh Gate
 
-- Evaluate `.beer/knowledge-base/` refresh only when the finished work created reusable pattern or convention drift worth preserving.
+- Evaluate generated `Docs/` refresh only when the finished work created reusable pattern or convention drift worth preserving.
 - Evaluate GitNexus reindex only when the finished work materially changed code or graph-relevant structure.
 - GitNexus reindex follows the automatic post-task path; it does not need a separate human approval prompt.
-- Knowledge-base refresh stays approval-based.
+- `gitnexus_refresh_status` must be `completed` or `skipped`; `manual-required` and `failed` block closeout.
+- Generated Docs refresh stays approval-based.
+- `knowledge_base_refresh_status = approved` is intermediate; final closeout requires `refreshed`, `declined`, or `not-needed`.
 - Post-task GitNexus refresh means re-indexing the current repo, not reinstalling or upgrading the GitNexus tool.
 - Run `beer-closeout-guard.mjs` before resetting Beer to idle.
 
 ## One-Line Reminder
 
-`compounding` records genuine reuse value, not a ceremonial summary.
+`compounding` records genuine reuse value, not a ceremonial summary; a no-learning closeout is valid after refresh statuses are final.

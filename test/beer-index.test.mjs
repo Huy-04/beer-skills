@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
+import { applyRepo } from "../scripts/commands/onboard-beer.mjs";
+import { readBeerState } from "../scripts/beer-state/core.mjs";
 import {
   assessGitNexusIndex,
   hasMaterialRepoChanges,
   isMaterialRepoPath,
   parseGitStatusPaths,
+  recordGitNexusIndexStatus,
   runGitNexusIndex,
 } from "../scripts/beer-cli/index.mjs";
 
@@ -84,4 +90,17 @@ test("runGitNexusIndex executes analyze from the repo root", () => {
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0].args, ["gitnexus", "analyze"]);
   assert.equal(calls[0].options.cwd, "C:\\Code\\Project\\Example");
+});
+
+test("recordGitNexusIndexStatus stores closeout status when Beer state exists", () => {
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), "beer-index-state-"));
+  applyRepo(repoRoot);
+
+  const nextState = recordGitNexusIndexStatus(repoRoot, {
+    status: "completed",
+  });
+
+  assert.equal(nextState.gitnexus_refresh_status, "completed");
+  assert.equal(nextState.closeout_ready, false);
+  assert.equal(readBeerState(repoRoot).gitnexus_refresh_status, "completed");
 });

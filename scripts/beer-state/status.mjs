@@ -396,7 +396,7 @@ export function renderBeerStatus(status) {
     `Pattern: ${patternStatus}`,
     `Review quality: ${reviewQualityStatus}`,
     `Epic: ${epicId}`,
-    `Knowledge-base refresh: ${knowledgeBaseRefreshStatus}`,
+    `Generated Docs refresh: ${knowledgeBaseRefreshStatus}`,
     `Closeout ready: ${closeoutReady}`,
     `Handoff: ${handoff}`,
     "",

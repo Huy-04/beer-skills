@@ -39,7 +39,7 @@ Lock decisions after intake, before planning. Ask one question at a time, confir
 | | |
 |---|---|
 | **Use when** | Feature work, ambiguous change requests, or design decisions still need to be locked |
-| **Skip when** | Small, local, low-ambiguity fixes that likely touch fewer than 3 files |
+| **Small-fix path** | Still enters `exploring`, then exits through the exemption when the fix is local, low ambiguity, and likely under 3 files |
 | **Consumes** | User request, optional `.beer/seed/`, quick repo evidence |
 | **Produces** | `history/<feature>/CONTEXT.md` |
 | **Next** | `beer:planning` |
@@ -55,14 +55,15 @@ Lock decisions after intake, before planning. Ask one question at a time, confir
 7. Ask for Gate 1 approval on the finished `CONTEXT.md`.
 8. Update `.beer/state.json`, then regenerate `.beer/STATE.md`.
 
-## Direct-Fix Exemption
+## Small-Fix Exemption
 
 Exit `exploring` early into compact planning when all of these are true:
 
 - the task is local and low ambiguity,
 - it is likely to touch fewer than 3 files,
 - it does not introduce a new feature boundary,
-- it does not need product or behavior decisions locked.
+- it does not need product or behavior decisions locked,
+- it does not already decompose into multiple worker-sized tasks.
 
 Examples:
 
@@ -78,6 +79,10 @@ If the exemption applies:
 - set `next_handoff = beer:planning`,
 - do not write `CONTEXT.md`,
 - do not request Gate 1 approval.
+
+`orchestration_strategy = single-worker` is a constraint of the exemption. If
+the work no longer fits a single-worker compact path, reject the exemption
+instead of treating it as a planning decision.
 
 ## Scope and Ownership
 
@@ -100,6 +105,7 @@ If the exemption applies:
 - Never bypass `context-intake` in normal workflow.
 - Never skip Socratic dialogue for feature work because the answer "seems obvious".
 - Never hand off to `beer:planning` before Gate 1 approval is recorded unless the small-fix exemption applies.
+- Never use the small-fix exemption when the quick scout already shows multiple worker-sized tasks or dependency management that would force `multi-worker` planning.
 - Never write code, propose libraries, or decompose execution work.
 - Never create beads in this phase.
 - Never treat `.beer/seed/` as locked context.
@@ -112,7 +118,7 @@ If the exemption applies:
 - Set `approved_gates.context = false` while `CONTEXT.md` is waiting for Gate 1 approval.
 - Set `approved_gates.context = true` only after Gate 1 approves the locked context for planning.
 - After Gate 1 passes, set `next_handoff = beer:planning`.
-- If the small-fix exemption applies, do not write `context_path` or request Gate 1. Set `route = small-fix`, `orchestration_strategy = single-worker`, preserve the existing `context_stage`, and set `next_handoff = beer:planning`.
+- If the small-fix exemption applies, do not write `context_path` or request Gate 1. Set `route = small-fix`, `orchestration_strategy = single-worker` as the exemption constraint, preserve the existing `context_stage`, and set `next_handoff = beer:planning`.
 - Regenerate `.beer/STATE.md` from `state.json`; do not treat `STATE.md` as the source of truth.
 
 ## References

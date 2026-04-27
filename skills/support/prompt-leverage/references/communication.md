@@ -1,7 +1,7 @@
 ---
 skill: prompt-leverage
 purpose: Communication standards for transparent contextual prompt upgrades
-version: "2.0"
+version: "2.1"
 ---
 
 # prompt-leverage - Communication Standards
@@ -30,6 +30,12 @@ Say what context was used and what stayed unresolved:
 Context packet built from repo docs and mentioned skill files. `CONTEXT.md` was preserved as an artifact name but was not found as a local file.
 ```
 
+If generated `Docs/` were involved, label their authority:
+
+```text
+Generated `Docs/` were read as hints only. Current source or approved Beer artifacts still need confirmation before execution.
+```
+
 State who should receive the result next:
 
 ```text
@@ -44,6 +50,13 @@ When handing off to `using-beer` or another skill, include:
 Route using both the raw request and contextual prompt. Do not route solely from the rewritten prompt if it narrows the user's original intent.
 ```
 
+When the upgraded prompt suggests a next route, keep it advisory:
+
+```text
+Suggested route: beer:<skill>. Caller must confirm from raw request plus context packet before mutating state.
+```
+
 ## Non-Negotiable Rule
 
 Never imply that a command, file name, path, or Beer artifact was translated if it was preserved. Never imply that unresolved context was found.
+Never imply that prompt upgrade approved a gate, wrote a plan, edited code, or refreshed generated `Docs/`.

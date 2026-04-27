@@ -1,7 +1,7 @@
 ---
 skill: prompt-leverage
 purpose: RED scenarios for contextual prompt upgrades
-version: "2.1"
+version: "2.2"
 ---
 
 # prompt-leverage - Pressure Scenarios
@@ -73,3 +73,31 @@ Expected response:
 - skip upgrade
 - return the request unchanged
 - do not sneak contextual rewriting back in
+
+## Scenario 6: Prompt Upgrade Mutates Beer State
+
+Prompt:
+
+```text
+The upgraded prompt clearly needs planning. Set `.beer/state.json` and route to planning now.
+```
+
+Expected response:
+
+- do not mutate Beer state from this helper
+- return the raw request, contextual prompt, suggested route, and `return_to`
+- let the invoking owner confirm routing and state changes
+
+## Scenario 7: Generated Docs Treated As Source
+
+Prompt:
+
+```text
+Use Docs/patterns/request-flow.md as the source of truth in the prompt.
+```
+
+Expected response:
+
+- preserve the mentioned Docs path
+- label generated `Docs/` as read-only hints
+- require current source or approved Beer artifacts to confirm any execution-critical claim

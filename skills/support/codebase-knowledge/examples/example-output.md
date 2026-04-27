@@ -1,32 +1,35 @@
 ---
 skill: codebase-knowledge
-purpose: Example `.beer/knowledge-base/` output shape
+purpose: Example `Docs/` output shape
 version: "1.1"
 ---
 
 # Example Output
 
-This is an illustrative output shape. Real entries must be generated from current source evidence.
+This is an illustrative output shape for a route/service backend. Real entries
+must be generated from current source evidence, and layered repos may choose
+paths such as `Backend/patterns/request-lifecycle.md` instead.
 
 ## Directory Shape
 
 ```text
-.beer/knowledge-base/
+Docs/
   00-metadata.json
   index.json
   README.md
-  architecture/
+  Flows/
+    repo-flow.md
+  Architecture/
     system-overview.md
-  backend/
+  Backend/
     request-lifecycle.md
-    module-template.md
-  frontend/
+  Frontend/
     app-structure-and-api-access.md
-  boundaries/
+  Boundaries/
     frontend-backend-proxy.md
-  critical-flows/
+  CriticalFlows/
     auth-session.md
-  conventions/
+  Conventions/
     implementation-rules.md
 ```
 
@@ -56,8 +59,8 @@ This is an illustrative output shape. Real entries must be generated from curren
   },
   "stats": {
     "files_scanned": 128,
-    "patterns_detected": 6,
-    "docs_generated": 6,
+    "patterns_detected": 5,
+    "docs_generated": 5,
     "discovery_lanes": 4
   },
   "confidence_summary": {
@@ -77,8 +80,9 @@ This is an illustrative output shape. Real entries must be generated from curren
   "strategy": "pattern-first",
   "stats": {
     "total_files": 128,
-    "generated_docs": 6,
-    "backend_docs": 2,
+    "generated_docs": 5,
+    "flow_docs": 1,
+    "backend_docs": 1,
     "frontend_docs": 1,
     "boundary_docs": 1,
     "critical_flows": 1
@@ -88,38 +92,50 @@ This is an illustrative output shape. Real entries must be generated from curren
       "title": "Request Lifecycle",
       "area": "backend",
       "kind": "pattern",
-      "file": "backend/request-lifecycle.md",
+      "role": "backend-request-lifecycle",
+      "architecture_style": "route-service-backend",
+      "file": "Backend/request-lifecycle.md",
       "confidence": "high",
       "tags": ["backend", "request", "lifecycle"],
       "summary": "Shows the standard backend path from request entrypoint to persistence and side effects."
+    },
+    {
+      "title": "Repository Flow Map",
+      "area": "flows",
+      "kind": "flow-map",
+      "role": "repo-flow-map",
+      "file": "Flows/repo-flow.md",
+      "confidence": "high",
+      "tags": ["flow", "entrypoints", "verification"],
+      "summary": "Default map of how implementation work should trace through this repo before changing code."
     }
   ],
   "dominant_patterns": [
     {
-      "name": "Layered backend with handler-mediated request flow",
+      "name": "Route/service backend request flow",
       "confidence": "high",
       "areas": ["architecture", "backend"],
-      "summary": "Controllers stay thin while handlers, domain rules, and unit-of-work boundaries coordinate the real work."
+      "summary": "Routes stay thin while service and persistence helpers coordinate the real work."
     }
   ],
   "task_index": {
     "add backend endpoint": {
       "docs": [
-        "backend/request-lifecycle.md",
-        "backend/module-template.md",
-        "conventions/implementation-rules.md"
+        "Backend/request-lifecycle.md",
+        "Conventions/implementation-rules.md"
       ],
-      "layer_targets": ["backend.layer_patterns.application-handler"]
+      "pattern_targets": ["backend.pattern_groups.request-lifecycle"]
     }
   },
   "backend": {
-    "layer_patterns": {
-      "application-handler": {
-        "mission": "orchestrate backend request flow without absorbing domain or infrastructure responsibilities",
+    "pattern_groups": {
+      "request-lifecycle": {
+        "architecture_style": "route-service-backend",
+        "mission": "orchestrate backend request flow while preserving the architecture style actually detected in this repo",
         "dominant_patterns": [
-          "thin handler orchestration",
-          "delegation into domain lifecycle",
-          "boundary-only mapping"
+          "thin route orchestration",
+          "delegation into service helpers",
+          "boundary-aware persistence or API helpers"
         ],
         "verification_targets": {
           "symbols": ["CreateUserHandler"],
@@ -129,17 +145,22 @@ This is an illustrative output shape. Real entries must be generated from curren
     },
     "flow_patterns": {
       "request-lifecycle": {
-        "docs": ["backend/request-lifecycle.md"]
+        "docs": ["Backend/request-lifecycle.md"]
       }
     }
   },
   "frontend": {
-    "layer_patterns": {},
+    "pattern_groups": {},
     "flow_patterns": {}
+  },
+  "flows": {
+    "repo-flow": {
+      "docs": ["Flows/repo-flow.md"]
+    }
   },
   "boundaries": {
     "auth-session": {
-      "docs": ["critical-flows/auth-session.md"],
+      "docs": ["CriticalFlows/auth-session.md"],
       "verification_targets": {
         "processes": ["AuthSession"]
       }
@@ -153,13 +174,13 @@ This is an illustrative output shape. Real entries must be generated from curren
     "source_authority": "current repository source"
   },
   "search_index": {
-    "auth": ["critical-flows/auth-session.md"],
-    "request lifecycle": ["backend/request-lifecycle.md"]
+    "auth": ["CriticalFlows/auth-session.md"],
+    "request lifecycle": ["Backend/request-lifecycle.md"]
   }
 }
 ```
 
-## backend/request-lifecycle.md
+## Backend/request-lifecycle.md
 
 ```markdown
 ---
@@ -179,7 +200,7 @@ status: current
 The standard backend path from entrypoint to persistence and side effects.
 
 ## Why It Exists Here
-This codebase keeps entrypoints thin and pushes coordination into deeper layers.
+This codebase keeps entrypoints thin and pushes coordination into service and persistence helpers.
 
 ## How To Follow It
 - Start from the request entrypoint.
@@ -225,3 +246,32 @@ High: repeated across multiple backend features.
 - Process: `CreateUser`
 - Symbol: `CreateUserHandler`
 ```
+
+## Flows/repo-flow.md
+
+````markdown
+# Repository Flow Map
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+  Task["Task or change request"]
+  Source["Read current source"]
+  Entry["Find repo entrypoint"]
+  Backend["Backend request flow"]
+  Frontend["Frontend app and API flow"]
+  Boundary["Boundary or contract flow"]
+  Verify["Verify changed flow"]
+  Docs["Refresh Docs if flow changed"]
+  Task --> Source
+  Source --> Entry
+  Entry --> Backend
+  Entry --> Frontend
+  Entry --> Boundary
+  Backend --> Verify
+  Frontend --> Verify
+  Boundary --> Verify
+  Verify --> Docs
+```
+````

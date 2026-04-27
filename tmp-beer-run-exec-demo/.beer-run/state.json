@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "active_feature": "invoice-export",
+  "route": "feature",
+  "work_intent": "delivery",
+  "risk": "normal",
+  "orchestration_strategy": "single-worker",
+  "run_style": "guided",
+  "phase": "idle",
+  "next_handoff": null,
+  "execution_target": "executing",
+  "current_slice": "slice-1",
+  "context_locked": false,
+  "plan_ready": true,
+  "validation_status": "approved",
+  "review_status": "approved",
+  "closeout_status": "completed",
+  "debug_active": false,
+  "debug_entry_phase": null,
+  "debug_exit_target": null,
+  "active_workers": [],
+  "artifacts": {
+    "context_path": ".beer-run/context/invoice-export.md",
+    "plan_path": ".beer-run/plans/invoice-export.md",
+    "review_path": ".beer-run/reviews/invoice-export.md",
+    "closeout_path": ".beer-run/closeout/invoice-export.md",
+    "execution_evidence_path": ".beer-run/reviews/invoice-export.execution.md"
+  },
+  "blockers": [],
+  "notes": [
+    "Initialized by materialize-beer-run for invoice-export",
+    "Plan updated for slice slice-1",
+    "Validation result: approved",
+    "Execution result: completed by beer-coder",
+    "Review result: approved",
+    "Closeout result: completed"
+  ]
+}

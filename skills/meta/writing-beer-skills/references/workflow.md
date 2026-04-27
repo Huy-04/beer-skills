@@ -34,29 +34,40 @@ If the request is ambiguous, resolve the minimum decisions needed to build the f
 
 ## Phase 2: Use SCENARIO RED / INSTRUCTION GREEN / PATTERN REFACTOR Internally
 
-### Step 2.1: SCENARIO RED
+### Step 2.1: Choose Pressure Depth
 
-Pressure-test the draft idea before finalizing wording.
+Pressure-test the draft idea before finalizing wording, but scale the testing to
+the risk of the skill change.
 
-Run `SCENARIO RED` for every new skill and every edit that changes behavior, routing, required artifacts, validation rules, or pressure guidance.
+Use one of three depths:
+
+| Depth | Use when | Minimum evidence |
+|---|---|---|
+| `full RED` | New skill, route/ownership rewrite, dependency change, pattern/template/checklist change, or broad behavior change | Baseline scenarios plus one change-specific pressure scenario |
+| `focused RED` | Narrow behavior edit to an existing skill where the baseline shape is already known | One change-specific pressure scenario or manual semantic pressure walkthrough |
+| `mechanical waiver` | Spelling, formatting, broken-link repair, or other meaning-free cleanup | Explicit statement that behavior, routing, artifacts, validation, examples, templates, and normative wording are unchanged |
+
+### Step 2.2: SCENARIO RED
 
 Edits to patterns, templates, checklists, or examples that change authoring decisions count as behavior-affecting edits for this skill.
 
 Treat an edit as mechanical-only only when it changes no meaning, no trigger conditions, no required artifacts, no validation expectations, no examples, no templates, and no normative wording.
 
-If an edit changes emphasis, interpretation, examples, or template content, it is behavior-affecting for this skill and `SCENARIO RED` must run.
+If an edit changes emphasis, interpretation, examples, or template content, it is behavior-affecting for this skill and pressure coverage must run.
 
-Only purely mechanical fixes such as spelling, formatting, or broken-link repairs may skip `SCENARIO RED`. If `SCENARIO RED` is skipped, record explicitly that behavior is unchanged and why the edit is mechanical.
+Only purely mechanical fixes such as spelling, formatting, or broken-link repairs may skip pressure coverage. If pressure coverage is skipped, record explicitly that behavior is unchanged and why the edit is mechanical.
 
-Run pressure scenarios against the active agent instructions or an explicitly authorized evaluation harness. Do not spawn subagents or external evaluators unless the user explicitly asks for parallel agent work or a separate evaluator. If a real scenario run is blocked, record the blocker instead of inventing failure evidence.
+For `full RED`, run pressure scenarios against the active agent instructions or an explicitly authorized evaluation harness. Do not spawn subagents or external evaluators unless the user explicitly asks for parallel agent work or a separate evaluator. If a real scenario run is blocked, record the blocker instead of inventing failure evidence.
 
-If a behavior-affecting edit was already made before `SCENARIO RED` ran, that lapse is itself a real failure mode. Record it, run the missing scenario coverage against the actual change, and do not hand off the skill as validated until that retroactive coverage is complete.
+For `focused RED`, a local manual semantic pressure walkthrough is acceptable when a separate evaluator would be disproportionate. It must name the exact changed rule, the pressure applied, the loophole or rationalization the draft allowed, and the wording that closes it. Label this evidence as `focused/manual` instead of pretending it is independent evaluator evidence.
 
-Use `references/pressure-test-template.md` to run the baseline scenarios for required `SCENARIO RED` coverage.
+If a behavior-affecting edit was already made before pressure coverage ran, that lapse is itself a real failure mode. Record it, run the missing coverage against the actual change, and do not hand off the skill as validated until that retroactive coverage is complete.
 
-For every required `SCENARIO RED`, add at least one scenario that targets the exact rule, template, checklist item, or behavior changed in the current edit. That change-specific scenario must combine at least two pressures and must produce an observable violation or verbatim rationalization. Baseline scenarios alone are not sufficient.
+Use `references/pressure-test-template.md` to run the baseline scenarios for `full RED` coverage.
 
-Run the scenarios against a real agent. `Prompt used`, `Observed violation`, and `Exact rationalization` must come from an actual run, not a hypothetical example. If execution is blocked by tooling, permissions, or environment limits, record the blocker explicitly and do not count that blocked scenario as successful `SCENARIO RED` coverage.
+For every `full RED`, add at least one scenario that targets the exact rule, template, checklist item, or behavior changed in the current edit. That change-specific scenario must combine at least two pressures and must produce an observable violation or verbatim rationalization. Baseline scenarios alone are not sufficient.
+
+For `full RED`, `Prompt used`, `Observed violation`, and `Exact rationalization` must come from an actual run, not a hypothetical example. If execution is blocked by tooling, permissions, or environment limits, record the blocker explicitly and do not count that blocked scenario as successful `full RED` coverage.
 
 Capture:
 
@@ -66,7 +77,7 @@ Capture:
 
 These notes may live in scratch text, temporary files, or working memory.
 
-### Step 2.2: INSTRUCTION GREEN
+### Step 2.3: INSTRUCTION GREEN
 
 Write the minimum pattern-compliant skill files needed to satisfy the request:
 
@@ -77,7 +88,7 @@ Write the minimum pattern-compliant skill files needed to satisfy the request:
 
 Add optional files only when the skill explicitly needs them.
 
-### Step 2.3: PATTERN REFACTOR
+### Step 2.4: PATTERN REFACTOR
 
 Tighten the skill after pressure-testing:
 
@@ -133,9 +144,9 @@ Before marking the work complete:
 1. remove temporary scenario/instruction/refactor files unless the user explicitly asked to keep them
 2. remove unused helper files or stale drafts
 3. confirm the remaining files form a clean Beer skill package
-4. note whether `SCENARIO RED` was run or legitimately waived as a mechanical-only edit
+4. note pressure depth: `full RED`, `focused RED`, or `mechanical waiver`
 5. include evidence for the manual semantic review in the validation report or handoff
-6. include a minimal SCENARIO RED report in the handoff or validation package when `SCENARIO RED` was run
+6. include a minimal pressure report in the handoff or validation package when pressure coverage was run
 
 Optional:
 
@@ -149,17 +160,18 @@ This workflow is done when:
 - temporary authoring artifacts are removed unless requested
 - the repo-native validation commands pass
 - the manual semantic checklist passes
-- a minimal SCENARIO RED report exists when `SCENARIO RED` was required
+- a minimal pressure report exists when `full RED` or `focused RED` was required
 - the remaining files are the intended final deliverable
 
-### Minimal SCENARIO RED Report Requirements
+### Minimal Pressure Report Requirements
 
-When `SCENARIO RED` runs, the handoff or validation package must include at least:
+When `full RED` or `focused RED` runs, the handoff or validation package must include at least:
 
+- pressure depth: `full RED` or `focused RED`
 - scenario count and whether each scenario was executed or blocked
 - the exact rule, template, checklist item, or behavior targeted by the change-specific scenario
 - the pressures used in the change-specific scenario
-- one observable failure or one verbatim rationalization from a real run
+- one observable failure or one verbatim rationalization from a real run for `full RED`, or the manual loophole/rationalization for `focused RED`
 - the strongest loophole found or a statement that no meaningful loophole survived
 
 ---

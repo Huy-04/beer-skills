@@ -18,7 +18,7 @@
 ### Why This Approach
 
 - `<reason>`
-- `<reason>`
+- `<supporting reason or tradeoff>`
 
 ## 3. Alternatives Rejected
 

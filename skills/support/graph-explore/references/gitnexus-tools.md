@@ -1,225 +1,138 @@
 ---
 skill: graph-explore
-purpose: Detailed documentation for all GitNexus MCP tools used by Beer
-version: "1.0"
+purpose: GitNexus tool choice guide for Beer support usage
+version: "1.2"
 ---
 
-# GitNexus Tools
+# GitNexus Tool Choice Guide
 
-GitNexus exposes tools via MCP. Beer uses these as the primary graph query interface.
+This file is a usage guide, not the source of truth for MCP tool schemas.
 
----
-
-## 1. `query` — Natural Language Code Search
-
-Find execution flows, symbols, and processes by describing what you need in plain language.
-
-**Input:**
-- `query`: natural language description (e.g., "existing auth validation logic")
-- `goal`: what you want to find
-- `task_context`: optional — what you're working on (improves ranking)
-- `include_content`: include full symbol source (default: false)
-- `limit`: max processes to return (default: 5)
-- `max_symbols`: max symbols per process (default: 10)
-
-**Example:**
-```
-query: "how does Order checkout flow work"
-goal: "find the checkout execution flow"
-task_context: "implementing checkout feature"
-```
-
-**Output:** Ranked execution flows with relevance, symbols, and file locations.
+Always prefer the active GitNexus MCP tool schema exposed in the current
+session. If this guide and the active schema disagree, follow the active schema
+and report the mismatch as stale documentation.
 
 ---
 
-## 2. `context` — 360-Degree Symbol View
+## Tool Selection
 
-Deep-dive into a single symbol: callers, callees, imports, properties, overrides.
-
-**Input:**
-- `name`: symbol name (e.g., "validateUser", "AuthService")
-- `uid`: direct symbol UID from prior `query` results (zero-ambiguity)
-- `file_path`: disambiguate common names
-- `include_content`: include full source (default: false)
-
-**Example:**
-```
-name: "OrderService"
-include_content: true
-```
-
-**Output:** Categorized incoming/outgoing references, process participation, file location.
+| Question | Primary tool | Notes |
+|---|---|---|
+| Is this repo indexed? | `list_repos` | Use before graph work when repo identity or index status is uncertain. |
+| What flow or symbols match this task? | `query` | Natural-language search over processes and symbols. |
+| What calls or uses this symbol? | `context` | Prefer `uid` or `file_path` when names are ambiguous. |
+| What breaks if this changes? | `impact` | Use `upstream` for dependents and `downstream` for dependencies. |
+| What custom graph pattern should be checked? | `cypher` | Use only when standard tools do not answer the question. |
+| What changed in the worktree? | `detect_changes` | Useful for review and pre-commit risk checks. |
+| Which clients call this API route? | `route_map` or `api_impact` | Route nodes may be absent in some indexes. |
+| Do response shapes match consumers? | `shape_check` | Treat empty route data as an index limitation until verified. |
+| Which MCP/RPC tools exist in code? | `tool_map` | Tool nodes may be absent in some indexes. |
+| Is a rename likely safe? | `rename` with `dry_run: true` | Preview only from this helper; implementation belongs elsewhere. |
+| Are repo groups configured? | `group_list` or `group_sync` | Use only when group mode is explicitly relevant. |
 
 ---
 
-## 3. `impact` — Blast Radius Analysis
+## Readiness Pattern
 
-Analyze what would break if you change a symbol. Returns affected symbols grouped by depth.
+1. Capture the caller and question:
+   - `return_to`
+   - concrete graph question
+   - target repo/path
+   - optional generated `Docs/` assumption to verify
+2. Check index status with `list_repos` when uncertain.
+3. Choose the smallest tool set that answers the question.
+4. Include `repo` on every GitNexus call when multiple repos are indexed.
+5. Return `status: degraded` when GitNexus is unavailable, missing the repo,
+   stale, or too sparse to support the conclusion.
 
-**Input:**
-- `target`: symbol name or file path to analyze
-- `direction`: `"upstream"` (what depends on this) or `"downstream"` (what this depends on)
-- `maxDepth`: max relationship depth (default: 3)
-- `minConfidence`: minimum confidence 0-1 (default: 0.7)
-- `relationTypes`: filter edge types (CALLS, IMPORTS, EXTENDS, IMPLEMENTS, HAS_METHOD, HAS_PROPERTY, METHOD_OVERRIDES, METHOD_IMPLEMENTS, ACCESSES)
-- `includeTests`: include test files (default: false)
-
-**Example:**
-```
-target: "OrderService"
-direction: "upstream"
-maxDepth: 2
-relationTypes: ["CALLS", "IMPORTS"]
-```
-
-**Output:** Risk level (LOW/MEDIUM/HIGH/CRITICAL), summary, affected processes, modules, symbols by depth.
-
-**Depth groups:**
-- `d=1`: WILL BREAK (direct callers/importers)
-- `d=2`: LIKELY AFFECTED (indirect)
-- `d=3`: MAY NEED TESTING (transitive)
+Do not auto-index from `graph-explore`. Return the precise indexing suggestion
+to the caller or user.
+Do not create or refresh generated `Docs/`; when graph evidence confirms or
+contradicts a Docs-derived assumption, return that relationship in the evidence
+packet.
 
 ---
 
-## 4. `cypher` — Raw Graph Query
+## Common Patterns
 
-Execute Cypher queries directly against the code knowledge graph.
+### Architecture Lookup
 
-**Input:**
-- `query`: Cypher query string
+Use `query` first.
 
-**Schema:**
-- Nodes: File, Folder, Function, Class, Interface, Method, CodeElement, Community, Process, Route, Tool
-- Edges: CONTAINS, DEFINES, CALLS, IMPORTS, EXTENDS, IMPLEMENTS, HAS_METHOD, HAS_PROPERTY, ACCESSES, METHOD_OVERRIDES, METHOD_IMPLEMENTS, MEMBER_OF, STEP_IN_PROCESS, HANDLES_ROUTE, FETCHES, HANDLES_TOOL, ENTRY_POINT_OF
-
-**Example:**
+```yaml
+query:
+  query: "checkout flow and shipment integration"
+  goal: "find relevant execution flows and symbols"
+  repo: "<repo-name>"
+  limit: 5
+  max_symbols: 10
 ```
+
+Then use `context` on the highest-signal symbol if the caller needs detail.
+
+### Blast Radius
+
+Use `impact` before approving or reviewing changes to shared behavior.
+
+```yaml
+impact:
+  target: "OrderAggregate"
+  direction: "upstream"
+  repo: "<repo-name>"
+  maxDepth: 3
+  includeTests: true
+```
+
+Prefer exact file paths or symbol UIDs for common names.
+
+### API Safety
+
+Use `api_impact` before changing a route handler.
+
+```yaml
+api_impact:
+  route: "/api/orders"
+  repo: "<repo-name>"
+```
+
+If route tools return no data, check whether the repo index contains Route
+nodes before treating the empty result as proof of no consumers.
+
+### Raw Cypher
+
+Use `cypher` only for graph questions not covered by higher-level tools.
+
+```cypher
 MATCH (a)-[:CodeRelation {type: 'CALLS'}]->(b:Function {name: "validateUser"})
 RETURN a.name, a.filePath
+LIMIT 20
 ```
 
-**Output:** Query results as structured data.
+Keep Cypher bounded with `LIMIT` and avoid inventing edge names.
 
 ---
 
-## 5. `detect_changes` — Pre-commit Impact Analysis
+## Output Rules
 
-Maps git diff hunks to indexed symbols and traces affected execution flows.
+Return evidence to the calling Beer skill. Include:
 
-**Input:**
-- `scope`: `"unstaged"`, `"staged"`, `"all"`, or `"compare"`
-- `base_ref`: branch/commit for compare (e.g., "main")
+- `return_to`
+- `source: gitnexus`
+- `status: ok | degraded`
+- tools used
+- key symbols, files, processes, or routes
+- starting points and source checks
+- `docs_relation` when generated Docs was part of the caller's question
+- confidence level and reason
+- next local check the caller should run, if any
 
-**Example:**
-```
-scope: "unstaged"
-```
-
-**Output:** Changed symbols, affected processes, risk summary.
-
----
-
-## 6. `route_map` — API Route Discovery
-
-Shows which components/hooks fetch which API endpoints, and which handler files serve them.
-
-**Input:**
-- `route`: filter by route path (e.g., "/api/grants"), omit for all
-
-**Example:**
-```
-route: "/api/orders"
-```
-
-**Output:** Route nodes with handlers, middleware, consumers.
+The caller owns workflow decisions, Beer state, planning artifacts, and code
+edits.
 
 ---
 
-## 7. `api_impact` — API Pre-change Impact
+## Stale Documentation Guard
 
-Shows what consumers depend on an API route before modifying it.
-
-**Input:**
-- `route`: API route path (e.g., "/api/grants")
-- `file`: handler file path (alternative to route)
-
-**Example:**
-```
-route: "/api/orders"
-```
-
-**Output:** Consumer count, response fields accessed, middleware, risk level.
-
----
-
-## 8. `shape_check` — Response Shape Mismatch Detection
-
-Checks if consumers access keys not present in a route's response.
-
-**Input:**
-- `route`: specific route, omit for all
-
-**Example:**
-```
-route: "/api/orders"
-```
-
-**Output:** Routes with response keys vs consumer access keys, MISMATCH status.
-
----
-
-## 9. `tool_map` — MCP/RPC Tool Discovery
-
-Lists tools, handlers, and descriptions.
-
-**Input:**
-- `tool`: filter by tool name, omit for all
-
-**Example:**
-```
-tool: "send_message"
-```
-
-**Output:** Tool nodes with handler files and descriptions.
-
----
-
-## 10. `rename` — Safe Cross-repo Rename
-
-Multi-file coordinated rename using graph + text search. Preview by default.
-
-**Input:**
-- `symbol_name`: current name
-- `new_name`: new name
-- `file_path`: disambiguate common names
-- `symbol_uid`: zero-ambiguity UID from prior query
-- `dry_run`: preview edits without modifying files (default: true)
-- `repo`: repository name/path
-
-**Example:**
-```
-symbol_name: "OrderService"
-new_name: "OrderApplicationService"
-dry_run: true
-```
-
-**Output:** Tagged edits (graph = high confidence, text_search = lower confidence).
-
----
-
-## 11. `list_repos` — Discover Indexed Repos
-
-Lists all indexed repositories with stats.
-
-**Output:** Repo names, paths, indexed date, last commit, stats.
-
----
-
-## 12-16. Group Commands (Multi-repo)
-
-- `group_list` — list repository groups
-- `group_status` — check group sync health
-- `group_sync` — rebuild contract registry
-- `group_contracts` — inspect cross-repo contracts
-- `group_query` — semantic search across group
+If a tool listed in old docs is missing from the active MCP schema, do not call
+it. Use the closest current tool, or return a degraded note if no replacement
+exists.

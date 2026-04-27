@@ -302,7 +302,7 @@ export function recordApproval(options = {}) {
   }
 
   if (assessment.approval === "review") {
-    nextSteps.push("Before leaving compounding, run beer closeout-guard with an explicit knowledge-base decision.");
+    nextSteps.push("Before leaving compounding, run beer closeout-guard with an explicit generated Docs decision.");
   }
 
   return {

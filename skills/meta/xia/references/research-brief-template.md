@@ -56,16 +56,29 @@ Record the highest-signal evidence, not every artifact touched.
 - Behaviors that required external validation:
 - Important caveats or mismatches:
 
-## Recommendation Matrix
-- Candidate:
-  - Recommendation class: `Adopt` | `Update` | `Adapt` | `Ignore`
-  - Priority band: `Now` | `Next` | `Later` | `Ignore`
-  - Closest Beer skill:
-  - Beer effect:
-  - Why this class won:
-  - Why the next-best alternative lost:
+## Decision Cards
 
-Do not leave serious candidates out of this matrix.
+### 1. [Candidate]
+
+Decision: `Adopt` | `Update` | `Adapt` | `Ignore`
+Priority: `Now` | `Next` | `Later` | `Ignore`
+Closest Beer skill: `beer:<skill>` | `none`
+Beer effect:
+
+Evidence:
+- `Local`:
+- `Upstream`:
+- `Docs`:
+- `Inference`:
+
+Why this class won:
+
+Why the next-best alternative lost:
+
+Recommended Beer change:
+-
+
+Do not leave serious candidates out of the decision cards.
 
 ## Priority Ordering
 - `Now`: [candidate] - [Beer effect]

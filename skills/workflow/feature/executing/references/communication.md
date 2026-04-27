@@ -11,7 +11,7 @@ version: "1.0"
 Use a short completion note:
 
 ```text
-Direct execution complete for <slice>. Files: <list>. Verified with: <commands>. Next owner: beer:<reviewing or planning>.
+Direct execution complete for <slice>. Files: <list>. Pattern: <pattern>. Source facts re-checked: <summary>. TDD: <complete | waived: reason | not-required>. Verified with: <commands>. Next owner: beer:<reviewing or planning>.
 Evidence: <execution_evidence_path>.
 ```
 
@@ -20,16 +20,24 @@ Evidence: <execution_evidence_path>.
 Report to the coordinator:
 
 ```text
-Assigned work complete: <task>. Files: <list>. Verified with: <commands>. No blocker remains.
-Evidence: <worker evidence or aggregate evidence path>.
+Assigned work complete: <task>. Status: completed. Files: <list>. Pattern: <pattern>. Source facts re-checked: <summary>. TDD: <complete | waived: reason | not-required>. Verified with: <commands>. No blocker remains.
+Evidence: <worker evidence or aggregate evidence path>. Next owner action: <coordinator review, merge, or follow-on assignment>.
 ```
 
 Do not claim `beer:reviewing` from a worker-completion note unless the coordinator explicitly assigned that handoff.
+Do not claim completion until the worker-result record or bead state has been updated.
 
 ## Route Rejection
 
 ```text
 Execution cannot start because the execution gate is not approved or the approved work item is unclear.
+Return to beer:validating before implementation continues.
+```
+
+## Contract Rejection
+
+```text
+Execution cannot start because `contract_verified` is not true or the implementation pattern is missing.
 Return to beer:validating before implementation continues.
 ```
 

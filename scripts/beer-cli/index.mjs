@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 
 import { resolveRepoRoot as resolveOnboardRepoRoot } from "../commands/onboard-beer.mjs";
+import { readBeerStatus, writeBeerState } from "../beer-state/core.mjs";
 import {
   buildGitNexusAnalyzeCommand,
   resolveCommand,
@@ -193,6 +194,40 @@ export function runGitNexusIndex(options = {}) {
   }
 }
 
+export function mapGitNexusRefreshStatus(result) {
+  if (result?.status === "completed") {
+    return "completed";
+  }
+  if (result?.status === "skipped") {
+    return "skipped";
+  }
+  if (result?.status === "manual_required") {
+    return "manual-required";
+  }
+  if (result?.status === "failed") {
+    return "failed";
+  }
+  return "";
+}
+
+export function recordGitNexusIndexStatus(repoRoot, result) {
+  const status = readBeerStatus(repoRoot);
+  if (!status.state_json.exists) {
+    return null;
+  }
+
+  const gitnexusStatus = mapGitNexusRefreshStatus(result);
+  if (!gitnexusStatus) {
+    return null;
+  }
+
+  return writeBeerState(repoRoot, {
+    ...status.state_json,
+    gitnexus_refresh_status: gitnexusStatus,
+    closeout_ready: false,
+  });
+}
+
 function renderBeerIndex(result) {
   const lines = [
     "Beer Index",
@@ -223,9 +258,15 @@ export async function runBeerIndex(args) {
     repoRoot: args.repoRoot,
     dryRun: args.dryRunTools,
   });
+  const recordedState = recordGitNexusIndexStatus(result.repo_root, result);
+  const output = {
+    ...result,
+    state_updated: Boolean(recordedState),
+    gitnexus_refresh_status: recordedState?.gitnexus_refresh_status || undefined,
+  };
 
   process.stdout.write(
-    args.json ? `${JSON.stringify(result, null, 2)}\n` : `${renderBeerIndex(result)}\n`,
+    args.json ? `${JSON.stringify(output, null, 2)}\n` : `${renderBeerIndex(output)}\n`,
   );
 
   return ["completed", "skipped", "dry_run"].includes(result.status) ? 0 : 1;

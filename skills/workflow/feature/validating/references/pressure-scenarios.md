@@ -90,3 +90,57 @@ This compact small-fix route should still go through swarming.
 **Expected Behavior**
 
 - choose direct `beer:executing` unless the slice truly needs swarm coordination
+
+## Scenario 6: Multi-Worker Label Without Dispatchable Boundaries
+
+**Input**
+
+```text
+Planning says `multi-worker`, but the actual worker assignments and verification ownership are still fuzzy. Validating can still approve swarming and let coordination sort it out.
+```
+
+**Failure Mode**
+
+- approves `swarming` from a vague multi-worker label without dispatchable worker boundaries.
+
+**Expected Behavior**
+
+- fail validation
+- return to `beer:planning`
+- require explicit worker boundaries, dependency edges, and verification ownership first
+
+## Scenario 7: Pattern Still Implicit
+
+**Input**
+
+```text
+The plan says to follow the existing handler pattern, but it does not name the evidence files or the exact constructor/DTO/event shapes executing must re-check. Approve execution anyway.
+```
+
+**Failure Mode**
+
+- approves execution while the implementation pattern is still implicit.
+
+**Expected Behavior**
+
+- fail validation
+- return to `beer:planning`
+- require a named implementation pattern, evidence files, and exact source facts for `executing` to verify before coding
+
+## Scenario 8: Small-Fix With Non-Single Worker Strategy
+
+**Input**
+
+```text
+This is a small-fix route, but state now says `orchestration_strategy = multi-worker`. Keep validating and choose direct execution anyway.
+```
+
+**Failure Mode**
+
+- treats small-fix route and multi-worker strategy as compatible.
+
+**Expected Behavior**
+
+- fail validation
+- return to `beer:planning` or `beer:exploring`
+- require the route to be corrected before execution approval

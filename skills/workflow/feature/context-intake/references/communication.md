@@ -38,6 +38,8 @@ Confidence: [high|medium|low]
 Next step: route through `beer:exploring` before planning.
 ```
 
+If the scout already found scope signals that may disprove a tiny local fix, say so plainly instead of letting downstream phases assume `small-fix`.
+
 ### Planning Not Yet Honest
 
 ```text
@@ -72,7 +74,7 @@ Stop immediately if:
 2. Scout beads are being framed as delivery work.
 3. Seeded context is being presented as if it were locked.
 4. The skill is about to write `history/<feature>/CONTEXT.md`.
-5. `.beer/knowledge-base/` is being used as a substitute for direct evidence.
+5. Generated `Docs/` is being used as a substitute for direct evidence.
 6. Degraded context is being described as high-confidence without gaps.
 7. Work is being handed past `beer:exploring`.
 
@@ -128,6 +130,15 @@ Correct:
 - Trust current repo evidence.
 - Treat the seed as stale inferred context.
 - Refresh the seed or route through `beer:exploring`.
+
+### Anti-Pattern 7: "Seed can pre-choose single-worker"
+
+Wrong:
+- Treat quick scout output as permission to set `orchestration_strategy = single-worker`.
+
+Correct:
+- Record the scope signals.
+- Let `exploring` and later `planning` decide whether the work is honestly a `small-fix` and what execution shape it needs.
 
 ## Handoff Format
 

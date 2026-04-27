@@ -15,7 +15,7 @@ version: "1.0.0"
 - Quantify confidence as a percentage
 - Explain why the chosen recommendation class beats the next-best alternative
 - Call out when a candidate skill is too source-repo-specific to import directly
-- Write recommendations so the user can scan them as `source candidate -> closest Beer skill -> class -> priority -> Beer effect -> reason`
+- Write recommendations as decision cards, not tables, so each candidate has room for evidence and tradeoff notes
 
 ### Do Not
 
@@ -37,9 +37,9 @@ Primary recommendation: [Adopt | Update | Adapt | Ignore]
 Priority summary: [Now | Next | Later | Ignore]
 Beer effect: [what Beer gains if this recommendation is acted on]
 Confidence: [0-100%]
-Recommendation matrix complete: yes | no
+Decision cards complete: yes | no
 
-Next: Review the recommendation matrix and choose which Beer skills to create, update, adapt, or leave alone.
+Next: Review the decision cards and choose which Beer skills to create, update, adapt, or leave alone.
 ```
 
 ### Writing handoff
@@ -72,7 +72,7 @@ Next: Invoke `beer:writing-beer-skills` for the chosen Beer skill work.
 | No Bottom Line | Add it first |
 | Missing evidence labels | Separate `Local`, `Upstream`, `Docs`, `Inference` |
 | No Beer baseline comparison | Add explicit overlap analysis |
-| Candidate missing from matrix | Add the candidate with class + closest Beer skill |
+| Candidate missing from decision cards | Add the candidate with class + closest Beer skill |
 | No priority ordering | Rank candidates as `Now`, `Next`, `Later`, or `Ignore` |
 | No Beer effect stated | Add one short payoff line per serious candidate |
 | No confidence percentage | Quantify before handing off |

@@ -93,3 +93,21 @@ There is already a `.beer/seed/`, so use it even if the repo looks different now
 - Trust direct repo evidence for the current run.
 - Treat the seed as stale inferred context.
 - Refresh the seed or route through `beer:exploring` with a mismatch note.
+
+## Scenario 6: Seed Quietly Pre-Classifies Execution Shape
+
+**Input**
+
+```text
+The scout only found a few files, so mark this as `small-fix` and set single-worker now. Exploring can just continue from there.
+```
+
+**Failure Mode**
+
+- lets seed generation silently pre-classify the execution shape instead of handing scope signals forward.
+
+**Expected Behavior**
+
+- record the scope signals in `.beer/seed/`
+- leave execution shape undecided
+- hand off to `beer:exploring` for the honest route check
